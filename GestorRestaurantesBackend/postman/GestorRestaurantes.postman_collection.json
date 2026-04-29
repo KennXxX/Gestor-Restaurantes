@@ -1,0 +1,755 @@
+{
+  "info": {
+    "name": "GestorRestaurantes - Full API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json", 
+    "description": "Colección actualizada. Ajusta baseUrl si tu puerto cambia (Dios te ama)."
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000", "type": "string" },
+    { "key": "token", "value": "<JWT>", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Restaurants",
+      "item": [
+        {
+          "name": "Create Restaurant (form-data, file: restaurantPhoto)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "restaurantName", "type": "text", "value": "My Restaurant" },
+                { "key": "restaurantAddress", "type": "text", "value": "Street 123" },
+                { "key": "restaurantPhone", "type": "text", "value": "123456789" },
+                { "key": "restaurantEmail", "type": "text", "value": "test@example.com" },
+                { "key": "openingHours", "type": "text", "value": "09:00" },
+                { "key": "closingHours", "type": "text", "value": "22:00" },
+                { "key": "restaurantPhoto", "type": "file" }
+              ]
+            },
+            "url": "{{baseUrl}}/gestorRestaurantes/api/v1/restaurants/create"
+          }
+        },
+        { "name": "Get Restaurants", "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/gestorRestaurantes/api/v1/restaurants" } },
+        { "name": "Get Restaurant by ID", "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/gestorRestaurantes/api/v1/restaurants/:id" } },
+        { "name": "Update Restaurant", "request": { "method": "PUT", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "body": { "mode": "raw", "raw": "{ \"restaurantName\": \"New name\" }", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/gestorRestaurantes/api/v1/restaurants/:id" } },
+        { "name": "Delete Restaurant", "request": { "method": "DELETE", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": "{{baseUrl}}/gestorRestaurantes/api/v1/restaurants/:id" } }
+      ]
+    },
+    {
+      "name": "Menus",
+      "item": [
+        {
+          "name": "Create Menu (form-data, file: menuPhoto)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "menuName", "type": "text", "value": "PizzaMenu" },
+                { "key": "menuDescription", "type": "text", "value": "Delicious" },
+                { "key": "menuPrice", "type": "text", "value": "12" },
+                { "key": "menuCategory", "type": "text", "value": "PLATO_FUERTE" },
+                { "key": "restaurantId", "type": "text", "value": "<restaurantId>" },
+                { "key": "menuPhoto", "type": "file" }
+              ]
+            },
+            "url": "{{baseUrl}}/gestorRestaurantes/api/v1/menus"
+          }
+        },
+        { "name": "Get Menus", "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/gestorRestaurantes/api/v1/menus" } },
+        { "name": "Get Menu by ID", "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/gestorRestaurantes/api/v1/menus/:id" } },
+        { "name": "Update Menu (form-data optional file)", "request": { "method": "PUT", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "body": { "mode": "formdata", "formdata": [ { "key": "menuName", "type": "text", "value": "Updated" }, { "key": "menuPhoto", "type": "file" } ] }, "url": "{{baseUrl}}/gestorRestaurantes/api/v1/menus/:id" } },
+        { "name": "Delete Menu", "request": { "method": "DELETE", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": "{{baseUrl}}/gestorRestaurantes/api/v1/menus/:id" } }
+      ]
+    },
+    {
+      "name": "Tables",
+      "item": [
+        {
+          "name": "Create Table (form-data)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "tableName", "type": "text", "value": "Mesa 1" },
+                { "key": "tableCapacity", "type": "text", "value": "4" },
+                { "key": "restaurantId", "type": "text", "value": "<restaurantId>" }
+              ]
+            },
+            "url": "{{baseUrl}}/gestorRestaurantes/api/v1/tables"
+          }
+        },
+        { "name": "Get Tables", "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/gestorRestaurantes/api/v1/tables" } },
+        { "name": "Get Table by ID", "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/gestorRestaurantes/api/v1/tables/:id" } },
+        { "name": "Update Table (form-data)", "request": { "method": "PUT", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "body": { "mode": "formdata", "formdata": [ { "key": "tableName", "type": "text", "value": "Mesa X" }, { "key": "tableCapacity", "type": "text", "value": "2" } ] }, "url": "{{baseUrl}}/gestorRestaurantes/api/v1/tables/:id" } },
+        { "name": "Delete Table", "request": { "method": "DELETE", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": "{{baseUrl}}/gestorRestaurantes/api/v1/tables/:id" } }
+      ]
+    },
+    {
+      "name": "Reservations",
+      "item": [
+        {
+          "name": "Create Reservation (form-data, optional file: photo)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "restaurantId", "type": "text", "value": "<restaurantId>" },
+                { "key": "tableId[]", "type": "text", "value": "<tableId>" },
+                { "key": "numberPeople", "type": "text", "value": "4" },
+                { "key": "typeReservation", "type": "text", "value": "PERSONAL" },
+                { "key": "startDate", "type": "text", "value": "2026-02-25T19:00:00Z" },
+                { "key": "endDate", "type": "text", "value": "2026-02-25T21:00:00Z" },
+                { "key": "description", "type": "text", "value": "Cena evento" },
+                { "key": "photo", "type": "file" }
+              ]
+            },
+            "url": "{{baseUrl}}/gestorRestaurantes/api/v1/reservations/create"
+          }
+        },
+        { "name": "Get My Reservations", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": "{{baseUrl}}/gestorRestaurantes/api/v1/reservations/my-reservations" } },
+        { "name": "Update Reservation Status (admin)", "request": { "method": "PUT", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "body": { "mode": "raw", "raw": "{ \"status\": \"COMPLETADO\" }", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/gestorRestaurantes/api/v1/reservations/status/:id" } }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "Create Order (delivery)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurantId\": \"<restaurantId>\",\n  \"orderType\": \"A_DOMICILIO\",\n  \"deliveryAddress\": \"Calle 123, Ciudad\",\n  \"items\": [\n    { \"menuId\": \"<menuId1>\", \"quantity\": 2 },\n    { \"menuId\": \"<menuId2>\", \"quantity\": 1 }\n  ]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/gestorRestaurantes/api/v1/orders"
+          }
+        },
+        {
+          "name": "Create Order (dine-in)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurantId\": \"<restaurantId>\",\n  \"orderType\": \"EN_RESTAURANTE\",\n  \"tableId\": \"<tableId>\",\n  \"items\": [\n    { \"menuId\": \"<menuId1>\", \"quantity\": 1 }\n  ]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/gestorRestaurantes/api/v1/orders"
+          }
+        },
+        {
+          "name": "Create Order (takeaway)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurantId\": \"<restaurantId>\",\n  \"orderType\": \"PARA_LLEVAR\",\n  \"items\": [\n    { \"menuId\": \"<menuId1>\", \"quantity\": 1 }\n  ]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/gestorRestaurantes/api/v1/orders"
+          }
+        },
+        {
+          "name": "Get Orders by Restaurant",
+          "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": "{{baseUrl}}/gestorRestaurantes/api/v1/orders/restaurant/:restaurantId" }
+        },
+        {
+          "name": "Update Order Status",
+          "request": {
+            "method": "PUT",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"LISTO\"\n}\n// Valores permitidos: EN_PREPARACION, LISTO, ENTREGADO, CANCELADO",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/gestorRestaurantes/api/v1/orders/status/:id"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Promotions",
+      "item": [
+        {
+          "name": "Create Promotion (pending approval)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurantId\": \"<restaurantId>\",\n  \"title\": \"Promo 2x1\",\n  \"description\": \"Detalles de la promo\",\n  \"couponCode\": \"SAVE10\",\n  \"discountPercentage\": 10,\n  \"startDate\": \"2026-03-01\",\n  \"endDate\": \"2026-03-31\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/gestorRestaurantes/api/v1/promotions"
+          }
+        },
+        {
+          "name": "Get Active Promotions",
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/gestorRestaurantes/api/v1/promotions/active" }
+        },
+        {
+          "name": "Approve Promotion (admin)",
+          "request": { "method": "PUT", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": "{{baseUrl}}/gestorRestaurantes/api/v1/promotions/approve/:id" }
+        }
+      ]
+    },
+    {
+      "name": "Reviews",
+      "item": [
+        {
+          "name": "Create Review (restaurant or menu)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurantId\": \"<restaurantId>\",\n  \"menuId\": null,\n  \"rating\": 5,\n  \"comment\": \"Excelente\",\n  \"userName\": \"Cliente\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/gestorRestaurantes/api/v1/reviews"
+          }
+        },
+        { "name": "Get Reviews by Restaurant", "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/gestorRestaurantes/api/v1/reviews/restaurant/:restaurantId" } },
+        { "name": "Get Reviews by Menu", "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/gestorRestaurantes/api/v1/reviews/menu/:menuId" } }
+      ]
+    },
+    {
+      "name": "Statistics",
+      "item": [
+        { "name": "Restaurant Statistics (admin)", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": "{{baseUrl}}/gestorRestaurantes/api/v1/statistics/:restaurantId" } },
+        { "name": "Export Statistics PDF (admin)", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": "{{baseUrl}}/gestorRestaurantes/api/v1/statistics/:restaurantId/pdf" } }
+      ]
+    },
+    {
+      "name": "Events",
+      "item": [
+        { "name": "Create Event", "request": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "body": { "mode": "raw", "raw": "{ \"reservationId\": \"<reservationId>\", \"description\": \"Evento\" }", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/gestorRestaurantes/api/v1/events/" } },
+        { "name": "Get Events by Reservation", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": "{{baseUrl}}/gestorRestaurantes/api/v1/events/reservation/:reservationId" } },
+        { "name": "Deactivate Event (ADMIN)", "request": { "method": "PUT", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": "{{baseUrl}}/gestorRestaurantes/api/v1/events/deactivate/:id" } }
+      ]
+    },
+
+    {
+  "name": "Create Inventory",
+  "request": {
+    "method": "POST",
+    "header": [
+      { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+      { "key": "Content-Type", "value": "application/json", "type": "text" }
+    ],
+    "url": {
+      "raw": "{{baseUrl}}/gestorRestaurantes/api/v1/inventory",
+      "host": ["{{baseUrl}}"],
+      "path": ["gestorRestaurantes","api","v1","inventory"]
+    },
+    "body": {
+      "mode": "raw",
+      "raw": "{\n  \"menuId\": \"<MENU_ID>\",\n  \"restaurantId\": \"<REST_ID>\",\n  \"quantity\": 10\n}"
+    }
+  }
+},
+
+{
+  "name": "Create Order (with stock decrement + invoice)",
+  "request": {
+    "method": "POST",
+    "header": [
+      { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+      { "key": "Content-Type", "value": "application/json", "type": "text" }
+    ],
+    "url": {
+      "raw": "{{baseUrl}}/gestorRestaurantes/api/v1/orders",
+      "host": ["{{baseUrl}}"],
+      "path": ["gestorRestaurantes","api","v1","orders"]
+    },
+    "body": {
+      "mode": "raw",
+      "raw": "{\n  \"restaurantId\": \"<REST_ID>\",\n  \"items\": [\n    { \"menuId\": \"<MENU_ID>\", \"quantity\": 2 }\n  ],\n  \"orderType\": \"EN_RESTAURANTE\",\n  \"coupon\": \"SAVE10\"   // opcional\n}"
+    }
+  }
+},
+
+{
+  "name": "Get Invoice by ID",
+  "request": {
+    "method": "GET",
+    "header": [
+      { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+    ],
+    "url": {
+      "raw": "{{baseUrl}}/gestorRestaurantes/api/v1/invoices/{{invoiceId}}",
+      "host": ["{{baseUrl}}"],
+      "path": ["gestorRestaurantes","api","v1","invoices","{{invoiceId}}"]
+    }
+  }
+},
+
+ {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Auth",
+          "item": [
+            {
+              "name": "Register",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"name\": \"Angel Geovanny Reyes Vinasco\",\r\n  \"email\": \"angelgeovannyvinasco@gmail.com\",\r\n  \"password\": \"contraseña123\",\r\n  \"phone\": \"39539423\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:3005/api/v1/auth/register",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "3005",
+                  "path": [
+                    "api",
+                    "v1",
+                    "auth",
+                    "register"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Verify-Email",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"token\": \"ZMzSBQn9nrtkR5Q6xMB9yTKtxC2LlM7NlcqVW1aJn9w\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:3005/api/v1/auth/verify-email",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "3005",
+                  "path": [
+                    "api",
+                    "v1",
+                    "auth",
+                    "verify-email"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "login",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"email\" : \"admin@gestor.local\",\r\n    \"password\" : \"Admin1234!\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:3005/api/v1/auth/login",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "3005",
+                  "path": [
+                    "api",
+                    "v1",
+                    "auth",
+                    "login"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Resend-verification",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"email\": \"angelgeovannyvinasco@gmail.com\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:3005/api/v1/auth/resend-verification",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "3005",
+                  "path": [
+                    "api",
+                    "v1",
+                    "auth",
+                    "resend-verification"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Forgot-password",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"email\": \"angelgeovannyvinasco@gmail.com\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:3005/api/v1/auth/forgot-password",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "3005",
+                  "path": [
+                    "api",
+                    "v1",
+                    "auth",
+                    "forgot-password"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Reset-password",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"token\": \"token_de_recuperacion\",\r\n  \"newPassword\": \"NuevaPassword456!\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:3005/api/v1/auth/reset-password",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "3005",
+                  "path": [
+                    "api",
+                    "v1",
+                    "auth",
+                    "reset-password"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Profile",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c3JfcHpUYmtkOGpEWkpSIiwianRpIjoiYmJkY2QzNTUtMjA5Yy00NjYxLTlhZGMtZDJhY2U0ZWNiMzQxIiwiaWF0IjoxNzcxOTA1MzE1LCJyb2xlIjoiVVNFUl9ST0xFIiwiZXhwIjoxNzcxOTA3MTE1LCJhdWQiOiJyVm1Ha0FpU2xNYVIiLCJpc3MiOiJyVm1Ha0FpU2xNYVIifQ.rjLF4c0f97Do0SHd7RcFEbz7iTTeNFphOhPk4X6A3Eo",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:3005/api/v1/auth/profile",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "3005",
+                  "path": [
+                    "api",
+                    "v1",
+                    "auth",
+                    "profile"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Profile By ID",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c3JfcHpUYmtkOGpEWkpSIiwianRpIjoiYmJkY2QzNTUtMjA5Yy00NjYxLTlhZGMtZDJhY2U0ZWNiMzQxIiwiaWF0IjoxNzcxOTA1MzE1LCJyb2xlIjoiVVNFUl9ST0xFIiwiZXhwIjoxNzcxOTA3MTE1LCJhdWQiOiJyVm1Ha0FpU2xNYVIiLCJpc3MiOiJyVm1Ha0FpU2xNYVIifQ.rjLF4c0f97Do0SHd7RcFEbz7iTTeNFphOhPk4X6A3Eo",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"userId\": \"usr_pzTbkd8jDZJR\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:3005/api/v1/auth/profile/by-id",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "3005",
+                  "path": [
+                    "api",
+                    "v1",
+                    "auth",
+                    "profile",
+                    "by-id"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Users",
+          "item": [
+            {
+              "name": "Actualizar rol",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c3JfcmU2N3oxWFlLZVp6IiwianRpIjoiMjNkY2RkZGMtODBkZi00NTNhLTk0NmUtZWVhZTY0M2FkOTA0IiwiaWF0IjoxNzcxOTA3MTgyLCJyb2xlIjoiVVNFUl9ST0xFIiwiZXhwIjoxNzcxOTA4OTgyLCJhdWQiOiJyVm1Ha0FpU2xNYVIiLCJpc3MiOiJyVm1Ha0FpU2xNYVIifQ.Eh5NyIi-yemZmtjTQkM3Z1yluEP0uG6YQSAIiSAaDVU",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"roleName\": \"ADMIN_ROLE\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:3005/api/v1/users/usr_re67z1XYKeZz/role",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "3005",
+                  "path": [
+                    "api",
+                    "v1",
+                    "users",
+                    "usr_re67z1XYKeZz",
+                    "role"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Obtener roles",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c3JfR1Q3Y2Q3ZTMyNE00IiwianRpIjoiN2EzNjEwOTctMTllOC00ODE5LWJmZDAtOTA0ZmE3MTY5Y2IyIiwiaWF0IjoxNzcxOTA2MzkyLCJyb2xlIjoiQURNSU5fUk9MRSIsImV4cCI6MTc3MTkwODE5MiwiYXVkIjoiclZtR2tBaVNsTWFSIiwiaXNzIjoiclZtR2tBaVNsTWFSIn0.e4T5gSz4vC8HiTCJF_uE-4oLvuJ8aQrklMrPXfyqblg",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:3005/api/v1/users/usr_re67z1XYKeZz/roles",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "3005",
+                  "path": [
+                    "api",
+                    "v1",
+                    "users",
+                    "usr_re67z1XYKeZz",
+                    "roles"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Obtener users por namerole",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c3JfR1Q3Y2Q3ZTMyNE00IiwianRpIjoiN2EzNjEwOTctMTllOC00ODE5LWJmZDAtOTA0ZmE3MTY5Y2IyIiwiaWF0IjoxNzcxOTA2MzkyLCJyb2xlIjoiQURNSU5fUk9MRSIsImV4cCI6MTc3MTkwODE5MiwiYXVkIjoiclZtR2tBaVNsTWFSIiwiaXNzIjoiclZtR2tBaVNsTWFSIn0.e4T5gSz4vC8HiTCJF_uE-4oLvuJ8aQrklMrPXfyqblg",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:3005/api/v1/users/by-role/USER_ROLE",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "3005",
+                  "path": [
+                    "api",
+                    "v1",
+                    "users",
+                    "by-role",
+                    "USER_ROLE"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "TODOS",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c3JfV1RHQjhKcFJaaFY4IiwianRpIjoiM2JjZDhmNmYtNjlkOS00NDZmLWJmNWQtNGU4ZTgzNDIxYzM4IiwiaWF0IjoxNzcyMTczNTk5LCJyb2xlIjoiQURNSU5fUk9MRSIsImV4cCI6MTc3MjE3NTM5OSwiYXVkIjoiR2VzdG9yUmVzdGF1cmFudGVzIiwiaXNzIjoiR2VzdG9yUmVzdGF1cmFudGVzIn0.NRWNz5iwTy_WRygpoR_OmhWASe7DUtJTlVttceZfoc8",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:3005/api/v1/users/all",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "3005",
+                  "path": [
+                    "api",
+                    "v1",
+                    "users",
+                    "all"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "token",
+      "value": "<JWT>"
+    }
+  ]
+}
+  
+
+  
+
+
