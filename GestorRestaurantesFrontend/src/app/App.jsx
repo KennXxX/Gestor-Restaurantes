@@ -1,10 +1,16 @@
+import { useEffect } from 'react'
+import { Toaster } from 'react-hot-toast'
+import { useAuthStore } from '../features/auth/store/authStore'
 import { AppRoutes } from "./router/AppRoutes"
-import { Toaster } from "react-hot-toast"
-
-export const App = () => {
+ 
+ 
+const App = () => {
+  useEffect(() => {
+    useAuthStore.getState().initializeAuth()
+  }, [])
   return (
     <>
-      <Toaster 
+      <Toaster
         position="top-center"
         toastOptions={{
           style: {
@@ -19,3 +25,5 @@ export const App = () => {
     </>
   )
 }
+ 
+export default App
