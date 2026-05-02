@@ -5,11 +5,13 @@ export const Sidebar = () => {
 
     const items = [
         { label: "Mesas", to: "/dashboard/mesas"},
+        { label: "Menús", to: "/dashboard/menus"},
         { label: "Reservaciones", to: "/dashboard/reservations"},
         { label: "Restaurantes", to: "/dashboard/restaurantes" },
         { label: "Inventario", to: "/dashboard/inventory" },
-        {label: "Facturas", to: "/dashboard/facturas"},
-        {label: "Estadísticas", to: "/dashboard/estadisticas"}
+        { label: "Reseñas", to: "/dashboard/resenas" },
+        { label: "Facturas", to: "/dashboard/facturas"},
+        { label: "Estadísticas", to: "/dashboard/estadisticas"}
     ]
  
  
