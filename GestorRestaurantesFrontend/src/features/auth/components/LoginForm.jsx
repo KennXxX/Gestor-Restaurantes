@@ -30,44 +30,58 @@ export const LoginForm = ({ onGoToRegister, onGoToForgot }) => {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="auth-form">
+    <form onSubmit={handleSubmit(onSubmit)} className="grid gap-5">
       <div>
-        <label htmlFor="email">Email</label>
+        <label htmlFor="email" className="block mb-2 font-semibold">Email</label>
         <input
           id="email"
           type="email"
           placeholder="correo@ejemplo.com"
+          className="w-full border border-gray-300 rounded-lg px-4 py-3 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-600"
           {...register('email', {
             required: 'Este campo es obligatorio',
           })}
         />
-        {errors.email && <p className="field-error">{errors.email.message}</p>}
+        {errors.email && <p className="mt-2 text-sm text-red-600">{errors.email.message}</p>}
       </div>
 
       <div>
-        <label htmlFor="password">Contraseña</label>
+        <label htmlFor="password" className="block mb-2 font-semibold">Contraseña</label>
         <input
           id="password"
           type="password"
           placeholder="••••••••"
+          className="w-full border border-gray-300 rounded-lg px-4 py-3 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-600"
           {...register('password', {
             required: 'La contraseña es obligatoria',
           })}
         />
-        {errors.password && <p className="field-error">{errors.password.message}</p>}
+        {errors.password && <p className="mt-2 text-sm text-red-600">{errors.password.message}</p>}
       </div>
 
-      {error && <p className="field-error">{error}</p>}
+      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
 
-      <button type="submit" disabled={loading}>
+      <button
+        type="submit"
+        disabled={loading}
+        className="inline-flex items-center justify-center min-h-[48px] px-4 py-3 rounded-[14px] bg-blue-600 text-white font-bold transition-opacity disabled:opacity-60 disabled:cursor-not-allowed hover:opacity-95"
+      >
         {loading ? 'Iniciando...' : 'Iniciar sesión'}
       </button>
 
-      <button type="button" className="auth-link auth-link--ghost" onClick={onGoToRegister}>
+      <button
+        type="button"
+        onClick={onGoToRegister}
+        className="inline-flex items-center justify-center min-h-[48px] px-4 py-3 rounded-[14px] bg-transparent text-blue-600 border border-blue-200 font-bold hover:opacity-95"
+      >
         Crear una cuenta
       </button>
 
-      <button type="button" className="auth-link auth-link--ghost" onClick={onGoToForgot}>
+      <button
+        type="button"
+        onClick={onGoToForgot}
+        className="inline-flex items-center justify-center min-h-[48px] px-4 py-3 rounded-[14px] bg-transparent text-blue-600 border border-blue-200 font-bold hover:opacity-95"
+      >
         Olvidé mi contraseña
       </button>
     </form>
