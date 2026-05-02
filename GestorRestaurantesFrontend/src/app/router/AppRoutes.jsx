@@ -8,6 +8,7 @@ import { ClientPage } from '../pages/ClientPage'
 import { ProtectedRoute } from './ProtectedRoute'
 import { RoleGuard } from './RoleGuard'
 
+
 export const AppRoutes = () => {
   return (
     <Routes>
@@ -24,7 +25,8 @@ export const AppRoutes = () => {
             </RoleGuard>
           </ProtectedRoute>
         }
-      />
+      >
+      </Route>
       <Route
         path="/client"
         element={
@@ -35,6 +37,8 @@ export const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
+   
     </Routes>
   )
 }
+   //AGREGAR RUTA DE INVENTARIO

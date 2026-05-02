@@ -128,3 +128,21 @@ const handleRefreshToken = async (error) => {
 
 axiosAuth.interceptors.response.use((response) => response, handleRefreshToken)
 axiosApi.interceptors.response.use((response) => response, handleRefreshToken)
+
+const axiosInventory = axios.create({
+  baseURL: import.meta.env.VITE_API_URL,
+  timeout: 8000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+})
+
+axiosInventory.interceptors.request.use((config) => {
+    //config._axiosClient = "auth"
+    const token = useAuthStore.getState().token;
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+})
