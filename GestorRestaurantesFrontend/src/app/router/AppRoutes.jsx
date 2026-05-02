@@ -14,6 +14,8 @@ import { Mesas } from '../../features/Mesas/Mesas'
 import { Inventory } from '../../features/inventory/components/Inventory'
 import { Menus } from '../../features/Menus/Menus'
 import { Resenas } from '../../features/Resenas/Resenas'
+import { Orders } from '../../features/Orders/Orders'
+import { Reservations } from '../../features/Reservations/Reservations'
 
 export const AppRoutes = () => {
   return (
@@ -36,8 +38,9 @@ export const AppRoutes = () => {
         <Route path="mesas" element={<Mesas />} />
         <Route path="inventory" element={<Inventory />} />
         <Route path="menus" element={<Menus />} />
+        <Route path="orders" element={<Orders />} />
+        <Route path="reservations" element={<Reservations />} />
         <Route path="resenas" element={<Resenas />} />
-        <Route path="inventory" element={<Inventory />} />
         <Route path="facturas" element={<Facturas />} />
         <Route path="estadisticas" element={<Estadisticas />} />
       </Route>
@@ -55,4 +58,3 @@ export const AppRoutes = () => {
     </Routes>
   )
 }
-   //AGREGAR RUTA DE INVENTARIO
