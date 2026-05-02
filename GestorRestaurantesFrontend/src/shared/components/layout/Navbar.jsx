@@ -1,5 +1,5 @@
-import {Typography} from "@material-tailwind/react"
-import imgLogo from "../../../assets/img/logoRestaurante.jpg"
+import { Typography } from "@material-tailwind/react";
+import imgLogo from "../../../assets/img/logoRestaurante.jpg";
 
 export const Navbar = () => {
   return (
@@ -16,6 +16,10 @@ export const Navbar = () => {
                 </Typography>
             </div>
         </div>
+        <div className="flex items-center gap-4">
+          
+        </div>
+      </div>
     </nav>
-  )
-}
+  );
+};

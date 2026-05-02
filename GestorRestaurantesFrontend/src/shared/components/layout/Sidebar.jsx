@@ -1,23 +1,23 @@
-import { Link, useLocation } from "react-router-dom"
- 
- 
+import { Link, useLocation } from "react-router-dom";
+
 export const Sidebar = () => {
-    const location = useLocation()
- 
+    const location = useLocation();
+
     const items = [
         { label: "Mesas", to: "/dashboard/mesas"},
         { label: "Reservaciones", to: "/dashboard/reservations"},
         { label: "Restaurantes", to: "/dashboard/restaurantes" },
+        { label: "Inventario", to: "/dashboard/inventory" },
         {label: "Facturas", to: "/dashboard/facturas"},
         {label: "Estadísticas", to: "/dashboard/estadisticas"}
     ]
  
  
-  return (
+    return (
     <aside className="w-60 bg-white min-h-[calc(100vh-4rem)] p-4 shadow-sm">
         <ul className="space-y-1">
             {items.map((item) => {
-                const Active = location.pathname === item.to
+                const Active = location.pathname.startsWith(item.to)
  
                 return (
                     <li key={item.to}>
@@ -37,9 +37,7 @@ export const Sidebar = () => {
  
             })}
         </ul>
- 
+
     </aside>
   )
 }
- 
- 
