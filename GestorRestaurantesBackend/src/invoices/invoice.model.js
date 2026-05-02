@@ -4,6 +4,11 @@ import mongoose from 'mongoose';
 
 const invoiceSchema = new mongoose.Schema(
   {
+    invoiceNumber: {
+      type: String,
+      required: [true, 'invoiceNumber es obligatorio'],
+      unique: true
+    },
     orderId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Order',
@@ -26,6 +31,10 @@ const invoiceSchema = new mongoose.Schema(
       }
     ],
     total: Number,
+    subtotal: {
+      type: Number,
+      default: 0
+    },
     coupon: {
       type: String,
       default: null
@@ -39,6 +48,10 @@ const invoiceSchema = new mongoose.Schema(
     totalBeforeDiscount: {
       type: Number,
       default: null
+    },
+    discountAmount: {
+      type: Number,
+      default: 0
     },
     shippingFee: {
       type: Number,

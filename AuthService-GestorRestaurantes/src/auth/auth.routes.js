@@ -104,7 +104,7 @@ router.post(
  *       423:
  *         description: Cuenta bloqueada
  */
-router.post('/login', authRateLimit, validateLogin, authController.login);
+router.post('/login', validateLogin, authController.login);
 
 /**
  * @swagger
