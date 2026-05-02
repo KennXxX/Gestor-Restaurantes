@@ -71,3 +71,36 @@ export const getReviewsByMenu = async (req, res) => {
     return res.status(500).json({ success: false, message: 'Error obteniendo calificaciones', error: err.message })
   }
 }
+
+export const getReviews = async (req, res) => {
+  try {
+    const reviews = await Review.find()
+      .populate('restaurantId', 'restaurantName')
+      .populate('menuId', 'menuName')
+      .sort({ createdAt: -1 })
+    
+    return res.status(200).json({ success: true, reviews })
+  } catch (err) {
+    console.error(err)
+    return res.status(500).json({ success: false, message: 'Error obteniendo todas las reseñas', error: err.message })
+  }
+}
+
+export const deleteReview = async (req, res) => {
+  try {
+    const { id } = req.params
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ success: false, message: 'ID de review inválido' })
+    }
+
+    const deleted = await Review.findByIdAndDelete(id)
+    if (!deleted) {
+      return res.status(404).json({ success: false, message: 'Review no encontrada' })
+    }
+
+    return res.status(200).json({ success: true, message: 'Reseña eliminada exitosamente' })
+  } catch (err) {
+    console.error(err)
+    return res.status(500).json({ success: false, message: 'Error eliminando reseña', error: err.message })
+  }
+}

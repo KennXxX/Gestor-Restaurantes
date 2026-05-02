@@ -18,4 +18,12 @@ export default defineConfig([
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
   },
+  {
+    files: ['**/*.css'],
+    rules: {
+      'at-rule-no-unknown': ['error', {
+        ignoreAtRules: ['tailwind', 'apply', 'layer']
+      }]
+    }
+  }
 ])

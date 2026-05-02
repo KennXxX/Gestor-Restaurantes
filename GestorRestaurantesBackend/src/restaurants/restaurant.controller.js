@@ -1,4 +1,5 @@
 import Restaurant from "./restaurant.model.js";
+import Table from "../tables/table.model.js";
 import mongoose from "mongoose";
 import { v2 as cloudinary } from 'cloudinary';
 
@@ -15,7 +16,7 @@ export const createRestaurant = async (req, res) => {
 
         res.status(201).json({
             success: true,
-            message: "Restaurant created successfully",
+            message: "Restaurante creado exitosamente.",
             data: restaurant
         });
         
@@ -27,9 +28,15 @@ export const createRestaurant = async (req, res) => {
                 console.error("Error cleaning up image:", err);
             }
         }
+        if (error.code === 11000) {
+            return res.status(400).json({
+                success: false,
+                message: 'Ya existe un restaurante con este correo electrónico.'
+            });
+        }
         res.status(400).json({
             success: false,
-            message: "Error creating restaurant",
+            message: "No se pudo crear el restaurante. Verifica que los datos sean correctos.",
             error: error.message
         });
     }
@@ -79,7 +86,7 @@ export const getRestaurantById = async (req, res) => {
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({
                 success: false,
-                message: "ID de restaurante no válido"
+                message: "El identificador del restaurante no es válido."
             });
         }
 
@@ -88,7 +95,7 @@ export const getRestaurantById = async (req, res) => {
         if (!restaurant) {
             return res.status(404).json({
                 success: false,
-                message: "Restaurante no encontrado"
+                message: "El restaurante no existe."
             });
         }
 
@@ -112,7 +119,7 @@ export const updateRestaurant = async (req, res) => {
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({
                 success: false,
-                message: "ID de restaurante no válido"
+                message: "El identificador del restaurante no es válido."
             });
         }
 
@@ -124,19 +131,32 @@ export const updateRestaurant = async (req, res) => {
         if (!updatedRestaurant) {
             return res.status(404).json({
                 success: false,
-                message: "Restaurante no encontrado"
+                message: "No se encontró el restaurante a actualizar."
             });
+        }
+
+        if (updatedRestaurant.restaurantActive === false) {
+            await Table.updateMany(
+                { restaurantId: id },
+                { tableActive: false }
+            );
         }
 
         return res.status(200).json({
             success: true,
-            message: "Restaurante actualizado exitosamente",
+            message: "Restaurante actualizado exitosamente.",
             data: updatedRestaurant
         });
     } catch (error) {
+        if (error.code === 11000) {
+            return res.status(400).json({
+                success: false,
+                message: 'Ya existe otro restaurante con ese correo electrónico.'
+            });
+        }
         return res.status(400).json({
             success: false,
-            message: "Error al actualizar el restaurante",
+            message: "No se pudo actualizar el restaurante. Verifica que los datos sean correctos.",
             error: error.message
         });
     }
@@ -149,7 +169,7 @@ export const deleteRestaurant = async (req, res) => {
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({
                 success: false,
-                message: "ID de restaurante no válido"
+                message: "El identificador del restaurante no es válido."
             });
         }
 
@@ -162,13 +182,18 @@ export const deleteRestaurant = async (req, res) => {
         if (!deletedRestaurant) {
             return res.status(404).json({
                 success: false,
-                message: "Restaurante no encontrado"
+                message: "El restaurante no existe."
             });
         }
 
+        await Table.updateMany(
+            { restaurantId: id },
+            { tableActive: false }
+        );
+
         return res.status(200).json({
             success: true,
-            message: "Restaurante desactivado exitosamente",
+            message: "Restaurante y sus mesas asociadas desactivados exitosamente.",
             data: deletedRestaurant
         });
     } catch (error) {

@@ -152,6 +152,49 @@ export const getOrdersByRestaurant = async (req, res) => {
   }
 }
 
+export const getOrders = async (req, res) => {
+  try {
+    const { restaurantId, status, orderType } = req.query
+    const filter = {}
+
+    if (restaurantId) filter.restaurantId = restaurantId
+    if (status) filter.status = status
+    if (orderType) filter.orderType = orderType
+
+    const orders = await Order.find(filter)
+      .populate('items.menuId')
+      .populate('tableId')
+      .sort({ createdAt: -1 })
+
+    return res.status(200).json({ success: true, orders })
+  } catch (err) {
+    console.error(err)
+    return res.status(500).json({ success: false, message: 'Error getting orders', error: err && err.message ? err.message : String(err) })
+  }
+}
+
+export const getOrderById = async (req, res) => {
+  try {
+    const { id } = req.params
+    if (!mongoose.Types.ObjectId.isValid(String(id))) {
+      return res.status(400).json({ success: false, message: 'id is not a valid id' })
+    }
+
+    const order = await Order.findById(id)
+      .populate('items.menuId')
+      .populate('tableId')
+
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'Order not found' })
+    }
+
+    return res.status(200).json({ success: true, order })
+  } catch (err) {
+    console.error(err)
+    return res.status(500).json({ success: false, message: 'Error getting order', error: err && err.message ? err.message : String(err) })
+  }
+}
+
 export const updateOrderStatus = async (req, res) => {
   try {
     const { id } = req.params
@@ -188,6 +231,8 @@ export const updateOrderStatus = async (req, res) => {
 
 export default {
   createOrder,
+  getOrders,
+  getOrderById,
   getOrdersByRestaurant,
   updateOrderStatus
 }

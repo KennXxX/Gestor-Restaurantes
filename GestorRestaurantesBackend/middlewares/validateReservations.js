@@ -121,7 +121,85 @@ export const updateReservationStatusValidator = [
     
     body('status')
         .notEmpty().withMessage('El estado es obligatorio')
-        .isIn(['PENDIENTE', 'CONFIRMADA', 'CANCELADA', 'COMPLETADO']).withMessage('Estado inválido'),
+        .isIn(['PENDIENTE', 'COMPLETADO', 'CANCELADO']).withMessage('Estado inválido'),
+
+    handleValidation
+];
+
+export const updateReservationValidator = [
+    param('id')
+        .isMongoId().withMessage('ID de reservación inválido'),
+
+    body('restaurantId')
+        .optional()
+        .isMongoId().withMessage('El ID del restaurante debe ser válido')
+        .custom(async (value) => {
+            if (!value) return true;
+            const exists = await Restaurant.exists({ _id: value });
+            if (!exists) {
+                throw new Error('Restaurante no encontrado');
+            }
+            return true;
+        }),
+
+    body('tableId')
+        .optional()
+        .customSanitizer((value) => {
+            if (typeof value === 'string') {
+                try {
+                    const parsed = JSON.parse(value);
+                    return Array.isArray(parsed) ? parsed : [parsed];
+                } catch (_e) {
+                    if (value.includes(',')) {
+                        return value.split(',').map((s) => s.trim()).filter(Boolean);
+                    }
+                    return [value];
+                }
+            }
+            return value;
+        })
+        .isArray({ min: 1 }).withMessage('tableId debe ser un arreglo no vacío')
+        .custom(async (tables) => {
+            for (const tableId of tables) {
+                if (!mongoose.Types.ObjectId.isValid(String(tableId))) {
+                    throw new Error(`ID de mesa inválido: ${tableId}`);
+                }
+                const exists = await Table.exists({ _id: tableId });
+                if (!exists) {
+                    throw new Error(`Mesa no encontrada: ${tableId}`);
+                }
+            }
+            return true;
+        }),
+
+    body('numberPeople')
+        .optional()
+        .isNumeric().withMessage('El número de personas debe ser un número'),
+
+    body('typeReservation')
+        .optional()
+        .isIn(['PERSONAL', 'EVENTO']).withMessage('Tipo de reservación inválido. Debe ser PERSONAL o EVENTO'),
+
+    body('startDate')
+        .optional()
+        .isISO8601().withMessage('La fecha de inicio debe ser una fecha válida (ISO8601)'),
+
+    body('endDate')
+        .optional()
+        .isISO8601().withMessage('La fecha de fin debe ser una fecha válida (ISO8601)'),
+
+    body('description')
+        .optional()
+        .isString().withMessage('La descripción debe ser texto'),
+
+    body().custom((value) => {
+        const allowed = ['restaurantId', 'tableId', 'numberPeople', 'typeReservation', 'description', 'startDate', 'endDate', 'status'];
+        const hasAny = allowed.some((key) => value[key] !== undefined);
+        if (!hasAny) {
+            throw new Error('Debes enviar al menos un campo para actualizar');
+        }
+        return true;
+    }),
 
     handleValidation
 ];

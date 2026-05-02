@@ -70,45 +70,45 @@ export const validateCreateTable = async (req, res, next) => {
         const { tableName, tableCapacity, tableActive, restaurantId } = req.body;
 
         if (!tableName || String(tableName).trim().length === 0) {
-            return res.status(400).json({ success: false, message: 'tableName es obligatorio' });
+            return res.status(400).json({ success: false, message: 'El nombre de la mesa es obligatorio.' });
         }
 
         if (typeof tableName !== 'string') {
-            return res.status(400).json({ success: false, message: 'tableName debe ser un string' });
+            return res.status(400).json({ success: false, message: 'El nombre de la mesa debe ser texto.' });
         }
 
         if (String(tableName).trim().length > 100) {
-            return res.status(400).json({ success: false, message: 'tableName no puede tener más de 100 caracteres' });
+            return res.status(400).json({ success: false, message: 'El nombre de la mesa es demasiado largo (máximo 100 letras).' });
         }
 
         if (isUndefinedOrNull(tableCapacity)) {
-            return res.status(400).json({ success: false, message: 'tableCapacity es obligatorio' });
+            return res.status(400).json({ success: false, message: 'Debes indicar para cuántas personas es la mesa.' });
         }
 
         if (!Number.isInteger(Number(tableCapacity))) {
-            return res.status(400).json({ success: false, message: 'tableCapacity debe ser un número entero' });
+            return res.status(400).json({ success: false, message: 'La cantidad de personas debe ser un número.' });
         }
 
         const parsedCapacity = Number(tableCapacity);
         if (parsedCapacity < 1 || parsedCapacity > 8) {
-            return res.status(400).json({ success: false, message: 'tableCapacity debe estar entre 1 y 8' });
+            return res.status(400).json({ success: false, message: 'La mesa debe ser para 1 a 8 personas como máximo.' });
         }
 
         if (!isUndefinedOrNull(tableActive) && typeof tableActive !== 'boolean') {
-            return res.status(400).json({ success: false, message: 'tableActive debe ser true o false' });
+            return res.status(400).json({ success: false, message: 'El estado de la mesa (activa o inactiva) no es válido.' });
         }
 
         if (!restaurantId) {
-            return res.status(400).json({ success: false, message: 'restaurantId es obligatorio' });
+            return res.status(400).json({ success: false, message: 'Debes seleccionar a qué restaurante pertenece la mesa.' });
         }
 
         if (!mongoose.Types.ObjectId.isValid(restaurantId)) {
-            return res.status(400).json({ success: false, message: 'restaurantId no es válido' });
+            return res.status(400).json({ success: false, message: 'El restaurante seleccionado no es válido.' });
         }
 
         const restaurantExists = await validateRestaurantExists(restaurantId);
         if (!restaurantExists) {
-            return res.status(404).json({ success: false, message: 'Restaurante no encontrado' });
+            return res.status(404).json({ success: false, message: 'El restaurante no existe.' });
         }
 
         req.body.tableName = String(tableName).trim();
@@ -133,11 +133,11 @@ export const validateUpdateTable = async (req, res, next) => {
 
         if (hasOwn(req.body, 'tableName')) {
             if (typeof tableName !== 'string' || String(tableName).trim().length === 0) {
-                return res.status(400).json({ success: false, message: 'tableName debe ser un string no vacío' });
+                return res.status(400).json({ success: false, message: 'El nombre de la mesa debe ser texto y no puede estar vacío.' });
             }
 
             if (String(tableName).trim().length > 100) {
-                return res.status(400).json({ success: false, message: 'tableName no puede tener más de 100 caracteres' });
+                return res.status(400).json({ success: false, message: 'El nombre de la mesa es demasiado largo (máximo 100 letras).' });
             }
 
             req.body.tableName = String(tableName).trim();
@@ -145,29 +145,29 @@ export const validateUpdateTable = async (req, res, next) => {
 
         if (hasOwn(req.body, 'tableCapacity')) {
             if (!Number.isInteger(Number(tableCapacity))) {
-                return res.status(400).json({ success: false, message: 'tableCapacity debe ser un número entero' });
+                return res.status(400).json({ success: false, message: 'La cantidad de personas debe ser un número entero.' });
             }
 
             const parsedCapacity = Number(tableCapacity);
             if (parsedCapacity < 1 || parsedCapacity > 8) {
-                return res.status(400).json({ success: false, message: 'tableCapacity debe estar entre 1 y 8' });
+                return res.status(400).json({ success: false, message: 'La mesa debe ser para 1 a 8 personas como máximo.' });
             }
 
             req.body.tableCapacity = parsedCapacity;
         }
 
         if (hasOwn(req.body, 'tableActive') && typeof tableActive !== 'boolean') {
-            return res.status(400).json({ success: false, message: 'tableActive debe ser true o false' });
+            return res.status(400).json({ success: false, message: 'El estado de la mesa (activa o inactiva) no es válido.' });
         }
 
         if (hasOwn(req.body, 'restaurantId')) {
             if (!mongoose.Types.ObjectId.isValid(restaurantId)) {
-                return res.status(400).json({ success: false, message: 'restaurantId no es válido' });
+                return res.status(400).json({ success: false, message: 'El restaurante seleccionado no es válido.' });
             }
 
             const restaurantExists = await validateRestaurantExists(restaurantId);
             if (!restaurantExists) {
-                return res.status(404).json({ success: false, message: 'Restaurante no encontrado' });
+                return res.status(404).json({ success: false, message: 'El restaurante no existe.' });
             }
         }
 
