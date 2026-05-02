@@ -40,16 +40,8 @@ importers:
         version: 5.0.12(@types/react@19.2.14)(react@18.3.1)
     devDependencies:
       '@eslint/js':
-<<<<<<< HEAD
         specifier: ^9.39.4
         version: 9.39.4
-=======
-        specifier: ^10.0.1
-        version: 10.0.1(eslint@10.2.1(jiti@2.6.1))
-      '@tailwindcss/postcss':
-        specifier: ^4.2.4
-        version: 4.2.4
->>>>>>> e05557887444bbf8dc197bafa9862e23a5f3397d
       '@types/react':
         specifier: ^19.2.14
         version: 19.2.14
@@ -63,7 +55,6 @@ importers:
         specifier: ^10.5.0
         version: 10.5.0(postcss@8.5.12)
       eslint:
-<<<<<<< HEAD
         specifier: ^9.39.4
         version: 9.39.4(jiti@2.6.1)
       eslint-plugin-react-hooks:
@@ -72,37 +63,17 @@ importers:
       eslint-plugin-react-refresh:
         specifier: ^0.5.2
         version: 0.5.2(eslint@9.39.4(jiti@2.6.1))
-=======
-        specifier: ^10.2.1
-        version: 10.2.1(jiti@2.6.1)
-      eslint-plugin-react-hooks:
-        specifier: ^7.1.1
-        version: 7.1.1(eslint@10.2.1(jiti@2.6.1))
-      eslint-plugin-react-refresh:
-        specifier: ^0.5.2
-        version: 0.5.2(eslint@10.2.1(jiti@2.6.1))
->>>>>>> e05557887444bbf8dc197bafa9862e23a5f3397d
       globals:
         specifier: ^17.4.0
         version: 17.5.0
       postcss:
         specifier: ^8.5.12
         version: 8.5.12
-<<<<<<< HEAD
-=======
-      tailwindcss:
-        specifier: ^4.2.4
-        version: 4.2.4
->>>>>>> e05557887444bbf8dc197bafa9862e23a5f3397d
       vite:
         specifier: ^8.0.10
         version: 8.0.10(jiti@2.6.1)
 
 packages:
-
-  '@alloc/quick-lru@5.2.0':
-    resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
-    engines: {node: '>=10'}
 
   '@babel/code-frame@7.29.0':
     resolution: {integrity: sha512-9NhCeYjq9+3uxgdtp20LSiJXJvN0FeCtNGpJxuMFZ1Kv3cWUNb6DOhJwUvcVCzKGR66cw4njwM6hrJLqgOwbcw==}
@@ -508,12 +479,6 @@ packages:
     resolution: {integrity: sha512-9El/iI069DKDSXwTvB9J4BwdO5JhRrOweGaK25taBAvBXyXqJAX+Jqdvs8r8gKpsI/1m0LeJLyQYTf/WLrBT1Q==}
     engines: {node: '>= 20'}
 
-<<<<<<< HEAD
-=======
-  '@tailwindcss/postcss@4.2.4':
-    resolution: {integrity: sha512-wgAVj6nUWAolAu8YFvzT2cTBIElWHkjZwFYovF+xsqKsW2ADxM/X2opxj5NsF/qVccAOjRNe8X2IdPzMsWyHTg==}
-
->>>>>>> e05557887444bbf8dc197bafa9862e23a5f3397d
   '@tailwindcss/vite@4.2.4':
     resolution: {integrity: sha512-pCvohwOCspk3ZFn6eJzrrX3g4n2JY73H6MmYC87XfGPyTty4YsCjYTMArRZm/zOI8dIt3+EcrLHAFPe5A4bgtw==}
     peerDependencies:
@@ -805,7 +770,6 @@ packages:
   fraction.js@5.3.4:
     resolution: {integrity: sha512-1X1NTtiJphryn/uLQz3whtY6jK3fTqoE3ohKs0tT+Ujr1W59oopxmoEh7Lu5p6vBaPbgoM0bzveAW4Qi5RyWDQ==}
 
-<<<<<<< HEAD
   framer-motion@6.5.1:
     resolution: {integrity: sha512-o1BGqqposwi7cgDrtg0dNONhkmPsUFDaLcKXigzuTFC5x58mE8iyTazxSudFzmT6MEyJKfjjU8ItoMe3W+3fiw==}
     peerDependencies:
@@ -815,8 +779,6 @@ packages:
   framesync@6.0.1:
     resolution: {integrity: sha512-fUY88kXvGiIItgNC7wcTOl0SNRCVXMKSWW2Yzfmn7EKNc+MpCzcz9DhdHcdjbrtN3c6R4H5dTY2jiCpPdysEjA==}
 
-=======
->>>>>>> e05557887444bbf8dc197bafa9862e23a5f3397d
   fsevents@2.3.3:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
@@ -861,13 +823,10 @@ packages:
   graceful-fs@4.2.11:
     resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
 
-<<<<<<< HEAD
   has-flag@4.0.0:
     resolution: {integrity: sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ==}
     engines: {node: '>=8'}
 
-=======
->>>>>>> e05557887444bbf8dc197bafa9862e23a5f3397d
   has-symbols@1.1.0:
     resolution: {integrity: sha512-1cDNdwJ2Jaohmb3sg4OmKaMBwuC48sYni5HUw2DvsC8LjGTLK9h+eb1X6RyuOHe4hT0ULCW68iomhjUoKUqlPQ==}
     engines: {node: '>= 0.4'}
@@ -1040,12 +999,9 @@ packages:
   magic-string@0.30.21:
     resolution: {integrity: sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==}
 
-<<<<<<< HEAD
   material-ripple-effects@2.0.1:
     resolution: {integrity: sha512-hHlUkZAuXbP94lu02VgrPidbZ3hBtgXBtjlwR8APNqOIgDZMV8MCIcsclL8FmGJQHvnORyvoQgC965vPsiyXLQ==}
 
-=======
->>>>>>> e05557887444bbf8dc197bafa9862e23a5f3397d
   math-intrinsics@1.1.0:
     resolution: {integrity: sha512-/IXtbwEk5HTPyEwyKX6hGkYXxM9nbj64B+ilVJnC/R6B0pH5G4V3b0pVbL7DBj4tkhBAppbQUlf6F6Xl9LHu1g==}
     engines: {node: '>= 0.4'}
@@ -1110,12 +1066,9 @@ packages:
     resolution: {integrity: sha512-QP88BAKvMam/3NxH6vj2o21R6MjxZUAd6nlwAS/pnGvN9IVLocLHxGYIzFhg6fUQ+5th6P4dv4eW9jX3DSIj7A==}
     engines: {node: '>=12'}
 
-<<<<<<< HEAD
   popmotion@11.0.3:
     resolution: {integrity: sha512-Y55FLdj3UxkR7Vl3s7Qr4e9m0onSnP8W7d/xQLsoJM40vs6UKHFdygs6SWryasTZYqugMjm3BepCF4CWXDiHgA==}
 
-=======
->>>>>>> e05557887444bbf8dc197bafa9862e23a5f3397d
   postcss-value-parser@4.2.0:
     resolution: {integrity: sha512-1NNCs6uurfkVbeXG4S8JFT9t19m45ICnif8zWLd5oPSZ50QnwMfK+H3jv408d4jw/7Bttv5axS5IiHoLaVNHeQ==}
 
@@ -1204,7 +1157,6 @@ packages:
     resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
     engines: {node: '>=0.10.0'}
 
-<<<<<<< HEAD
   strip-json-comments@3.1.1:
     resolution: {integrity: sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==}
     engines: {node: '>=8'}
@@ -1222,8 +1174,6 @@ packages:
   tailwind-merge@1.8.1:
     resolution: {integrity: sha512-+fflfPxvHFr81hTJpQ3MIwtqgvefHZFUHFiIHpVIRXvG/nX9+gu2P7JNlFu2bfDMJ+uHhi/pUgzaYacMoXv+Ww==}
 
-=======
->>>>>>> e05557887444bbf8dc197bafa9862e23a5f3397d
   tailwindcss@4.2.4:
     resolution: {integrity: sha512-HhKppgO81FQof5m6TEnuBWCZGgfRAWbaeOaGT00KOy/Pf/j6oUihdvBpA7ltCeAvZpFhW3j0PTclkxsd4IXYDA==}
 
@@ -1338,8 +1288,6 @@ packages:
         optional: true
 
 snapshots:
-
-  '@alloc/quick-lru@5.2.0': {}
 
   '@babel/code-frame@7.29.0':
     dependencies:
@@ -1457,7 +1405,6 @@ snapshots:
       tslib: 2.8.1
     optional: true
 
-<<<<<<< HEAD
   '@emotion/is-prop-valid@0.8.8':
     dependencies:
       '@emotion/memoize': 0.7.4
@@ -1469,11 +1416,6 @@ snapshots:
   '@eslint-community/eslint-utils@4.9.1(eslint@9.39.4(jiti@2.6.1))':
     dependencies:
       eslint: 9.39.4(jiti@2.6.1)
-=======
-  '@eslint-community/eslint-utils@4.9.1(eslint@10.2.1(jiti@2.6.1))':
-    dependencies:
-      eslint: 10.2.1(jiti@2.6.1)
->>>>>>> e05557887444bbf8dc197bafa9862e23a5f3397d
       eslint-visitor-keys: 3.4.3
 
   '@eslint-community/regexpp@4.12.2': {}
@@ -1494,17 +1436,7 @@ snapshots:
     dependencies:
       '@types/json-schema': 7.0.15
 
-<<<<<<< HEAD
   '@eslint/eslintrc@3.3.5':
-=======
-  '@eslint/js@10.0.1(eslint@10.2.1(jiti@2.6.1))':
-    optionalDependencies:
-      eslint: 10.2.1(jiti@2.6.1)
-
-  '@eslint/object-schema@3.0.5': {}
-
-  '@eslint/plugin-kit@0.7.1':
->>>>>>> e05557887444bbf8dc197bafa9862e23a5f3397d
     dependencies:
       ajv: 6.15.0
       debug: 4.4.3
@@ -1759,17 +1691,6 @@ snapshots:
       '@tailwindcss/oxide-win32-arm64-msvc': 4.2.4
       '@tailwindcss/oxide-win32-x64-msvc': 4.2.4
 
-<<<<<<< HEAD
-=======
-  '@tailwindcss/postcss@4.2.4':
-    dependencies:
-      '@alloc/quick-lru': 5.2.0
-      '@tailwindcss/node': 4.2.4
-      '@tailwindcss/oxide': 4.2.4
-      postcss: 8.5.12
-      tailwindcss: 4.2.4
-
->>>>>>> e05557887444bbf8dc197bafa9862e23a5f3397d
   '@tailwindcss/vite@4.2.4(vite@8.0.10(jiti@2.6.1))':
     dependencies:
       '@tailwindcss/node': 4.2.4
@@ -1940,34 +1861,20 @@ snapshots:
 
   escape-string-regexp@4.0.0: {}
 
-<<<<<<< HEAD
   eslint-plugin-react-hooks@7.1.1(eslint@9.39.4(jiti@2.6.1)):
     dependencies:
       '@babel/core': 7.29.0
       '@babel/parser': 7.29.2
       eslint: 9.39.4(jiti@2.6.1)
-=======
-  eslint-plugin-react-hooks@7.1.1(eslint@10.2.1(jiti@2.6.1)):
-    dependencies:
-      '@babel/core': 7.29.0
-      '@babel/parser': 7.29.2
-      eslint: 10.2.1(jiti@2.6.1)
->>>>>>> e05557887444bbf8dc197bafa9862e23a5f3397d
       hermes-parser: 0.25.1
       zod: 4.3.6
       zod-validation-error: 4.0.2(zod@4.3.6)
     transitivePeerDependencies:
       - supports-color
 
-<<<<<<< HEAD
   eslint-plugin-react-refresh@0.5.2(eslint@9.39.4(jiti@2.6.1)):
     dependencies:
       eslint: 9.39.4(jiti@2.6.1)
-=======
-  eslint-plugin-react-refresh@0.5.2(eslint@10.2.1(jiti@2.6.1)):
-    dependencies:
-      eslint: 10.2.1(jiti@2.6.1)
->>>>>>> e05557887444bbf8dc197bafa9862e23a5f3397d
 
   eslint-scope@8.4.0:
     dependencies:
@@ -1978,15 +1885,9 @@ snapshots:
 
   eslint-visitor-keys@4.2.1: {}
 
-<<<<<<< HEAD
   eslint@9.39.4(jiti@2.6.1):
     dependencies:
       '@eslint-community/eslint-utils': 4.9.1(eslint@9.39.4(jiti@2.6.1))
-=======
-  eslint@10.2.1(jiti@2.6.1):
-    dependencies:
-      '@eslint-community/eslint-utils': 4.9.1(eslint@10.2.1(jiti@2.6.1))
->>>>>>> e05557887444bbf8dc197bafa9862e23a5f3397d
       '@eslint-community/regexpp': 4.12.2
       '@eslint/config-array': 0.21.2
       '@eslint/config-helpers': 0.4.2
@@ -2081,7 +1982,6 @@ snapshots:
 
   fraction.js@5.3.4: {}
 
-<<<<<<< HEAD
   framer-motion@6.5.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       '@motionone/dom': 10.12.0
@@ -2099,8 +1999,6 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
-=======
->>>>>>> e05557887444bbf8dc197bafa9862e23a5f3397d
   fsevents@2.3.3:
     optional: true
 
@@ -2142,11 +2040,8 @@ snapshots:
 
   graceful-fs@4.2.11: {}
 
-<<<<<<< HEAD
   has-flag@4.0.0: {}
 
-=======
->>>>>>> e05557887444bbf8dc197bafa9862e23a5f3397d
   has-symbols@1.1.0: {}
 
   has-tostringtag@1.0.2:
@@ -2276,11 +2171,8 @@ snapshots:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.5
 
-<<<<<<< HEAD
   material-ripple-effects@2.0.1: {}
 
-=======
->>>>>>> e05557887444bbf8dc197bafa9862e23a5f3397d
   math-intrinsics@1.1.0: {}
 
   mime-db@1.52.0: {}
@@ -2332,7 +2224,6 @@ snapshots:
 
   picomatch@4.0.4: {}
 
-<<<<<<< HEAD
   popmotion@11.0.3:
     dependencies:
       framesync: 6.0.1
@@ -2340,8 +2231,6 @@ snapshots:
       style-value-types: 5.0.0
       tslib: 2.8.1
 
-=======
->>>>>>> e05557887444bbf8dc197bafa9862e23a5f3397d
   postcss-value-parser@4.2.0: {}
 
   postcss@8.5.12:
@@ -2434,7 +2323,6 @@ snapshots:
 
   source-map-js@1.2.1: {}
 
-<<<<<<< HEAD
   strip-json-comments@3.1.1: {}
 
   style-value-types@5.0.0:
@@ -2450,8 +2338,6 @@ snapshots:
 
   tailwind-merge@1.8.1: {}
 
-=======
->>>>>>> e05557887444bbf8dc197bafa9862e23a5f3397d
   tailwindcss@4.2.4: {}
 
   tapable@2.3.3: {}

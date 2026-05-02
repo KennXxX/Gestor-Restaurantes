@@ -67,6 +67,5 @@ const invoiceSchema = new mongoose.Schema(
 
 invoiceSchema.index({ orderId: 1 });
 invoiceSchema.index({ restaurantId: 1 });
-invoiceSchema.index({ invoiceNumber: 1 }, { unique: true });
 
 export default mongoose.model('Invoice', invoiceSchema);

@@ -33,35 +33,35 @@ const handleValidation = async (req, res, next) => {
 
 export const createRestaurantValidator = [
     body('restaurantName')
-        .notEmpty().withMessage('El nombre del restaurante es obligatorio')
-        .isString().withMessage('El nombre debe ser texto'), 
+        .notEmpty().withMessage('El nombre del restaurante es obligatorio.')
+        .isString().withMessage('El nombre debe ser texto.'), 
 
     body('restaurantAddress')
-        .notEmpty().withMessage('La dirección es obligatoria'),
+        .notEmpty().withMessage('La dirección del restaurante es obligatoria.'),
 
     body('restaurantPhone')
-        .notEmpty().withMessage('El teléfono es obligatorio')
-        .isLength({ min: 8, max: 8 }).withMessage('El teléfono debe tener exactamente 8 dígitos')
-        .isNumeric().withMessage('El teléfono debe contener solo números'),
+        .notEmpty().withMessage('El número de teléfono es obligatorio.')
+        .isLength({ min: 8, max: 8 }).withMessage('El teléfono debe tener exactamente 8 números.')
+        .isNumeric().withMessage('El teléfono solo debe contener números, sin espacios ni letras.'),
 
     body('restaurantEmail')
-        .notEmpty().withMessage('El email es obligatorio')
-        .isEmail().withMessage('Debe ser un email válido')
+        .notEmpty().withMessage('El correo electrónico es obligatorio.')
+        .isEmail().withMessage('Debes ingresar un correo electrónico válido.')
         .custom(async (value) => {
             const exists = await Restaurant.exists({ restaurantEmail: value });
             if (exists) {
-                throw new Error('El email ya está registrado');
+                throw new Error('Este correo electrónico ya está registrado en otro restaurante.');
             }
             return true;
         }),
 
     body('openingHours')
-        .notEmpty().withMessage('El horario de apertura es obligatorio')
-        .matches(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/).withMessage('El horario de apertura debe tener el formato HH:MM (24h)'),
+        .notEmpty().withMessage('La hora de apertura es obligatoria.')
+        .matches(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/).withMessage('La hora de apertura debe estar en formato 24 horas (ej. 08:00 o 14:30).'),
 
     body('closingHours')
-        .notEmpty().withMessage('El horario de cierre es obligatorio')
-        .matches(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/).withMessage('El horario de cierre debe tener el formato HH:MM (24h)')
+        .notEmpty().withMessage('La hora de cierre es obligatoria.')
+        .matches(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/).withMessage('La hora de cierre debe estar en formato 24 horas (ej. 20:00 o 23:30).')
         .custom((value, { req }) => {
             const opening = req.body.openingHours;
             const closing = value;
@@ -74,7 +74,7 @@ export const createRestaurantValidator = [
                 const closeTime = closeHour * 60 + closeMinute;
                 
                 if (closeTime <= openTime) {
-                    throw new Error('El horario de cierre debe ser posterior al horario de apertura');
+                    throw new Error('La hora de cierre debe ser posterior a la hora de apertura.');
                 }
             }
             return true;
@@ -84,20 +84,20 @@ export const createRestaurantValidator = [
 ];
 
 export const updateRestaurantValidator = [
-    param('id').isMongoId().withMessage('ID de restaurante no válido'),
+    param('id').isMongoId().withMessage('El identificador del restaurante no es válido.'),
     
     body('restaurantPhone')
         .optional()
-        .isLength({ min: 8, max: 8 }).withMessage('El teléfono debe tener exactamente 8 dígitos')
-        .isNumeric().withMessage('El teléfono debe contener solo números'),
+        .isLength({ min: 8, max: 8 }).withMessage('El teléfono debe tener exactamente 8 números.')
+        .isNumeric().withMessage('El teléfono solo debe contener números, sin espacios ni letras.'),
 
     body('restaurantEmail')
         .optional()
-        .isEmail().withMessage('Debe ser un email válido')
+        .isEmail().withMessage('Debes ingresar un correo electrónico válido.')
         .custom(async (value, { req }) => {
             const exists = await Restaurant.findOne({ restaurantEmail: value });
             if (exists && exists._id.toString() !== req.params.id) {
-                throw new Error('El email ya está en uso por otro restaurante');
+                throw new Error('Este correo electrónico ya está registrado en otro restaurante.');
             }
             return true;
         }),

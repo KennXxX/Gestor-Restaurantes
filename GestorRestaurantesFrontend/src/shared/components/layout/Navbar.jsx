@@ -11,7 +11,7 @@ export const Navbar = () => {
                 alt="Kinal Logo" 
                 className="h-8 md:h-10 w-auto object-contain" 
                 />
-                <Typography variant="h5 " className="font-bold text-white">
+                <Typography variant="h5" className="font-bold text-white">
                     Kinal  Admin
                 </Typography>
             </div>

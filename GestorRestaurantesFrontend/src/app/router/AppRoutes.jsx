@@ -9,6 +9,8 @@ import { ProtectedRoute } from './ProtectedRoute'
 import { RoleGuard } from './RoleGuard'
 import { Facturas } from '../../features/Facturas/Facturas'
 import { Estadisticas } from '../../features/Estadisticas/Estadisticas'
+import { Restaurantes } from '../../features/Restaurantes/Restaurantes'
+import { Mesas } from '../../features/Mesas/Mesas'
 
 export const AppRoutes = () => {
   return (
@@ -27,6 +29,8 @@ export const AppRoutes = () => {
           </ProtectedRoute>
         }
       >
+        <Route path="restaurantes" element={<Restaurantes />} />
+        <Route path="mesas" element={<Mesas />} />
         <Route path="facturas" element={<Facturas />} />
         <Route path="estadisticas" element={<Estadisticas />} />
       </Route>
