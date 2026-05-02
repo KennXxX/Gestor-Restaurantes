@@ -229,8 +229,10 @@
     {
       "name": "Statistics",
       "item": [
-        { "name": "Restaurant Statistics (admin)", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": "{{baseUrl}}/gestorRestaurantes/api/v1/statistics/:restaurantId" } },
-        { "name": "Export Statistics PDF (admin)", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": "{{baseUrl}}/gestorRestaurantes/api/v1/statistics/:restaurantId/pdf" } }
+        { "name": "Admin Overview Statistics", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": "{{baseUrl}}/gestorRestaurantes/api/v1/statistics/admin/overview" } },
+        { "name": "Export Admin Statistics PDF", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": "{{baseUrl}}/gestorRestaurantes/api/v1/statistics/admin/report/pdf" } },
+        { "name": "Export Admin Statistics Excel", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": "{{baseUrl}}/gestorRestaurantes/api/v1/statistics/admin/report/excel" } },
+        { "name": "Restaurant Statistics (admin)", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": "{{baseUrl}}/gestorRestaurantes/api/v1/statistics/:restaurantId" } }
       ]
     },
     {
@@ -293,6 +295,51 @@
       "raw": "{{baseUrl}}/gestorRestaurantes/api/v1/invoices/{{invoiceId}}",
       "host": ["{{baseUrl}}"],
       "path": ["gestorRestaurantes","api","v1","invoices","{{invoiceId}}"]
+    }
+  }
+},
+
+{
+  "name": "Get Issued Invoices",
+  "request": {
+    "method": "GET",
+    "header": [
+      { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+    ],
+    "url": {
+      "raw": "{{baseUrl}}/gestorRestaurantes/api/v1/invoices/issued",
+      "host": ["{{baseUrl}}"],
+      "path": ["gestorRestaurantes","api","v1","invoices","issued"]
+    }
+  }
+},
+
+{
+  "name": "Get Invoices by Restaurant",
+  "request": {
+    "method": "GET",
+    "header": [
+      { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+    ],
+    "url": {
+      "raw": "{{baseUrl}}/gestorRestaurantes/api/v1/invoices/restaurant/:restaurantId",
+      "host": ["{{baseUrl}}"],
+      "path": ["gestorRestaurantes","api","v1","invoices","restaurant",":restaurantId"]
+    }
+  }
+},
+
+{
+  "name": "Export Invoice PDF",
+  "request": {
+    "method": "GET",
+    "header": [
+      { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+    ],
+    "url": {
+      "raw": "{{baseUrl}}/gestorRestaurantes/api/v1/invoices/:id/pdf",
+      "host": ["{{baseUrl}}"],
+      "path": ["gestorRestaurantes","api","v1","invoices",":id","pdf"]
     }
   }
 },
