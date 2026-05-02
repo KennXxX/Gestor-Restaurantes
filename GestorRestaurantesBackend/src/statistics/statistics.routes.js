@@ -1,10 +1,17 @@
 import { Router } from 'express'
-import { getStatistics, exportStatisticsPDF } from './statistics.controller.js'
+import {
+	getAdminStatistics,
+	getRestaurantStatistics,
+	exportAdminStatisticsPDF,
+	exportAdminStatisticsExcel
+} from './statistics.controller.js'
 import { validateJWT, isAdmin } from '../../middlewares/validate-JWT.js'
 
 const router = Router()
 
-router.get('/:restaurantId', validateJWT, isAdmin, getStatistics)
-router.get('/:restaurantId/pdf', validateJWT, isAdmin, exportStatisticsPDF)
+router.get('/admin/overview', validateJWT, isAdmin, getAdminStatistics)
+router.get('/admin/report/pdf', validateJWT, isAdmin, exportAdminStatisticsPDF)
+router.get('/admin/report/excel', validateJWT, isAdmin, exportAdminStatisticsExcel)
+router.get('/:restaurantId', validateJWT, isAdmin, getRestaurantStatistics)
 
 export default router

@@ -7,6 +7,8 @@ import { DashboardPage } from '../layouts/DashboardPage.jsx'
 import { ClientPage } from '../pages/ClientPage'
 import { ProtectedRoute } from './ProtectedRoute'
 import { RoleGuard } from './RoleGuard'
+import { Facturas } from '../../features/Facturas/Facturas'
+import { Estadisticas } from '../../features/Estadisticas/Estadisticas'
 
 export const AppRoutes = () => {
   return (
@@ -24,7 +26,10 @@ export const AppRoutes = () => {
             </RoleGuard>
           </ProtectedRoute>
         }
-      />
+      >
+        <Route path="facturas" element={<Facturas />} />
+        <Route path="estadisticas" element={<Estadisticas />} />
+      </Route>
       <Route
         path="/client"
         element={
