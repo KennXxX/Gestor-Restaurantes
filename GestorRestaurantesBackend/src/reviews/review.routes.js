@@ -1,7 +1,7 @@
 'use strict'
 
 import { Router } from 'express'
-import { createReview, getReviewsByRestaurant, getReviewsByMenu } from './review.controller.js'
+import { createReview, getReviewsByRestaurant, getReviewsByMenu, getReviews, deleteReview } from './review.controller.js'
 import { uploadFieldImage } from '../../middlewares/file-uploader.js'
 import { validateJWT } from '../../middlewares/validate-JWT.js'
 
@@ -15,5 +15,11 @@ router.get('/restaurant/:restaurantId', getReviewsByRestaurant)
 
 // Listar calificaciones de menú
 router.get('/menu/:menuId', getReviewsByMenu)
+
+// Listar todas las calificaciones
+router.get('/', getReviews)
+
+// Eliminar calificación
+router.delete('/:id', validateJWT, deleteReview)
 
 export default router
