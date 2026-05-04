@@ -1,25 +1,17 @@
 import { axiosApi } from './api'
 
-export const getInventories = async () => {
-  return axiosApi.get('/inventory')
-}
+export const getInventories = async () => 
+  axiosApi.get('/inventory')
 
-export const createInventory = async (payload) => {
-  return axiosApi.post('/inventory', payload)
-}
+export const getInventoryById = async (id) => 
+  axiosApi.get(`/inventory/${id}`)
 
-export const updateInventory = async (id, payload) => {
-  return axiosApi.put(`/inventory/${id}`, payload)
-}
+export const createInventory = async (payload) => 
+  axiosApi.post('/inventory', payload)
 
-export const deleteInventory = async (id) => {
-  return axiosApi.delete(`/inventory/${id}`)
-}
+export const updateInventory = async (id, payload) => 
+  axiosApi.put(`/inventory/${id}`, payload)
 
-export const getInventory = async () => {
-  return getInventories()
-}
+export const deleteInventory = async (id) => 
+  axiosApi.delete(`/inventory/${id}`)
 
-export const registerInventory = async (data) => {
-  return createInventory(data)
-}
