@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { useAuthStore } from '../store/authStore'
 
-export const LoginForm = ({ onGoToRegister, onGoToForgot }) => {
+export const LoginForm = ({ onGoToForgot }) => {
   const navigate = useNavigate()
   const login = useAuthStore((state) => state.login)
   const loading = useAuthStore((state) => state.loading)
@@ -13,7 +13,12 @@ export const LoginForm = ({ onGoToRegister, onGoToForgot }) => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm()
+  } = useForm({
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  })
 
   const onSubmit = async (formData) => {
     const result = await login(formData)
@@ -30,59 +35,67 @@ export const LoginForm = ({ onGoToRegister, onGoToForgot }) => {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="grid gap-5">
-      <div>
-        <label htmlFor="email" className="block mb-2 font-semibold">Email</label>
+    <form onSubmit={handleSubmit(onSubmit)} className="grid w-full gap-5">
+      <div className="grid gap-2">
+        <label htmlFor="email" className="text-sm font-semibold text-slate-100">
+          Email
+        </label>
         <input
           id="email"
           type="email"
           placeholder="correo@ejemplo.com"
-          className="w-full border border-gray-300 rounded-lg px-4 py-3 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-600"
+          className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-slate-100 outline-none transition focus:border-white/50 focus:ring-2 focus:ring-white/10"
           {...register('email', {
             required: 'Este campo es obligatorio',
+            pattern: {
+              value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+              message: 'Por favor ingresa un email válido',
+            },
           })}
         />
-        {errors.email && <p className="mt-2 text-sm text-red-600">{errors.email.message}</p>}
+        {errors.email && <p className="text-sm text-rose-400">{errors.email.message}</p>}
       </div>
 
-      <div>
-        <label htmlFor="password" className="block mb-2 font-semibold">Contraseña</label>
+      <div className="grid gap-2">
+        <label htmlFor="password" className="text-sm font-semibold text-slate-100">
+          Contraseña
+        </label>
         <input
           id="password"
           type="password"
           placeholder="••••••••"
-          className="w-full border border-gray-300 rounded-lg px-4 py-3 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-600"
+          className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-slate-100 outline-none transition focus:border-white/50 focus:ring-2 focus:ring-white/10"
           {...register('password', {
             required: 'La contraseña es obligatoria',
+            minLength: {
+              value: 6,
+              message: 'La contraseña debe tener al menos 6 caracteres',
+            },
           })}
         />
-        {errors.password && <p className="mt-2 text-sm text-red-600">{errors.password.message}</p>}
+        {errors.password && <p className="text-sm text-rose-400">{errors.password.message}</p>}
       </div>
 
-      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+      {error && (
+        <div className="rounded-2xl border border-rose-700 bg-rose-950 px-4 py-3 text-sm text-rose-200">
+          {error}
+        </div>
+      )}
 
       <button
         type="submit"
         disabled={loading}
-        className="inline-flex items-center justify-center min-h-[48px] px-4 py-3 rounded-[14px] bg-blue-600 text-white font-bold transition-opacity disabled:opacity-60 disabled:cursor-not-allowed hover:opacity-95"
+        className="inline-flex w-full items-center justify-center rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {loading ? 'Iniciando...' : 'Iniciar sesión'}
-      </button>
-
-      <button
-        type="button"
-        onClick={onGoToRegister}
-        className="inline-flex items-center justify-center min-h-[48px] px-4 py-3 rounded-[14px] bg-transparent text-blue-600 border border-blue-200 font-bold hover:opacity-95"
-      >
-        Crear una cuenta
+        {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
       </button>
 
       <button
         type="button"
         onClick={onGoToForgot}
-        className="inline-flex items-center justify-center min-h-[48px] px-4 py-3 rounded-[14px] bg-transparent text-blue-600 border border-blue-200 font-bold hover:opacity-95"
+        className="text-sm font-semibold text-slate-300 transition hover:text-white"
       >
-        Olvidé mi contraseña
+        Olvidé contraseña
       </button>
     </form>
   )
