@@ -16,6 +16,19 @@ export const Resenas = () => {
   const [error, setError] = useState(null)
   const [selectedReview, setSelectedReview] = useState(null)
 
+  const ratingValues = reviews
+    .map(review => Number(review.rating))
+    .filter(rating => Number.isFinite(rating))
+  const averageRating = ratingValues.length > 0
+    ? ratingValues.reduce((total, rating) => total + rating, 0) / ratingValues.length
+    : 0
+  const averageRatingLabel = averageRating > 0 ? averageRating.toFixed(1) : '0.0'
+
+  const acceptedReviews = ratingValues.filter(rating => rating >= 4).length
+  const acceptancePercentage = ratingValues.length > 0
+    ? ((acceptedReviews / ratingValues.length) * 100).toFixed(1)
+    : 0
+
   const loadReviews = async () => {
     setLoading(true)
     setError(null)
@@ -68,6 +81,34 @@ export const Resenas = () => {
           <p className="mt-3 text-sm text-slate-700 sm:text-base max-w-2xl">
             Revisa los comentarios que los usuarios han dejado sobre restaurantes o platillos específicos.
           </p>
+        </div>
+
+        <div className="relative mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="rounded-3xl border border-white/70 bg-white/85 p-5 shadow-sm backdrop-blur">
+            <p className="text-xs uppercase tracking-[0.22em] text-slate-400">Promedio general</p>
+            <div className="mt-3 flex items-end gap-3">
+              <span className="font-display text-4xl font-semibold text-slate-900">{averageRatingLabel}</span>
+              <span className="pb-1 text-sm text-slate-500">/ 5</span>
+            </div>
+            <div className="mt-3 flex gap-1">{renderStars(Math.round(averageRating))}</div>
+          </div>
+
+          <div className="rounded-3xl border border-white/70 bg-white/85 p-5 shadow-sm backdrop-blur">
+            <p className="text-xs uppercase tracking-[0.22em] text-slate-400">Calificaciones registradas</p>
+            <p className="mt-3 font-display text-4xl font-semibold text-slate-900">{reviews.length}</p>
+            <p className="mt-2 text-sm text-slate-500">Opiniones ingresadas por clientes</p>
+          </div>
+
+          <div className="rounded-3xl border border-white/70 bg-white/85 p-5 shadow-sm backdrop-blur">
+            <p className="text-xs uppercase tracking-[0.22em] text-slate-400">Porcentaje de aceptación</p>
+            <div className="mt-3 flex items-end gap-3">
+              <span className="font-display text-4xl font-semibold text-emerald-600">{acceptancePercentage}%</span>
+              <span className="pb-1 text-sm text-slate-500">De 4-5 estrellas</span>
+            </div>
+            <div className="mt-4 w-full bg-slate-200 rounded-full h-2">
+              <div className="bg-emerald-500 h-2 rounded-full" style={{ width: `${acceptancePercentage}%` }}></div>
+            </div>
+          </div>
         </div>
       </header>
 
@@ -143,12 +184,7 @@ export const Resenas = () => {
                   <p className="text-sm text-slate-700 italic">"{selectedReview.comment || 'Sin comentario.'}"</p>
                 </div>
 
-                <button 
-                  onClick={() => handleDelete(selectedReview)}
-                  className="w-full mt-4 rounded-2xl bg-rose-50 text-rose-600 font-semibold py-3 border border-rose-200 hover:bg-rose-100 transition"
-                >
-                  Eliminar reseña
-                </button>
+              
               </div>
             ) : (
               <div className="text-center py-10">
