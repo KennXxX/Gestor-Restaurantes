@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { Typography } from "@material-tailwind/react";
-import imgLogo from "../../../assets/img/logoRestaurante.jpg";
+import imgLogo from '../../../assets/img/logoRestaurante.png'
 import { useAuthStore } from '../../../features/auth/store/authStore'
 
 export const Navbar = () => {
