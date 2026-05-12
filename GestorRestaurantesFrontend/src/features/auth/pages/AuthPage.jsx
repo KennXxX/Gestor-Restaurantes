@@ -49,12 +49,12 @@ export const AuthPage = () => {
   const { title, description } = getTitleAndDescription()
 
   return (
-    <main className="min-h-screen grid place-items-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700 px-5 py-10">
-      <section className="w-full max-w-md rounded-[32px] border border-slate-700 bg-slate-800/95 p-10 shadow-[0_20px_50px_rgba(15,23,42,0.45)] backdrop-blur-sm flex flex-col items-center">
-        <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-slate-800 text-slate-100">
+    <main className="min-h-screen grid place-items-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700 px-4 sm:px-6 lg:px-8 py-6 sm:py-10 lg:py-12">
+      <section className="w-full max-w-md rounded-2xl sm:rounded-3xl border border-slate-700 bg-slate-900/95 backdrop-blur-sm p-6 sm:p-8 lg:p-10 shadow-2xl flex flex-col items-center">
+        <div className="mb-4 sm:mb-6 flex h-20 sm:h-24 w-20 sm:w-24 items-center justify-center rounded-full bg-slate-800 text-slate-100">
           <svg
             viewBox="0 0 64 64"
-            className="h-16 w-16"
+            className="h-12 sm:h-16 w-12 sm:w-16"
             aria-hidden="true"
           >
             <circle cx="32" cy="20" r="12" fill="currentColor" />
@@ -62,25 +62,25 @@ export const AuthPage = () => {
           </svg>
         </div>
 
-        <h1 className="mb-3 w-full text-center text-3xl font-bold text-white">{title}</h1>
+        <h1 className="mb-2 sm:mb-3 w-full text-center text-2xl sm:text-3xl lg:text-4xl font-bold text-white">{title}</h1>
         {description ? (
-          <p className="mb-7 w-full text-center text-sm leading-6 text-slate-300">{description}</p>
+          <p className="mb-5 sm:mb-7 w-full text-center text-xs sm:text-sm leading-5 sm:leading-6 text-slate-300">{description}</p>
         ) : null}
 
         {notice ? (
-          <p className="mb-6 w-full rounded-2xl border border-emerald-700 bg-emerald-950 px-4 py-3 text-sm text-emerald-200">
+          <p className="mb-4 sm:mb-6 w-full rounded-xl sm:rounded-2xl border border-emerald-700 bg-emerald-950 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-emerald-200">
             {notice}
           </p>
         ) : null}
 
         {mode === 'login' || mode === 'register' ? (
-          <div className="mb-6 grid w-full grid-cols-2 gap-3">
+          <div className="mb-5 sm:mb-6 grid w-full grid-cols-2 gap-2 sm:gap-3">
             <button
               type="button"
               className={
                 mode === 'login'
-                  ? 'rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-sm font-semibold text-white'
-                  : 'rounded-2xl border border-slate-700 bg-slate-800 px-4 py-3 text-sm font-semibold text-slate-300 transition hover:bg-slate-700'
+                  ? 'rounded-xl sm:rounded-2xl border border-white/20 bg-white/10 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-white'
+                  : 'rounded-xl sm:rounded-2xl border border-slate-700 bg-slate-800 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-slate-300 transition hover:bg-slate-700'
               }
               onClick={() => setMode('login')}
             >
@@ -90,8 +90,8 @@ export const AuthPage = () => {
               type="button"
               className={
                 mode === 'register'
-                  ? 'rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-sm font-semibold text-white'
-                  : 'rounded-2xl border border-slate-700 bg-slate-800 px-4 py-3 text-sm font-semibold text-slate-300 transition hover:bg-slate-700'
+                  ? 'rounded-xl sm:rounded-2xl border border-white/20 bg-white/10 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-white'
+                  : 'rounded-xl sm:rounded-2xl border border-slate-700 bg-slate-800 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-slate-300 transition hover:bg-slate-700'
               }
               onClick={() => setMode('register')}
             >
