@@ -1,9 +1,120 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuthStore } from '../../features/auth/store/authStore'
+
+const ClientHome = ({ user }) => (
+  <section className="client-hero">
+    <div className="client-hero-copy">
+      <span className="client-hero-tag">Bienvenido cliente</span>
+      <h1 className="client-hero-title">
+        Hola{user?.name ? `, ${user.name}` : ' cliente'}
+      </h1>
+      <p className="client-hero-text">
+        Gestiona tus reservas, pedidos y facturas desde un panel diseñado para tu experiencia en Fuego y Sabor.
+      </p>
+      <div className="client-hero-actions">
+        <button className="client-button client-button-primary" type="button">
+          Ver reservas
+        </button>
+        <button className="client-button client-button-ghost" type="button">
+          Explorar menú
+        </button>
+      </div>
+    </div>
+    <div className="client-hero-card">
+      <p className="client-hero-card-title">Tu cuenta</p>
+      <p className="client-hero-card-copy">Acceso rápido a tus datos, órdenes y facturas.</p>
+      <div className="client-hero-stat">
+        <span>Correo</span>
+        <strong>{user?.email ?? 'Sin correo'}</strong>
+      </div>
+      <div className="client-hero-stat">
+        <span>Rol</span>
+        <strong>{user?.role ?? 'Cliente'}</strong>
+      </div>
+    </div>
+  </section>
+)
+
+const ClientReservations = () => (
+  <section className="client-section client-feature-section">
+    <div className="client-section-header">
+      <div>
+        <p className="client-section-label">Reservas</p>
+        <h2>Mis reservaciones</h2>
+      </div>
+      <p className="client-section-description">
+        Revisa tus reservas actuales, confirma horarios y modifica los detalles según tu preferencia.
+      </p>
+    </div>
+
+    <div className="client-feature-grid">
+      <div className="client-feature-card">
+        <h3>Reservación activa</h3>
+        <p>Administra la fecha, hora y número de personas de tu próxima visita.</p>
+      </div>
+      <div className="client-feature-card">
+        <h3>Nueva reserva</h3>
+        <p>Crea una nueva reservación para disfrutar en el restaurante cuando quieras.</p>
+      </div>
+    </div>
+  </section>
+)
+
+const ClientMenu = () => (
+  <section className="client-section client-feature-section">
+    <div className="client-section-header">
+      <div>
+        <p className="client-section-label">Menú</p>
+        <h2>Explora el menú</h2>
+      </div>
+      <p className="client-section-description">
+        Descubre los platos del día, especialidades del chef y recomendaciones ideales para ti.
+      </p>
+    </div>
+
+    <div className="client-feature-grid">
+      <div className="client-feature-card">
+        <h3>Platos estrella</h3>
+        <p>Observa nuestras especialidades más solicitadas y sus detalles.</p>
+      </div>
+      <div className="client-feature-card">
+        <h3>Ofertas especiales</h3>
+        <p>Aprovecha promociones exclusivas para clientes del portal.</p>
+      </div>
+    </div>
+  </section>
+)
+
+const ClientInvoices = () => (
+  <section className="client-section client-feature-section">
+    <div className="client-section-header">
+      <div>
+        <p className="client-section-label">Facturas</p>
+        <h2>Mis facturas</h2>
+      </div>
+      <p className="client-section-description">
+        Revisa todos tus comprobantes de pago y descarga los documentos que necesites.
+      </p>
+    </div>
+
+    <div className="client-feature-grid">
+      <div className="client-feature-card">
+        <h3>Historial de pagos</h3>
+        <p>Consulta tus facturas anteriores y el estado de cada transacción.</p>
+      </div>
+      <div className="client-feature-card">
+        <h3>Comprobantes</h3>
+        <p>Descarga tus facturas en PDF para tus registros personales.</p>
+      </div>
+    </div>
+  </section>
+)
 
 export const ClientPage = () => {
   const user = useAuthStore((state) => state.user)
   const logout = useAuthStore((state) => state.logout)
+  const [activeSection, setActiveSection] = useState('home')
 
   const userInitials = user?.name
     ? user.name
@@ -12,6 +123,19 @@ export const ClientPage = () => {
         .slice(0, 2)
         .join('')
     : 'US'
+
+  const renderSection = () => {
+    switch (activeSection) {
+      case 'reservations':
+        return <ClientReservations />
+      case 'menu':
+        return <ClientMenu />
+      case 'invoices':
+        return <ClientInvoices />
+      default:
+        return <ClientHome user={user} />
+    }
+  }
 
   return (
     <div className="client-page-shell">
@@ -26,18 +150,34 @@ export const ClientPage = () => {
           </div>
 
           <nav className="client-nav-links">
-            <a href="#inicio" className="client-nav-link">
+            <button
+              type="button"
+              className={`client-nav-link ${activeSection === 'home' ? 'client-nav-link--active' : ''}`}
+              onClick={() => setActiveSection('home')}
+            >
               Inicio
-            </a>
-            <a href="#reservas" className="client-nav-link">
+            </button>
+            <button
+              type="button"
+              className={`client-nav-link ${activeSection === 'reservations' ? 'client-nav-link--active' : ''}`}
+              onClick={() => setActiveSection('reservations')}
+            >
               Reservas
-            </a>
-            <a href="#menu" className="client-nav-link">
+            </button>
+            <button
+              type="button"
+              className={`client-nav-link ${activeSection === 'menu' ? 'client-nav-link--active' : ''}`}
+              onClick={() => setActiveSection('menu')}
+            >
               Menú
-            </a>
-            <a href="#facturas" className="client-nav-link">
+            </button>
+            <button
+              type="button"
+              className={`client-nav-link ${activeSection === 'invoices' ? 'client-nav-link--active' : ''}`}
+              onClick={() => setActiveSection('invoices')}
+            >
               Facturas
-            </a>
+            </button>
           </nav>
 
           <button type="button" className="client-logout-button" onClick={logout}>
@@ -47,116 +187,7 @@ export const ClientPage = () => {
       </header>
 
       <main className="client-content">
-        <section id="inicio" className="client-hero">
-          <div className="client-hero-copy">
-            <span className="client-hero-tag">Bienvenido cliente</span>
-            <h1 className="client-hero-title">
-              Hola{user?.name ? `, ${user.name}` : ' cliente'}
-            </h1>
-            <p className="client-hero-text">
-              Gestiona tus reservas, pedidos y facturas desde un panel diseñado
-              para tu experiencia en Fuego y Sabor.
-            </p>
-            <div className="client-hero-actions">
-              <a href="#reservas" className="client-button client-button-primary">
-                Ver reservas
-              </a>
-              <a href="#menu" className="client-button client-button-ghost">
-                Explorar menú
-              </a>
-            </div>
-          </div>
-          <div className="client-hero-card">
-            <p className="client-hero-card-title">Tu cuenta</p>
-            <p className="client-hero-card-copy">Acceso rápido a tus datos, órdenes y facturas.</p>
-            <div className="client-hero-stat">
-              <span>Perfil</span>
-              <strong>{user?.email ?? 'Sin correo'}</strong>
-            </div>
-          </div>
-        </section>
-
-        <section className="client-section client-overview">
-          <div className="client-section-header">
-            <div>
-              <p className="client-section-label">Resumen</p>
-              <h2>Panel principal del cliente</h2>
-            </div>
-            <Link to="/" className="client-link-secondary">
-              Volver a inicio
-            </Link>
-          </div>
-
-          <div className="client-grid">
-            <article className="client-card">
-              <h3>Reservas</h3>
-              <p>Controla tus próximas visitas y modifica detalles de tu reservación.</p>
-            </article>
-            <article className="client-card">
-              <h3>Menú</h3>
-              <p>Descubre los platos estrella y promociones exclusivas para clientes.</p>
-            </article>
-            <article className="client-card">
-              <h3>Pedidos</h3>
-              <p>Revisa tus pedidos activos y consulta el historial de consumo.</p>
-            </article>
-            <article className="client-card">
-              <h3>Facturas</h3>
-              <p>Accede a tus facturas y descarga comprobantes de pago.</p>
-            </article>
-          </div>
-        </section>
-
-        <section id="reservas" className="client-section client-feature-section">
-          <h2>Reservas</h2>
-          <p className="client-section-description">
-            Aquí encontrarás tus reservas confirmadas y opciones para programar una nueva visita.
-          </p>
-          <div className="client-feature-grid">
-            <div className="client-feature-card">
-              <h3>Reservación activa</h3>
-              <p>Gestiona fecha, hora y número de personas con facilidad desde tu panel.</p>
-            </div>
-            <div className="client-feature-card">
-              <h3>Confirmaciones</h3>
-              <p>Recibe alertas de confirmación y notas especiales para tu experiencia.</p>
-            </div>
-          </div>
-        </section>
-
-        <section id="menu" className="client-section client-feature-section">
-          <h2>Menú</h2>
-          <p className="client-section-description">
-            Consulta nuestros platos más populares, especiales del chef y sugerencias del día.
-          </p>
-          <div className="client-feature-grid">
-            <div className="client-feature-card">
-              <h3>Platos destacados</h3>
-              <p>Explora recetas sabrosas y recomendaciones personalizadas.</p>
-            </div>
-            <div className="client-feature-card">
-              <h3>Ofertas exclusivas</h3>
-              <p>Disfruta de promociones especiales solo para clientes registrados.</p>
-            </div>
-          </div>
-        </section>
-
-        <section id="facturas" className="client-section client-feature-section">
-          <h2>Facturas</h2>
-          <p className="client-section-description">
-            Revisa tus comprobantes, pagos y estado de facturación en un solo lugar.
-          </p>
-          <div className="client-feature-grid">
-            <div className="client-feature-card">
-              <h3>Historial de pagos</h3>
-              <p>Consulta tus registros de pagos anteriores.</p>
-            </div>
-            <div className="client-feature-card">
-              <h3>Comprobantes</h3>
-              <p>Descarga tus facturas en PDF para tus registros.</p>
-            </div>
-          </div>
-        </section>
+        {renderSection()}
       </main>
     </div>
   )
