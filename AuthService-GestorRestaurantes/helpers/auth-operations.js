@@ -191,6 +191,8 @@ export const loginUserHelper = async (email, password) => {
     const userDetails = {
       id: fullUser.id,
       name: fullUser.name,
+      email: fullUser.email,
+      UserProfile: fullUser.UserProfile,
       profilePicture: fullUser.profilePicture,
       role: fullUser.role,
     };

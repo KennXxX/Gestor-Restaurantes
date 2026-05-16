@@ -3,6 +3,9 @@ import { validateJWT } from '../../middlewares/validate-JWT.js';
 import {
   createAdminRestaurantUser,
   findUserById,
+  updateUserProfile,
+  changeUserPassword,
+  deleteUserAccount,
 } from '../../helpers/user-db.js';
 import {
   getUserRoleNames,
@@ -13,6 +16,7 @@ import { ALLOWED_ROLES, ADMIN_ROLE } from '../../helpers/role-constants.js';
 import { buildUserResponse } from '../../utils/user-helpers.js';
 import { sequelize } from '../../configs/db.js';
 import { validateCreateAdminRestaurant } from '../../middlewares/validation.js';
+import { hashPassword } from '../../utils/password-utils.js';
 
 const ensureAdmin = async (req) => {
   const currentUserId = req.userId;
@@ -123,6 +127,111 @@ export const createAdminRestaurant = [
       return res.status(status).json({
         success: false,
         message: error.message || 'No se pudo crear el administrador',
+      });
+    }
+  }),
+];
+
+export const updateProfile = [
+  validateJWT,
+  asyncHandler(async (req, res) => {
+    try {
+      const userId = req.userId;
+      const { name, email, phone, address } = req.body;
+
+      // Validaciones básicas
+      if (!name || !email) {
+        return res.status(400).json({
+          success: false,
+          message: 'Nombre y email son requeridos',
+        });
+      }
+
+      if (phone && !/^\d{8}$/.test(phone)) {
+        return res.status(400).json({
+          success: false,
+          message: 'El teléfono debe tener exactamente 8 dígitos',
+        });
+      }
+
+      const updatedUser = await updateUserProfile(userId, {
+        name,
+        email,
+        phone,
+        address,
+      });
+
+      return res.status(200).json({
+        success: true,
+        message: 'Perfil actualizado correctamente',
+        user: buildUserResponse(updatedUser),
+      });
+    } catch (error) {
+      const status = error.status || 500;
+      return res.status(status).json({
+        success: false,
+        message: error.message || 'Error al actualizar perfil',
+      });
+    }
+  }),
+];
+
+export const updatePasswordController = [
+  validateJWT,
+  asyncHandler(async (req, res) => {
+    try {
+      const userId = req.userId;
+      const { currentPassword, newPassword } = req.body;
+
+      // Validaciones
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({
+          success: false,
+          message: 'Contraseña actual y nueva son requeridas',
+        });
+      }
+
+      if (newPassword.length < 8) {
+        return res.status(400).json({
+          success: false,
+          message: 'La nueva contraseña debe tener al menos 8 caracteres',
+        });
+      }
+
+      const newHashedPassword = await hashPassword(newPassword);
+      await changeUserPassword(userId, currentPassword, newHashedPassword);
+
+      return res.status(200).json({
+        success: true,
+        message: 'Contraseña actualizada correctamente',
+      });
+    } catch (error) {
+      const status = error.status || 500;
+      return res.status(status).json({
+        success: false,
+        message: error.message || 'Error al cambiar contraseña',
+      });
+    }
+  }),
+];
+
+export const deleteAccountController = [
+  validateJWT,
+  asyncHandler(async (req, res) => {
+    try {
+      const userId = req.userId;
+
+      await deleteUserAccount(userId);
+
+      return res.status(200).json({
+        success: true,
+        message: 'Cuenta eliminada correctamente',
+      });
+    } catch (error) {
+      const status = error.status || 500;
+      return res.status(status).json({
+        success: false,
+        message: error.message || 'Error al eliminar cuenta',
       });
     }
   }),

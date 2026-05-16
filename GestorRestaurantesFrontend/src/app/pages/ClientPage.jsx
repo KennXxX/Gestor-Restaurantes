@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuthStore } from '../../features/auth/store/authStore'
+import { UserProfile } from '../../features/auth/components/UserProfile'
 
 const ClientHome = ({ user }) => (
   <section className="client-hero">
@@ -126,6 +127,8 @@ export const ClientPage = () => {
 
   const renderSection = () => {
     switch (activeSection) {
+      case 'profile':
+        return <UserProfile user={user} />
       case 'reservations':
         return <ClientReservations />
       case 'menu':
@@ -141,13 +144,17 @@ export const ClientPage = () => {
     <div className="client-page-shell">
       <header className="client-navbar">
         <div className="client-navbar-inner">
-          <div className="client-brand">
+          <button
+            type="button"
+            className="client-brand"
+            onClick={() => setActiveSection('profile')}
+          >
             <span className="client-brand-mark">{userInitials}</span>
             <div>
               <p className="client-brand-title">{user?.name ?? 'Cliente'}</p>
               <p className="client-brand-subtitle">Perfil de usuario</p>
             </div>
-          </div>
+          </button>
 
           <nav className="client-nav-links">
             <button

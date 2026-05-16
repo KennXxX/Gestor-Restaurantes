@@ -119,6 +119,12 @@ export const useAuthStore = create(
           isLoadingAuth: false,
         })
       },
+
+      updateUser: (updatedUser) => {
+        set({
+          user: updatedUser,
+        })
+      },
     }),
     {
       name: 'auth-storage',
