@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 import { useAuthStore } from '../../features/auth/store/authStore'
 import { UserProfile } from '../../features/auth/components/UserProfile'
+import { ReservationView } from '../../features/Reservations/ReservationView'
 
 const ClientHome = ({ user }) => (
   <section className="client-hero">
@@ -37,30 +37,7 @@ const ClientHome = ({ user }) => (
   </section>
 )
 
-const ClientReservations = () => (
-  <section className="client-section client-feature-section">
-    <div className="client-section-header">
-      <div>
-        <p className="client-section-label">Reservas</p>
-        <h2>Mis reservaciones</h2>
-      </div>
-      <p className="client-section-description">
-        Revisa tus reservas actuales, confirma horarios y modifica los detalles según tu preferencia.
-      </p>
-    </div>
-
-    <div className="client-feature-grid">
-      <div className="client-feature-card">
-        <h3>Reservación activa</h3>
-        <p>Administra la fecha, hora y número de personas de tu próxima visita.</p>
-      </div>
-      <div className="client-feature-card">
-        <h3>Nueva reserva</h3>
-        <p>Crea una nueva reservación para disfrutar en el restaurante cuando quieras.</p>
-      </div>
-    </div>
-  </section>
-)
+const ClientReservations = () => <ReservationView />
 
 const ClientMenu = () => (
   <section className="client-section client-feature-section">
