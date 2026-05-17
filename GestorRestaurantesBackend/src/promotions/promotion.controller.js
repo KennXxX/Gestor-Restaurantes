@@ -18,7 +18,8 @@ export const createPromotion = async (req, res) => {
       couponCode: couponCode || null,
       discountPercentage: discountPercentage ? Number(discountPercentage) : 0,
       startDate: startDate ? new Date(startDate) : null,
-      endDate: endDate ? new Date(endDate) : null
+      endDate: endDate ? new Date(endDate) : null,
+      isApproved: true // Auto-approved to allow immediate local testing of coupons
     })
 
     await promo.save()
@@ -29,10 +30,10 @@ export const createPromotion = async (req, res) => {
   }
 }
 
-export const getActivePromotions = async (_req, res) => {
+export const getActivePromotions = async (req, res) => {
   try {
     const now = new Date()
-    const promotions = await Promotion.find({
+    const filter = {
       isActive: true,
       isApproved: true,
       $or: [
@@ -41,7 +42,11 @@ export const getActivePromotions = async (_req, res) => {
         { startDate: null, endDate: { $gte: now } },
         { startDate: { $lte: now }, endDate: { $gte: now } }
       ]
-    }).populate('restaurantId')
+    }
+    if (req.query.restaurantId && mongoose.Types.ObjectId.isValid(String(req.query.restaurantId))) {
+      filter.restaurantId = req.query.restaurantId
+    }
+    const promotions = await Promotion.find(filter).populate('restaurantId')
 
     return res.status(200).json({ success: true, promotions })
   } catch (err) {

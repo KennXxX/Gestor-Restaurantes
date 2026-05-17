@@ -1,167 +1,242 @@
 import { ORDER_TYPES, getUserId, getUserLabel, orderTypeLabel } from '../utils/orderHelpers'
 
+const C = {
+  surface:    "#111827",
+  border:     "rgba(255,255,255,0.07)",
+  accent:     "#1d4ed8",
+  accentLight:"#3b82f6",
+  text:       "#f5f0e8",
+  textMuted:  "rgba(255,255,255,0.45)",
+}
+
+const inputStyle = {
+  padding: "12px 16px", borderRadius: "12px",
+  background: "rgba(255,255,255,0.05)", border: `1px solid ${C.border}`,
+  color: C.text, fontSize: "0.875rem", outline: "none", width: "100%"
+}
+
+const fieldLabel = {
+  fontSize: "0.75rem", fontWeight: 600, color: C.textMuted, marginBottom: "6px", display: "block"
+}
+
 export const CreateOrderModal = ({
-  isOpen,
-  onClose,
-  form,
-  setForm,
-  handleCreate,
-  saving,
-  users,
-  restaurants,
-  tables,
-  menus,
-  handleItemChange,
-  addItem,
-  removeItem
+  isOpen, onClose, form, setForm, handleCreate, saving,
+  users, restaurants, tables, menus, handleItemChange, addItem, removeItem
 }) => {
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm transition-all">
-      <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-[24px] bg-white p-6 shadow-2xl">
-        <div className="flex items-center justify-between mb-6 border-b border-slate-100 pb-4">
-          <h2 className="font-display text-2xl font-semibold text-slate-900">Crear nueva orden</h2>
-          <button
-            onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200"
-          >
-            ✕
+    <div style={{
+      position: "fixed", inset: 0, zIndex: 50,
+      display: "flex", alignItems: "center", justifyContent: "center",
+      background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)",
+      padding: "16px"
+    }}>
+      <div style={{
+        width: "100%", maxWidth: "600px", maxHeight: "90vh", overflowY: "auto",
+        background: C.surface, borderRadius: "24px",
+        border: `1px solid ${C.border}`,
+        boxShadow: "0 24px 60px rgba(0,0,0,0.5)"
+      }}>
+        {/* Header */}
+        <div style={{
+          position: "sticky", top: 0, zIndex: 10,
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          borderBottom: `1px solid ${C.border}`,
+          background: C.surface, padding: "20px 24px"
+        }}>
+          <h2 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 700, color: C.text }}>
+            Crear nueva orden
+          </h2>
+          <button onClick={onClose} style={{
+            background: "transparent", border: "none", cursor: "pointer",
+            padding: "8px", borderRadius: "8px", color: C.textMuted
+          }}>
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
           </button>
         </div>
 
-        <form onSubmit={handleCreate} className="grid gap-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="text-sm font-semibold text-slate-700">
-              Usuario
+        {/* Form */}
+        <form onSubmit={handleCreate} style={{ padding: "24px", display: "flex", flexDirection: "column", gap: "18px" }}>
+
+          {/* Usuario + Restaurante */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+            <div>
+              <label style={fieldLabel}>Usuario</label>
               <select
                 value={form.userId}
-                onChange={(e) => setForm((prev) => ({ ...prev, userId: e.target.value }))}
-                className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100"
+                onChange={e => setForm(prev => ({ ...prev, userId: e.target.value }))}
+                style={inputStyle}
               >
-                <option value="">Selecciona un usuario</option>
-                {users.map((user) => (
-                  <option key={getUserId(user)} value={getUserId(user)}>
+                <option value="" style={{ background: C.surface }}>Selecciona un usuario</option>
+                {users.map(user => (
+                  <option key={getUserId(user)} value={getUserId(user)} style={{ background: C.surface }}>
                     {getUserLabel(user)}
                   </option>
                 ))}
               </select>
-            </label>
-
-            <label className="text-sm font-semibold text-slate-700">
-              Restaurante
+            </div>
+            <div>
+              <label style={fieldLabel}>Restaurante</label>
               <select
-                name="restaurantId"
                 value={form.restaurantId}
-                onChange={(e) => setForm((prev) => ({ ...prev, restaurantId: e.target.value, tableId: '' }))}
-                className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100"
+                onChange={e => setForm(prev => ({ ...prev, restaurantId: e.target.value, tableId: '' }))}
+                style={inputStyle}
               >
-                <option value="">Selecciona uno</option>
-                {restaurants.map((restaurant) => (
-                  <option key={restaurant._id} value={restaurant._id}>{restaurant.restaurantName}</option>
+                <option value="" style={{ background: C.surface }}>Selecciona uno</option>
+                {restaurants.map(r => (
+                  <option key={r._id} value={r._id} style={{ background: C.surface }}>{r.restaurantName}</option>
                 ))}
               </select>
-            </label>
+            </div>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="text-sm font-semibold text-slate-700">
-              Tipo de orden
+          {/* Tipo + Mesa / Dirección */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+            <div>
+              <label style={fieldLabel}>Tipo de orden</label>
               <select
                 value={form.orderType}
-                onChange={(e) => setForm((prev) => ({ ...prev, orderType: e.target.value }))}
-                className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100"
+                onChange={e => setForm(prev => ({ ...prev, orderType: e.target.value }))}
+                style={inputStyle}
               >
-                {ORDER_TYPES.map((type) => (
-                  <option key={type} value={type}>{orderTypeLabel(type)}</option>
+                {ORDER_TYPES.map(type => (
+                  <option key={type} value={type} style={{ background: C.surface }}>{orderTypeLabel(type)}</option>
                 ))}
               </select>
-            </label>
+            </div>
 
             {form.orderType === 'EN_RESTAURANTE' && (
-              <label className="text-sm font-semibold text-slate-700">
-                Mesa
+              <div>
+                <label style={fieldLabel}>Mesa</label>
                 <select
                   value={form.tableId}
-                  onChange={(e) => setForm((prev) => ({ ...prev, tableId: e.target.value }))}
-                  className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100"
+                  onChange={e => setForm(prev => ({ ...prev, tableId: e.target.value }))}
+                  style={inputStyle}
                 >
-                  <option value="">Selecciona mesa</option>
-                  {tables.map((table) => (
-                    <option key={table._id} value={table._id}>{table.tableNumber || `Mesa ${table._id?.slice(-4)}`}</option>
+                  <option value="" style={{ background: C.surface }}>Selecciona mesa</option>
+                  {tables.map(table => (
+                    <option key={table._id} value={table._id} style={{ background: C.surface }}>
+                      {table.tableName || `Mesa ${table._id?.slice(-4)}`}
+                    </option>
                   ))}
                 </select>
-              </label>
+              </div>
             )}
 
             {form.orderType === 'A_DOMICILIO' && (
-              <label className="text-sm font-semibold text-slate-700">
-                Dirección de entrega
+              <div>
+                <label style={fieldLabel}>Dirección de entrega</label>
                 <input
                   value={form.deliveryAddress}
-                  onChange={(e) => setForm((prev) => ({ ...prev, deliveryAddress: e.target.value }))}
-                  className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100"
+                  onChange={e => setForm(prev => ({ ...prev, deliveryAddress: e.target.value }))}
                   placeholder="Zona, avenida, referencia..."
+                  style={inputStyle}
                 />
-              </label>
+              </div>
             )}
           </div>
 
-          <label className="text-sm font-semibold text-slate-700">
-            Cupón de descuento (opcional)
+          {/* Cupón */}
+          <div>
+            <label style={fieldLabel}>Cupón de descuento (opcional)</label>
             <input
               value={form.coupon}
-              onChange={(e) => setForm((prev) => ({ ...prev, coupon: e.target.value }))}
-              className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100"
+              onChange={e => setForm(prev => ({ ...prev, coupon: e.target.value }))}
               placeholder="Ej: FUEGO10"
+              style={inputStyle}
             />
-          </label>
+          </div>
 
-          <div className="space-y-3 mt-2 border-t border-slate-100 pt-4">
-            <p className="text-sm font-semibold text-slate-700">Items de la orden</p>
-            {form.items.map((item, index) => (
-              <div key={`${index}-${item.menuId}`} className="grid grid-cols-[1fr_88px_40px] items-center gap-2">
-                <select
-                  value={item.menuId}
-                  onChange={(e) => handleItemChange(index, 'menuId', e.target.value)}
-                  className="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-emerald-400"
-                >
-                  <option value="">Selecciona menú</option>
-                  {menus.map((menu) => (
-                    <option key={menu._id} value={menu._id}>{menu.menuName}</option>
-                  ))}
-                </select>
-                <input
-                  type="number"
-                  min="1"
-                  value={item.quantity}
-                  onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
-                  className="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-emerald-400"
-                />
-                <button 
-                  type="button" 
-                  onClick={() => removeItem(index)} 
-                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-rose-200 text-rose-500 hover:bg-rose-50 transition-colors"
-                >
-                  ✕
-                </button>
-              </div>
-            ))}
-            <button 
-              type="button" 
-              onClick={addItem} 
-              className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-100 transition-colors"
+          {/* Items */}
+          <div style={{
+            borderRadius: "14px", background: "rgba(255,255,255,0.03)",
+            border: `1px solid ${C.border}`, padding: "16px"
+          }}>
+            <p style={{
+              fontSize: "0.6rem", fontWeight: 700, letterSpacing: "0.18em",
+              textTransform: "uppercase", color: "rgba(59,130,246,0.7)", margin: "0 0 14px"
+            }}>
+              Items de la orden
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              {form.items.map((item, index) => (
+                <div key={`${index}-${item.menuId}`} style={{
+                  display: "grid", gridTemplateColumns: "1fr 88px 40px",
+                  alignItems: "center", gap: "10px"
+                }}>
+                  <select
+                    value={item.menuId}
+                    onChange={e => handleItemChange(index, 'menuId', e.target.value)}
+                    style={inputStyle}
+                  >
+                    <option value="" style={{ background: C.surface }}>Selecciona menú</option>
+                    {menus.map(menu => (
+                      <option key={menu._id} value={menu._id} style={{ background: C.surface }}>{menu.menuName}</option>
+                    ))}
+                  </select>
+                  <input
+                    type="number" min="1"
+                    value={item.quantity}
+                    onChange={e => handleItemChange(index, 'quantity', e.target.value)}
+                    style={{ ...inputStyle, width: "auto" }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeItem(index)}
+                    style={{
+                      width: "40px", height: "40px", borderRadius: "10px",
+                      border: "1px solid rgba(239,68,68,0.3)",
+                      background: "rgba(239,68,68,0.1)", color: "#f87171",
+                      cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center"
+                    }}
+                  >
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={addItem}
+              style={{
+                marginTop: "12px", padding: "8px 18px", borderRadius: "100px",
+                background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.25)",
+                color: C.accentLight, fontSize: "0.78rem", fontWeight: 600, cursor: "pointer"
+              }}
             >
               + Agregar item
             </button>
           </div>
 
-          <div className="mt-4 flex justify-end gap-3 border-t border-slate-100 pt-4">
-            <button type="button" onClick={onClose} className="rounded-xl border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50">
-              Cancelar
-            </button>
-            <button type="submit" disabled={saving} className="rounded-xl bg-emerald-600 px-6 py-2.5 text-sm font-bold text-white shadow-md hover:bg-emerald-500 disabled:opacity-50">
+          {/* Botones */}
+          <div style={{ display: "flex", gap: "12px", marginTop: "4px" }}>
+            <button
+              type="submit"
+              disabled={saving}
+              style={{
+                flex: 1, padding: "14px 20px", borderRadius: "14px",
+                background: `linear-gradient(135deg, ${C.accent}, ${C.accentLight})`,
+                border: "none", color: "white", fontWeight: 700,
+                fontSize: "0.875rem", cursor: "pointer", opacity: saving ? 0.6 : 1
+              }}
+            >
               {saving ? 'Guardando...' : 'Crear orden'}
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              style={{
+                padding: "14px 20px", borderRadius: "14px",
+                background: "rgba(255,255,255,0.05)", border: `1px solid ${C.border}`,
+                color: C.textMuted, fontWeight: 600, fontSize: "0.875rem", cursor: "pointer"
+              }}
+            >
+              Cancelar
             </button>
           </div>
         </form>

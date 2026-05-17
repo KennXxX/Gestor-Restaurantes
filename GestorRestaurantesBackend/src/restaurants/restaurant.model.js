@@ -44,6 +44,11 @@ const restaurantSchema = new mongoose.Schema(
         restaurantActive:{
             type: Boolean,
             default: true
+        },
+
+        adminId: {
+            type: String,
+            default: null
         }
     },
 

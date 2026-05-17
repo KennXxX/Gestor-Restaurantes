@@ -4,115 +4,80 @@ import { getRestaurants } from '../../shared/api/restaurants'
 import { getTables } from '../../shared/api/tables'
 import { getAllUsers } from '../../shared/api/users'
 import {
-  cancelReservation,
-  createReservation,
-  getReservations,
-  updateReservation,
-  updateReservationStatus,
+  cancelReservation, createReservation, getReservations,
+  updateReservation, updateReservationStatus,
 } from '../../shared/api/reservations'
 import { showError, showSuccess } from '../../shared/utils/toast'
 import {
-  STATUS_OPTIONS,
-  getErrorMessage,
-  statusLabel,
-  toInputDateTime,
-  isClientRole,
-  getUserId,
-  getUserLabel
+  STATUS_OPTIONS, getErrorMessage, statusLabel,
+  toInputDateTime, isClientRole, getUserId, getUserLabel,
 } from './utils/reservationHelpers'
-import { ReservationStats } from './components/Admin/ReservationStats'
-import { AdminReservationList } from './components/Admin/AdminReservationList'
-import { AdminReservationModal } from './components/Admin/AdminReservationModal'
+import { ReservationStats }       from './components/Admin/ReservationStats'
+import { AdminReservationList }   from './components/Admin/AdminReservationList'
+import { AdminReservationModal }  from './components/Admin/AdminReservationModal'
 import { AdminReservationDetail } from './components/Admin/AdminReservationDetail'
-import { FilterBar } from '../../shared/components/ui/FilterBar'
+
+// ── Design tokens ─────────────────────────────────────────────────────────────
+const C = {
+  bg:           "#0c0f18",
+  surface:      "#111827",
+  border:       "rgba(255,255,255,0.07)",
+  borderAccent: "rgba(59,130,246,0.25)",
+  accent:       "#1d4ed8",
+  accentLight:  "#3b82f6",
+  accentDim:    "rgba(59,130,246,0.7)",
+  text:         "#f5f0e8",
+  textMuted:    "rgba(255,255,255,0.45)",
+}
+
+const label = {
+  fontSize: "0.6rem", fontWeight: 700,
+  letterSpacing: "0.18em", textTransform: "uppercase",
+  color: C.accentDim, margin: "0 0 6px",
+}
 
 const emptyForm = {
-  userId: '',
-  restaurantId: '',
-  tableId: [],
-  numberPeople: 1,
-  typeReservation: 'PERSONAL',
-  description: '',
-  coupon: '',
-  startDate: '',
-  endDate: '',
-  photo: null,
+  userId: '', restaurantId: '', tableId: [],
+  numberPeople: 1, typeReservation: 'PERSONAL',
+  description: '', coupon: '', startDate: '', endDate: '', photo: null,
 }
 
 export const Reservations = () => {
-  const [reservations, setReservations] = useState([])
-  const [restaurants, setRestaurants] = useState([])
-  const [users, setUsers] = useState([])
-  const [tables, setTables] = useState([])
+  const [reservations,        setReservations]        = useState([])
+  const [restaurants,         setRestaurants]         = useState([])
+  const [users,               setUsers]               = useState([])
+  const [tables,              setTables]              = useState([])
   const [selectedReservation, setSelectedReservation] = useState(null)
-  const [editingReservation, setEditingReservation] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState(null)
-  const [form, setForm] = useState(emptyForm)
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  
-  const [searchTerm, setSearchTerm] = useState('')
-  const [startDate, setStartDate] = useState('')
-  const [endDate, setEndDate] = useState('')
-  
-  const [searchParams, setSearchParams] = useSearchParams()
-
-  const usersById = useMemo(() => {
-    return new Map(users.map((user) => [getUserId(user), user]))
-  }, [users])
-
-  const filteredReservations = useMemo(() => {
-    return reservations.filter((reservation) => {
-      const searchLower = searchTerm.toLowerCase()
-      const resId = reservation._id || ''
-      const user = usersById.get(String(reservation.userId || ''))
-      const userLabel = user ? getUserLabel(user) : ''
-      const type = reservation.typeReservation || ''
-
-      const matchesSearch =
-        !searchTerm ||
-        resId.toLowerCase().includes(searchLower) ||
-        userLabel.toLowerCase().includes(searchLower) ||
-        type.toLowerCase().includes(searchLower)
-
-      let matchesDate = true
-      if (startDate || endDate) {
-        const itemDate = new Date(reservation.startDate || reservation.createdAt)
-        if (!Number.isNaN(itemDate.getTime())) {
-          if (startDate) {
-            matchesDate = matchesDate && itemDate >= new Date(startDate + 'T00:00:00')
-          }
-          if (endDate) {
-            matchesDate = matchesDate && itemDate <= new Date(endDate + 'T23:59:59')
-          }
-        }
-      }
-
-      return matchesSearch && matchesDate
-    })
-  }, [reservations, searchTerm, startDate, endDate, usersById])
+  const [editingReservation,  setEditingReservation]  = useState(null)
+  const [loading,             setLoading]             = useState(true)
+  const [saving,              setSaving]              = useState(false)
+  const [error,               setError]               = useState(null)
+  const [form,                setForm]                = useState(emptyForm)
+  const [isModalOpen,         setIsModalOpen]         = useState(false)
+  const [searchParams,        setSearchParams]        = useSearchParams()
 
   const stats = useMemo(() => ({
-    total: filteredReservations.length,
-    pending: filteredReservations.filter((r) => r.status === 'PENDIENTE').length,
-    canceled: filteredReservations.filter((r) => r.status === 'CANCELADO').length,
-  }), [filteredReservations])
+    total:    reservations.length,
+    pending:  reservations.filter(r => r.status === 'PENDIENTE').length,
+    canceled: reservations.filter(r => r.status === 'CANCELADO').length,
+  }), [reservations])
 
+  const usersById = useMemo(() =>
+    new Map(users.map(u => [getUserId(u), u]))
+  , [users])
 
   const loadInitialData = async () => {
     setLoading(true)
     setError(null)
     try {
-      const [reservationsRes, restaurantsRes, usersRes] = await Promise.all([
+      const [resRes, restRes, usersRes] = await Promise.all([
         getReservations(),
         getRestaurants({ limit: 100 }),
         getAllUsers().catch(() => ({ data: { users: [] } })),
       ])
-
-      setReservations(reservationsRes.data?.reservations || [])
-      setRestaurants(restaurantsRes.data?.data || [])
-      setUsers((usersRes.data?.users || []).filter((user) => isClientRole(user)))
+      setReservations(resRes.data?.reservations || [])
+      setRestaurants(restRes.data?.data || [])
+      setUsers((usersRes.data?.users || []).filter(isClientRole))
     } catch (err) {
       setError(getErrorMessage(err, 'No se pudo cargar la información de reservaciones.'))
     } finally {
@@ -121,49 +86,35 @@ export const Reservations = () => {
   }
 
   const loadTables = async (restaurantId) => {
-    if (!restaurantId) {
-      setTables([])
-      return
-    }
-
+    if (!restaurantId) { setTables([]); return }
     try {
       const { data } = await getTables({ restaurantId, limit: 100 })
       setTables(data?.data || [])
-    } catch (_err) {
-      setTables([])
-    }
+    } catch { setTables([]) }
   }
 
-  useEffect(() => {
-    loadInitialData()
-  }, [])
-
-  useEffect(() => {
-    loadTables(form.restaurantId)
-  }, [form.restaurantId])
+  useEffect(() => { loadInitialData() }, [])
+  useEffect(() => { loadTables(form.restaurantId) }, [form.restaurantId])
 
   useEffect(() => {
     const couponParam = searchParams.get('coupon')
     if (!couponParam) return
-
     setForm({ ...emptyForm, coupon: couponParam })
     setEditingReservation(null)
     setIsModalOpen(true)
-
-    const nextParams = new URLSearchParams(searchParams)
-    nextParams.delete('coupon')
-    setSearchParams(nextParams, { replace: true })
+    const next = new URLSearchParams(searchParams)
+    next.delete('coupon')
+    setSearchParams(next, { replace: true })
   }, [searchParams, setSearchParams])
 
   useEffect(() => {
-    // Antes se eliminaban automáticamente las mesas seleccionadas si su
-    // capacidad individual era menor que `numberPeople`. Ahora permitimos
-    // combinar varias mesas, por lo que solo nos aseguramos de que las
-    // mesas seleccionadas sigan existiendo cuando cambian las mesas disponibles.
-    setForm((prev) => {
-      const filteredTables = prev.tableId.filter((tableId) => tables.some((entry) => entry._id === tableId))
-      if (filteredTables.length === prev.tableId.length) return prev
-      return { ...prev, tableId: filteredTables }
+    const peopleCount = Number(form.numberPeople) || 1
+    setForm(prev => {
+      const filtered = prev.tableId.filter(tid => {
+        const t = tables.find(e => e._id === tid)
+        return !t || Number(t.tableCapacity || 0) >= peopleCount
+      })
+      return filtered.length === prev.tableId.length ? prev : { ...prev, tableId: filtered }
     })
   }, [form.numberPeople, tables])
 
@@ -174,62 +125,51 @@ export const Reservations = () => {
   }
 
   const toggleTableSelection = (tableId) => {
-    // Permitimos seleccionar cualquier mesa; la validación combinada se
-    // realiza en backend. Aquí solo alternamos la selección.
-    setForm((prev) => {
-      const selected = prev.tableId.includes(tableId)
-        ? prev.tableId.filter((id) => id !== tableId)
+    const table = tables.find(e => e._id === tableId)
+    const peopleCount = Number(form.numberPeople) || 1
+    if (table && Number(table.tableCapacity || 0) < peopleCount) {
+      showError(`La mesa ${table.tableName || tableId} no soporta ${peopleCount} personas.`)
+      return
+    }
+    setForm(prev => ({
+      ...prev,
+      tableId: prev.tableId.includes(tableId)
+        ? prev.tableId.filter(id => id !== tableId)
         : [...prev.tableId, tableId]
-      return { ...prev, tableId: selected }
-    })
+    }))
   }
 
   const startEditing = (reservation) => {
     setEditingReservation(reservation)
     setSelectedReservation(reservation)
     setForm({
-      userId: reservation.userId || '',
-      restaurantId: reservation.restaurantId?._id || reservation.restaurantId || '',
-      tableId: (reservation.tableId || []).map((table) => table._id || table),
-      numberPeople: reservation.numberPeople || 1,
+      userId:          reservation.userId || '',
+      restaurantId:    reservation.restaurantId?._id || reservation.restaurantId || '',
+      tableId:         (reservation.tableId || []).map(t => t._id || t),
+      numberPeople:    reservation.numberPeople || 1,
       typeReservation: reservation.typeReservation || 'PERSONAL',
-      description: reservation.description || '',
-      coupon: reservation.coupon || '',
-      startDate: toInputDateTime(reservation.startDate),
-      endDate: toInputDateTime(reservation.endDate),
-      photo: null,
+      description:     reservation.description || '',
+      coupon:          reservation.coupon || '',
+      startDate:       toInputDateTime(reservation.startDate),
+      endDate:         toInputDateTime(reservation.endDate),
+      photo:           null,
     })
     setIsModalOpen(true)
   }
 
   const handleSubmit = async (event) => {
     event.preventDefault()
-
-    if (!form.userId) {
-      showError('Selecciona un usuario para la reservación.')
-      return
-    }
-
-    if (!form.restaurantId || form.tableId.length === 0) {
-      showError('Selecciona restaurante y al menos una mesa.')
-      return
-    }
-
-    if (form.typeReservation === 'EVENTO' && !form.description.trim()) {
-      showError('Las reservas de evento requieren descripción.')
-      return
-    }
+    if (!form.userId) { showError('Selecciona un usuario para la reservación.'); return }
+    if (!form.restaurantId || form.tableId.length === 0) { showError('Selecciona restaurante y al menos una mesa.'); return }
+    if (form.typeReservation === 'EVENTO' && !form.description.trim()) { showError('Las reservas de evento requieren descripción.'); return }
 
     const payload = {
-      userId: form.userId,
-      restaurantId: form.restaurantId,
-      tableId: form.tableId,
-      numberPeople: Number(form.numberPeople) || 1,
-      typeReservation: form.typeReservation,
-      description: form.description,
+      userId: form.userId, restaurantId: form.restaurantId,
+      tableId: form.tableId, numberPeople: Number(form.numberPeople) || 1,
+      typeReservation: form.typeReservation, description: form.description,
       coupon: form.coupon?.trim() || undefined,
       startDate: new Date(form.startDate).toISOString(),
-      endDate: new Date(form.endDate).toISOString(),
+      endDate:   new Date(form.endDate).toISOString(),
       photo: form.photo,
     }
 
@@ -242,7 +182,6 @@ export const Reservations = () => {
         await createReservation(payload)
         showSuccess('Reserva creada correctamente.')
       }
-
       resetForm()
       await loadInitialData()
     } catch (err) {
@@ -257,9 +196,8 @@ export const Reservations = () => {
       await updateReservationStatus(reservation._id, status)
       showSuccess('Estado de reservación actualizado.')
       await loadInitialData()
-      if (selectedReservation?._id === reservation._id) {
-        setSelectedReservation((prev) => ({ ...prev, status }))
-      }
+      if (selectedReservation?._id === reservation._id)
+        setSelectedReservation(prev => ({ ...prev, status }))
     } catch (err) {
       showError(getErrorMessage(err, 'No se pudo actualizar el estado.'))
     }
@@ -267,7 +205,6 @@ export const Reservations = () => {
 
   const handleCancel = async (reservation) => {
     if (!window.confirm('¿Deseas cancelar esta reservación?')) return
-
     try {
       await cancelReservation(reservation._id)
       showSuccess('Reservación cancelada.')
@@ -278,41 +215,98 @@ export const Reservations = () => {
   }
 
   return (
-    <section className="space-y-6 font-body">
-      <header className="rounded-[28px] border border-sky-200 bg-[radial-gradient(circle_at_top_right,_rgba(14,165,233,0.18),_transparent_60%),linear-gradient(120deg,_#f0f9ff_0%,_#e0f2fe_60%,_#bae6fd_100%)] p-8 shadow-sm flex justify-between items-center flex-wrap gap-4">
-        <div>
-          <p className="inline-flex rounded-full bg-sky-700 px-4 py-1 text-xs font-semibold uppercase tracking-[0.32em] text-sky-50">Reservations</p>
-          <h1 className="font-display mt-4 text-3xl font-semibold text-slate-900 sm:text-4xl">Gestión de reservas</h1>
-          <p className="mt-3 text-sm text-slate-700 sm:text-base">Listado general de reservas, creación y edición asignadas a usuarios, cancelación y relación con mesas o clientes.</p>
+    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+      <style>{`
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(12px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes shimmer {
+          0%   { background-position: -200% center; }
+          100% { background-position:  200% center; }
+        }
+      `}</style>
+
+      {/* ── Hero Banner ── */}
+      <section style={{
+        position: "relative", overflow: "hidden", borderRadius: "20px",
+        background: "linear-gradient(135deg, #0d1526 0%, #111c30 50%, #0e1a28 100%)",
+        border: `1px solid ${C.borderAccent}`,
+        padding: "32px 36px",
+        animation: "fadeUp 0.4s ease both"
+      }}>
+        <div style={{
+          position: "absolute", top: 0, left: 0, right: 0, height: "2px",
+          background: "linear-gradient(90deg, transparent, #1d4ed8, #3b82f6, #1d4ed8, transparent)",
+        }} />
+        <div style={{
+          position: "relative", display: "flex",
+          justifyContent: "space-between", alignItems: "flex-end",
+          flexWrap: "wrap", gap: "20px"
+        }}>
+          <div>
+            <p style={{ ...label, marginBottom: "8px" }}>Gestión de reservas</p>
+            <h1 style={{
+              margin: "0 0 12px", fontSize: "2rem", fontWeight: 800,
+              color: C.text, letterSpacing: "-0.04em", lineHeight: 1.1
+            }}>
+              Control de{" "}
+              <span style={{
+                background: "linear-gradient(90deg, #1d4ed8, #3b82f6, #1d4ed8)",
+                backgroundSize: "200% auto",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                animation: "shimmer 3s linear infinite",
+              }}>reservaciones</span>
+            </h1>
+            <p style={{
+              margin: 0, fontSize: "0.88rem",
+              color: "rgba(255,255,255,0.5)", maxWidth: "500px", lineHeight: 1.6
+            }}>
+              Listado general de reservas, creación y edición asignadas a usuarios, cancelación y relación con mesas.
+            </p>
+          </div>
+          <button
+            onClick={() => { resetForm(); setIsModalOpen(true) }}
+            style={{
+              display: "flex", alignItems: "center", gap: "8px",
+              padding: "12px 24px", borderRadius: "14px",
+              background: `linear-gradient(135deg, ${C.accent}, ${C.accentLight})`,
+              border: "none", color: "white", fontWeight: 700,
+              fontSize: "0.875rem", cursor: "pointer"
+            }}
+          >
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/>
+            </svg>
+            Nueva reserva
+          </button>
         </div>
-        <button 
-          onClick={() => { resetForm(); setIsModalOpen(true); }}
-          className="rounded-xl bg-sky-600 px-6 py-3 text-sm font-bold text-white shadow-lg hover:bg-sky-500 transition-all"
-        >
-          + Nueva Reserva
-        </button>
-      </header>
+      </section>
 
-      <div className="grid gap-6 xl:grid-cols-[1.4fr_1fr]">
-        <section className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="font-display text-xl font-semibold text-slate-900">Listado de reservas</h2>
+      {/* ── Content grid ── */}
+      <div style={{ display: "grid", gap: "20px", gridTemplateColumns: "1.4fr 1fr" }}>
 
-          <ReservationStats total={stats.total} pending={stats.pending} canceled={stats.canceled} />
+        {/* Lista */}
+        <section style={{
+          background: C.surface, border: `1px solid ${C.border}`,
+          borderRadius: "20px", padding: "24px"
+        }}>
+          <p style={label}>Listado de reservas</p>
+          <h2 style={{ margin: "0 0 4px", fontSize: "1.35rem", fontWeight: 800, color: C.text }}>
+            Todas las reservas
+          </h2>
 
-          <FilterBar
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-            startDate={startDate}
-            onStartDateChange={setStartDate}
-            endDate={endDate}
-            onEndDateChange={setEndDate}
-            searchPlaceholder="Buscar por ID, cliente o tipo..."
+          <ReservationStats
+            total={stats.total}
+            pending={stats.pending}
+            canceled={stats.canceled}
           />
 
           <AdminReservationList
             loading={loading}
             error={error}
-            reservations={filteredReservations}
+            reservations={reservations}
             selectedReservation={selectedReservation}
             setSelectedReservation={setSelectedReservation}
             usersById={usersById}
@@ -322,25 +316,27 @@ export const Reservations = () => {
           />
         </section>
 
-        <AdminReservationDetail 
+        {/* Detalle */}
+        <AdminReservationDetail
           selectedReservation={selectedReservation}
           usersById={usersById}
         />
-        
-        <AdminReservationModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          form={form}
-          setForm={setForm}
-          handleSubmit={handleSubmit}
-          saving={saving}
-          editingReservation={editingReservation}
-          users={users}
-          restaurants={restaurants}
-          tables={tables}
-          toggleTableSelection={toggleTableSelection}
-        />
       </div>
-    </section>
+
+      {/* Modal */}
+      <AdminReservationModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        form={form}
+        setForm={setForm}
+        handleSubmit={handleSubmit}
+        saving={saving}
+        editingReservation={editingReservation}
+        users={users}
+        restaurants={restaurants}
+        tables={tables}
+        toggleTableSelection={toggleTableSelection}
+      />
+    </div>
   )
 }

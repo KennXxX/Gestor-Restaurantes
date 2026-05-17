@@ -17,6 +17,7 @@ import { buildUserResponse } from '../../utils/user-helpers.js';
 import { sequelize } from '../../configs/db.js';
 import { validateCreateAdminRestaurant } from '../../middlewares/validation.js';
 import { hashPassword } from '../../utils/password-utils.js';
+import { sendRestaurantAssignmentEmail } from '../../helpers/email-service.js';
 
 const ensureAdmin = async (req) => {
   const currentUserId = req.userId;
@@ -232,6 +233,50 @@ export const deleteAccountController = [
       return res.status(status).json({
         success: false,
         message: error.message || 'Error al eliminar cuenta',
+      });
+    }
+  }),
+];
+
+export const sendAssignmentNotification = [
+  validateJWT,
+  asyncHandler(async (req, res) => {
+    if (!(await ensureAdmin(req))) {
+      return res.status(403).json({
+        success: false,
+        message: 'Acceso restringido solo para ADMIN_ROLE',
+      });
+    }
+
+    const { userId, restaurantName } = req.body;
+
+    if (!userId || !restaurantName) {
+      return res.status(400).json({
+        success: false,
+        message: 'userId y restaurantName son requeridos',
+      });
+    }
+
+    try {
+      const user = await findUserById(userId);
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'Usuario no encontrado',
+        });
+      }
+
+      await sendRestaurantAssignmentEmail(user.Email, user.Name, restaurantName);
+
+      return res.status(200).json({
+        success: true,
+        message: 'Email de asignación enviado exitosamente',
+      });
+    } catch (error) {
+      const status = error.status || 500;
+      return res.status(status).json({
+        success: false,
+        message: error.message || 'Error al enviar email de asignación',
       });
     }
   }),

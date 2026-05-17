@@ -1,249 +1,254 @@
 import { getUserId, getUserLabel } from '../../utils/reservationHelpers'
 
+const C = {
+  surface:     "#111827",
+  border:      "rgba(255,255,255,0.07)",
+  accent:      "#1d4ed8",
+  accentLight: "#3b82f6",
+  text:        "#f5f0e8",
+  textMuted:   "rgba(255,255,255,0.45)",
+}
+
+const inputStyle = {
+  width: "100%", padding: "12px 16px", borderRadius: "12px",
+  background: "rgba(255,255,255,0.05)", border: `1px solid ${C.border}`,
+  color: C.text, fontSize: "0.875rem", outline: "none",
+  boxSizing: "border-box"
+}
+
+const fieldLabel = {
+  fontSize: "0.75rem", fontWeight: 600, color: C.textMuted,
+  display: "block", marginBottom: "6px"
+}
+
 export const AdminReservationModal = ({
-  isOpen,
-  onClose,
-  form,
-  setForm,
-  handleSubmit,
-  saving,
-  editingReservation,
-  users,
-  restaurants,
-  tables,
-  toggleTableSelection,
+  isOpen, onClose, form, setForm, handleSubmit,
+  saving, editingReservation, users, restaurants, tables, toggleTableSelection,
 }) => {
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm transition-all">
-      <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-[24px] bg-white p-6 shadow-2xl">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="font-display text-2xl font-semibold text-slate-900">
-            {editingReservation ? '✏️ Editar reserva' : '📝 Crear reserva'}
+    <div style={{
+      position: "fixed", inset: 0, zIndex: 50,
+      display: "flex", alignItems: "center", justifyContent: "center",
+      background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)", padding: "16px"
+    }}>
+      <div style={{
+        position: "relative", width: "100%", maxWidth: "620px",
+        maxHeight: "90vh", overflowY: "auto",
+        background: C.surface, borderRadius: "24px",
+        border: `1px solid ${C.border}`,
+        boxShadow: "0 24px 60px rgba(0,0,0,0.5)"
+      }}>
+        {/* Header */}
+        <div style={{
+          position: "sticky", top: 0, zIndex: 10,
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          borderBottom: `1px solid ${C.border}`,
+          background: C.surface, padding: "20px 24px"
+        }}>
+          <h2 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 700, color: C.text }}>
+            {editingReservation ? 'Editar reserva' : 'Nueva reserva'}
           </h2>
           <button
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200"
+            style={{
+              background: "transparent", border: "none", cursor: "pointer",
+              padding: "8px", borderRadius: "8px", color: C.textMuted
+            }}
           >
-            ✕
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/>
+            </svg>
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="grid gap-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="text-sm font-semibold text-slate-700">
-              Usuario
+        {/* Form */}
+        <form onSubmit={handleSubmit} style={{ padding: "24px", display: "flex", flexDirection: "column", gap: "20px" }}>
+
+          {/* Usuario + Restaurante */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+            <div>
+              <label style={fieldLabel}>Usuario</label>
               <select
                 value={form.userId}
-                onChange={(e) => setForm((prev) => ({ ...prev, userId: e.target.value }))}
-                className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none"
+                onChange={e => setForm(prev => ({ ...prev, userId: e.target.value }))}
+                style={inputStyle}
               >
-                <option value="">Selecciona un usuario</option>
-                {users.map((user) => (
-                  <option key={getUserId(user)} value={getUserId(user)}>
+                <option value="" style={{ background: C.surface }}>Selecciona un usuario</option>
+                {users.map(user => (
+                  <option key={getUserId(user)} value={getUserId(user)} style={{ background: C.surface }}>
                     {getUserLabel(user)}
                   </option>
                 ))}
               </select>
-            </label>
-
-            <label className="text-sm font-semibold text-slate-700">
-              Restaurante
+            </div>
+            <div>
+              <label style={fieldLabel}>Restaurante</label>
               <select
                 value={form.restaurantId}
-                onChange={(e) => setForm((prev) => ({ ...prev, restaurantId: e.target.value, tableId: [] }))}
-                className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none"
+                onChange={e => setForm(prev => ({ ...prev, restaurantId: e.target.value, tableId: [] }))}
+                style={inputStyle}
               >
-                <option value="">Selecciona uno</option>
-                {restaurants.map((restaurant) => (
-                  <option key={restaurant._id} value={restaurant._id}>{restaurant.restaurantName}</option>
+                <option value="" style={{ background: C.surface }}>Selecciona uno</option>
+                {restaurants.map(r => (
+                  <option key={r._id} value={r._id} style={{ background: C.surface }}>{r.restaurantName}</option>
                 ))}
               </select>
-            </label>
+            </div>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="text-sm font-semibold text-slate-700">
-              Número de personas
+          {/* Personas + Tipo */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+            <div>
+              <label style={fieldLabel}>Número de personas</label>
               <input
-                type="number"
-                min="1"
+                type="number" min="1"
                 value={form.numberPeople}
-                onChange={(e) => setForm((prev) => ({ ...prev, numberPeople: e.target.value }))}
-                className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none"
+                onChange={e => setForm(prev => ({ ...prev, numberPeople: e.target.value }))}
+                style={inputStyle}
               />
-            </label>
-
-            <label className="text-sm font-semibold text-slate-700">
-              Tipo de reserva
+            </div>
+            <div>
+              <label style={fieldLabel}>Tipo de reserva</label>
               <select
                 value={form.typeReservation}
-                onChange={(e) => setForm((prev) => ({ ...prev, typeReservation: e.target.value }))}
-                className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none"
+                onChange={e => setForm(prev => ({ ...prev, typeReservation: e.target.value }))}
+                style={inputStyle}
               >
-                <option value="PERSONAL">Personal</option>
-                <option value="EVENTO">Evento</option>
+                <option value="PERSONAL" style={{ background: C.surface }}>Personal</option>
+                <option value="EVENTO"   style={{ background: C.surface }}>Evento</option>
               </select>
-            </label>
+            </div>
           </div>
 
+          {/* Mesas */}
           <div>
-            <p className="text-sm font-semibold text-slate-700">Mesas disponibles</p>
-            <div className="mt-2 mb-2 flex items-center justify-between gap-3">
-              <div className="text-sm text-slate-600">
-                <span className="font-medium">Capacidad seleccionada: </span>
-                {tables.filter(t => form.tableId.includes(t._id)).reduce((s, t) => s + Number(t.tableCapacity || 0), 0)}
-                <span className="text-slate-400"> / {form.numberPeople || 0}</span>
+            <label style={fieldLabel}>Mesas disponibles</label>
+            {tables.length === 0 ? (
+              <p style={{ fontSize: "0.78rem", color: C.textMuted, fontStyle: "italic", margin: 0 }}>
+                Selecciona un restaurante para ver las mesas.
+              </p>
+            ) : (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px,1fr))", gap: "8px" }}>
+                {tables.map(table => {
+                  const tableId = table._id
+                  const checked  = form.tableId.includes(tableId)
+                  const disabled = Number(table.tableCapacity || 0) < Number(form.numberPeople || 1)
+                  return (
+                    <label
+                      key={tableId}
+                      style={{
+                        display: "flex", alignItems: "center", gap: "8px",
+                        padding: "10px 12px", borderRadius: "10px", cursor: disabled ? "not-allowed" : "pointer",
+                        border: `1px solid ${checked ? C.accentLight : C.border}`,
+                        background: checked ? "rgba(59,130,246,0.1)" : "rgba(255,255,255,0.03)",
+                        opacity: disabled ? 0.4 : 1, transition: "all 0.15s"
+                      }}
+                    >
+                      <input
+                        type="checkbox" checked={checked} disabled={disabled}
+                        onChange={() => toggleTableSelection(tableId)}
+                        style={{ accentColor: C.accentLight }}
+                      />
+                      <span>
+                        <span style={{ fontSize: "0.8rem", fontWeight: 600, color: C.text, display: "block" }}>
+                          {table.tableName || table.tableNumber || `Mesa ${tableId.slice(-4)}`}
+                        </span>
+                        <span style={{ fontSize: "0.68rem", color: C.textMuted }}>
+                          Cap. {table.tableCapacity || 0}
+                        </span>
+                      </span>
+                    </label>
+                  )
+                })}
               </div>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    // sugerir combinacion: elegir mesas grandes primero hasta cubrir numberPeople
-                    const need = Number(form.numberPeople || 0)
-                    if (!need) return
-                    const available = tables.slice().sort((a,b) => Number(b.tableCapacity || 0) - Number(a.tableCapacity || 0))
-                    const pick = []
-                    let sum = 0
-                    for (const t of available) {
-                      if (sum >= need) break
-                      pick.push(t._id)
-                      sum += Number(t.tableCapacity || 0)
-                    }
-                    if (sum < need) {
-                      // no alcanza
-                      alert(`No hay combinación de mesas que cubra ${need} personas.`)
-                      return
-                    }
-                    // aplicar seleccion
-                    setForm(prev => ({ ...prev, tableId: pick }))
-                  }}
-                  className="rounded-full border px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-                >
-                  Sugerir combinación
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setForm(prev => ({ ...prev, tableId: [] }))}
-                  className="rounded-full border px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-                >
-                  Limpiar
-                </button>
-              </div>
+            )}
+          </div>
+
+          {/* Fechas */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+            <div>
+              <label style={fieldLabel}>Inicio</label>
+              <input
+                type="datetime-local" value={form.startDate}
+                onChange={e => setForm(prev => ({ ...prev, startDate: e.target.value }))}
+                style={{ ...inputStyle, colorScheme: "dark" }}
+              />
             </div>
-
-            {/* Mensaje si la capacidad total de las mesas no alcanza */}
-            {tables.length > 0 && (() => {
-              const totalCapacity = tables.reduce((s, t) => s + Number(t.tableCapacity || 0), 0)
-              const need = Number(form.numberPeople || 0)
-              if (totalCapacity < need) {
-                return (
-                  <div className="mt-2 rounded-xl border border-rose-100 bg-rose-50 px-3 py-2 text-sm text-rose-700">
-                    No existe combinación de mesas que cubra <strong>{need}</strong> personas. Capacidad total disponible: <strong>{totalCapacity}</strong>.
-                  </div>
-                )
-              }
-              return null
-            })()}
-
-            <div className="mt-2 grid gap-2 sm:grid-cols-3">
-              {tables.length === 0 && (
-                <p className="col-span-3 text-xs text-slate-500 italic">Selecciona un restaurante para ver las mesas.</p>
-              )}
-              {tables.map((table) => {
-                const tableId = table._id
-                const checked = form.tableId.includes(tableId)
-                // permitimos seleccionar cualquier mesa; la validación de capacidad es combinada en backend
-
-                return (
-                  <label
-                    key={tableId}
-                    className={`rounded-xl border px-3 py-2 text-sm transition-colors ${checked ? 'border-sky-400 bg-sky-50' : 'border-slate-200 hover:border-sky-200'} cursor-pointer`}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      onChange={() => toggleTableSelection(tableId)}
-                      className="mr-2"
-                    />
-                    <span className="inline-flex items-center gap-1.5">
-                      <span className="font-medium">{table.tableNumber || table.tableName || `Mesa ${tableId.slice(-4)}`}</span>
-                      <span className="text-xs text-slate-500">(Cap. {table.tableCapacity || 0})</span>
-                    </span>
-                  </label>
-                )
-              })}
+            <div>
+              <label style={fieldLabel}>Fin</label>
+              <input
+                type="datetime-local" value={form.endDate}
+                onChange={e => setForm(prev => ({ ...prev, endDate: e.target.value }))}
+                style={{ ...inputStyle, colorScheme: "dark" }}
+              />
             </div>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="text-sm font-semibold text-slate-700">
-              Inicio
-              <input
-                type="datetime-local"
-                value={form.startDate}
-                onChange={(e) => setForm((prev) => ({ ...prev, startDate: e.target.value }))}
-                className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none"
-              />
-            </label>
-
-            <label className="text-sm font-semibold text-slate-700">
-              Fin
-              <input
-                type="datetime-local"
-                value={form.endDate}
-                onChange={(e) => setForm((prev) => ({ ...prev, endDate: e.target.value }))}
-                className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none"
-              />
-            </label>
-          </div>
-
-          <label className="text-sm font-semibold text-slate-700">
-            Descripción
+          {/* Descripción */}
+          <div>
+            <label style={fieldLabel}>Descripción</label>
             <textarea
               value={form.description}
-              onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
-              className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none resize-none"
-              rows={2}
-              placeholder="Ejemplo: cumpleaños, aniversario, reunión..."
+              onChange={e => setForm(prev => ({ ...prev, description: e.target.value }))}
+              rows={2} placeholder="Ej: cumpleaños, aniversario, reunión..."
+              style={{ ...inputStyle, resize: "none" }}
             />
-          </label>
+          </div>
 
-          <label className="text-sm font-semibold text-slate-700">
-            Cupón de descuento (opcional)
+          {/* Cupón */}
+          <div>
+            <label style={fieldLabel}>Cupón de descuento (opcional)</label>
             <input
               value={form.coupon}
-              onChange={(e) => setForm((prev) => ({ ...prev, coupon: e.target.value }))}
-              className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none"
+              onChange={e => setForm(prev => ({ ...prev, coupon: e.target.value }))}
               placeholder="Ej: FIESTA20"
+              style={inputStyle}
             />
-          </label>
+          </div>
 
-          <label className="text-sm font-semibold text-slate-700">
-            Foto (opcional)
+          {/* Foto */}
+          <div>
+            <label style={fieldLabel}>Foto (opcional)</label>
             <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => setForm((prev) => ({ ...prev, photo: e.target.files?.[0] || null }))}
-              className="mt-1.5 w-full rounded-xl border border-dashed border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-500"
+              type="file" accept="image/*"
+              onChange={e => setForm(prev => ({ ...prev, photo: e.target.files?.[0] || null }))}
+              style={{
+                ...inputStyle,
+                padding: "10px 14px",
+                border: `1px dashed ${C.border}`,
+                color: C.textMuted
+              }}
             />
-          </label>
+          </div>
 
-          <div className="mt-4 flex justify-end gap-3 border-t border-slate-100 pt-4">
-            <button type="button" onClick={onClose} className="rounded-xl border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50">
+          {/* Botones */}
+          <div style={{
+            display: "flex", gap: "12px", marginTop: "8px",
+            paddingTop: "16px", borderTop: `1px solid ${C.border}`
+          }}>
+            <button
+              type="submit" disabled={saving}
+              style={{
+                flex: 1, padding: "14px 20px", borderRadius: "14px",
+                background: `linear-gradient(135deg, ${C.accent}, ${C.accentLight})`,
+                border: "none", color: "white", fontWeight: 700,
+                fontSize: "0.875rem", cursor: "pointer", opacity: saving ? 0.6 : 1
+              }}
+            >
+              {saving ? 'Guardando...' : editingReservation ? 'Actualizar reserva' : 'Crear reserva'}
+            </button>
+            <button
+              type="button" onClick={onClose}
+              style={{
+                padding: "14px 20px", borderRadius: "14px",
+                background: "rgba(255,255,255,0.05)", border: `1px solid ${C.border}`,
+                color: C.textMuted, fontWeight: 600, fontSize: "0.875rem", cursor: "pointer"
+              }}
+            >
               Cancelar
             </button>
-            {(() => {
-              const totalCapacity = tables.reduce((s, t) => s + Number(t.tableCapacity || 0), 0)
-              const need = Number(form.numberPeople || 0)
-              const insufficient = tables.length > 0 && totalCapacity < need
-              return (
-                <button type="submit" disabled={saving || insufficient} className="rounded-xl bg-sky-600 px-6 py-2.5 text-sm font-bold text-white shadow-md hover:bg-sky-500 disabled:opacity-50">
-                  {saving ? 'Guardando...' : editingReservation ? 'Actualizar reserva' : 'Crear reserva'}
-                </button>
-              )
-            })()}
           </div>
         </form>
       </div>

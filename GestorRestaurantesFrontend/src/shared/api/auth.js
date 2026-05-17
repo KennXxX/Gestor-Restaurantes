@@ -27,3 +27,8 @@ export const forgotPassword = async (email) => {
 export const resetPassword = async (token, newPassword) => {
   return axiosAuth.post('/auth/reset-password', { token, newPassword })
 }
+
+export const getAllUsersWithAuthService = async () => {
+  const { data } = await axiosAuth.get('/users/all')
+  return data
+}

@@ -1,7 +1,7 @@
 import { axiosApi } from './api'
 
-export const getMenus = async () => {
-  return axiosApi.get('/menus')
+export const getMenus = async (params = {}) => {
+  return axiosApi.get('/menus', { params })
 }
 
 export const getMenuById = async (id) => {

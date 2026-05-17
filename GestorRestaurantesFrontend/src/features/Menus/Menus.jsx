@@ -1,10 +1,41 @@
-import { useEffect, useMemo, useState } from 'react'
+﻿import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getRestaurants } from '../../shared/api/restaurants'
 import { getMenus, createMenu, updateMenu, deleteMenu } from '../../shared/api/menus'
 import { getInventories, createInventory, updateInventory } from '../../shared/api/inventory'
 import { showError, showSuccess } from '../../shared/utils/toast'
 import { FilterBar } from '../../shared/components/ui/FilterBar'
+
+// Design tokens (mismo estilo que el dashboard)
+const C = {
+  bg: "#0c0f18",
+  surface: "#111827",
+  surfaceHover: "#161d2e",
+  border: "rgba(255,255,255,0.07)",
+  borderAccent: "rgba(59,130,246,0.25)",
+  accent: "#1d4ed8",
+  accentLight: "#3b82f6",
+  accentDim: "rgba(59,130,246,0.7)",
+  text: "#f5f0e8",
+  textMuted: "rgba(255,255,255,0.45)",
+  textDim: "rgba(255,255,255,0.25)",
+}
+
+const card = {
+  background: C.surface,
+  border: `1px solid ${C.border}`,
+  borderRadius: "16px",
+  padding: "20px",
+}
+
+const label = {
+  fontSize: "0.6rem",
+  fontWeight: 700,
+  letterSpacing: "0.18em",
+  textTransform: "uppercase",
+  color: C.accentDim,
+  margin: "0 0 6px",
+}
 
 const emptyForm = {
   menuName: '',
@@ -161,12 +192,10 @@ export const Menus = () => {
       if (editing) {
         await updateMenu(editing._id, menuPayload)
         
-        // Update Inventory Stock
         const menuInventory = inventories.find(inv => inv.menuId === editing._id)
         if (menuInventory) {
           await updateInventory(menuInventory._id, { quantity: inventoryPayload.quantity })
         } else {
-          // If no inventory exists for this menu, create one
           await createInventory(inventoryPayload)
         }
         
@@ -175,7 +204,6 @@ export const Menus = () => {
         const createdMenuRes = await createMenu(menuPayload)
         const createdMenuId = createdMenuRes.data?.menu?._id
         
-        // Create Initial Inventory
         if (createdMenuId) {
            await createInventory({
              menuId: createdMenuId,
@@ -207,81 +235,170 @@ export const Menus = () => {
   }
 
   return (
-    <section className="space-y-6 font-body">
-      <header className="relative overflow-hidden rounded-[30px] border border-orange-200 bg-[radial-gradient(circle_at_top_right,_rgba(234,88,12,0.15),_transparent_60%),linear-gradient(120deg,_#fff7ed_0%,_#ffedd5_50%,_#fed7aa_100%)] p-8 shadow-sm">
-        <div className="absolute -bottom-10 right-10 h-32 w-32 rounded-full bg-orange-300/40 blur-3xl" />
-        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-3xl">
-            <p className="inline-flex rounded-full bg-orange-700 px-4 py-1 text-xs font-semibold uppercase tracking-[0.32em] text-orange-50">
-              Menús
-            </p>
-            <h1 className="font-display mt-4 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
-              Gestión de platillos
-            </h1>
-            <p className="mt-3 text-sm text-slate-700 sm:text-base">
-              Crea y administra los platillos, asocia ingredientes simulados del inventario y define categorías y precios.
-            </p>
-          </div>
+    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+      <style>{`
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(12px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes shimmer {
+          0% { background-position: -200% center; }
+          100% { background-position: 200% center; }
+        }
+      `}</style>
+
+      {/* Hero Banner */}
+      <section style={{
+        position: "relative", overflow: "hidden", borderRadius: "20px",
+        background: "linear-gradient(135deg, #0d1526 0%, #111c30 50%, #0e1a28 100%)",
+        border: `1px solid ${C.borderAccent}`,
+        padding: "32px 36px",
+        animation: "fadeUp 0.4s ease both",
+        boxShadow: "0 0 0 1px rgba(59,130,246,0.06), 0 24px 60px rgba(0,0,0,0.5)",
+      }}>
+        <div style={{
+          position: "absolute", top: 0, left: 0, right: 0, height: "2px",
+          background: "linear-gradient(90deg, transparent, #1d4ed8, #3b82f6, #1d4ed8, transparent)",
+        }} />
+        <div style={{ position: "absolute", right: "-60px", top: "-20px", width: "220px", height: "220px", borderRadius: "50%", background: "radial-gradient(circle, rgba(59,130,246,0.2), transparent 70%)", pointerEvents: "none" }} />
+        
+        <div style={{ position: "relative" }}>
+          <p style={{ ...label, marginBottom: "8px" }}>Gestión de platillos</p>
+          <h1 style={{ margin: "0 0 12px", fontSize: "2.2rem", fontWeight: 800, color: C.text, letterSpacing: "-0.04em", lineHeight: 1.1 }}>
+            Catálogo de <span style={{
+              background: "linear-gradient(90deg, #1d4ed8, #3b82f6, #1d4ed8)",
+              backgroundSize: "200% auto",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              animation: "shimmer 3s linear infinite",
+            }}>menús</span>
+          </h1>
+          <p style={{ margin: 0, fontSize: "0.88rem", color: "rgba(255,255,255,0.5)", maxWidth: "500px", lineHeight: 1.6 }}>
+            Crea y administra los platillos, asocia ingredientes simulados del inventario y define categorías y precios.
+          </p>
         </div>
-      </header>
+      </section>
 
-      <div className="grid gap-6 xl:grid-cols-[1.4fr_1fr]">
-        <section className="rounded-[26px] border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="font-display text-xl font-semibold text-slate-900 border-b border-slate-100 pb-5">Listado de platillos</h2>
-          
-          <div className="mt-5 grid gap-4 sm:grid-cols-3">
-            <div className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
-              <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Total</p>
-              <p className="mt-2 text-2xl font-semibold text-slate-900">{stats.total}</p>
+      {/* Main Grid */}
+      <div style={{ display: "grid", gap: "24px", gridTemplateColumns: "1.55fr 1fr" }}>
+        {/* Left Column - Menu List */}
+        <section style={{ ...card, animation: "fadeUp 0.4s ease both", animationDelay: "0.1s" }}>
+          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "20px" }}>
+            <div>
+              <p style={label}>Listado de platillos</p>
+              <h2 style={{ fontSize: "1.25rem", fontWeight: 700, color: C.text, margin: 0, letterSpacing: "-0.02em" }}>
+                Todos los platillos
+              </h2>
             </div>
-            <div className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
-              <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Activos</p>
-              <p className="mt-2 text-2xl font-semibold text-slate-900">{stats.active}</p>
+            <div style={{ display: "flex", gap: "8px" }}>
+              <span style={{ padding: "4px 12px", borderRadius: "100px", background: "rgba(59,130,246,0.1)", border: `1px solid ${C.borderAccent}`, fontSize: "0.7rem", color: C.accentDim }}>
+                Total: {stats.total}
+              </span>
+            </div>
+          </div>
+          
+          {/* Stats Cards */}
+          <div style={{ display: "grid", gap: "12px", gridTemplateColumns: "repeat(2, 1fr)", marginBottom: "20px" }}>
+            <div style={{ padding: "12px 16px", borderRadius: "12px", background: "rgba(255,255,255,0.03)", border: `1px solid ${C.border}` }}>
+              <p style={{ margin: "0 0 2px", fontSize: "0.6rem", fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: C.textDim }}>Activos</p>
+              <p style={{ margin: 0, fontSize: "1.5rem", fontWeight: 800, color: "#22c55e", letterSpacing: "-0.03em" }}>{stats.active}</p>
+            </div>
+            <div style={{ padding: "12px 16px", borderRadius: "12px", background: "rgba(255,255,255,0.03)", border: `1px solid ${C.border}` }}>
+              <p style={{ margin: "0 0 2px", fontSize: "0.6rem", fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: C.textDim }}>Inactivos</p>
+              <p style={{ margin: 0, fontSize: "1.5rem", fontWeight: 800, color: C.textMuted, letterSpacing: "-0.03em" }}>{stats.inactive}</p>
             </div>
           </div>
 
-          <FilterBar
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-            searchPlaceholder="Buscar por nombre, categoría o precio..."
-            hideDateFilters={true}
-          />
+          {/* FilterBar */}
+          <div style={{ marginBottom: "20px" }}>
+            <FilterBar
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              searchPlaceholder="Buscar por nombre, categoría o precio..."
+              hideDateFilters={true}
+            />
+          </div>
 
-          <div className="mt-6 space-y-4">
-            {loading && <p className="text-center text-sm text-slate-500 py-6">Cargando menús...</p>}
-            {!loading && error && <p className="text-center text-sm text-rose-500 py-6">{error}</p>}
+          {/* Menu List */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+            {loading && (
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "40px", gap: "12px" }}>
+                <div style={{
+                  width: "24px", height: "24px", borderRadius: "50%",
+                  border: `2px solid ${C.border}`, borderTopColor: C.accentLight,
+                  animation: "spin 0.8s linear infinite"
+                }} />
+                <p style={{ color: C.textMuted, fontSize: "0.85rem", margin: 0 }}>Cargando menús...</p>
+              </div>
+            )}
+            
+            {!loading && error && (
+              <div style={{ padding: "16px", borderRadius: "12px", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", color: "#f87171", fontSize: "0.875rem" }}>
+                {error}
+              </div>
+            )}
+            
             {!loading && !error && filteredMenus.length === 0 && (
-              <p className="text-center text-sm text-slate-500 py-6">No hay platillos que coincidan con la búsqueda.</p>
+              <div style={{ padding: "40px", textAlign: "center", borderRadius: "12px", background: "rgba(255,255,255,0.02)", border: `1px dashed ${C.border}` }}>
+                <p style={{ margin: 0, fontSize: "0.85rem", color: C.textMuted }}>No hay platillos que coincidan con la búsqueda.</p>
+              </div>
             )}
 
             {!loading && filteredMenus.length > 0 && (
-              <div className="grid gap-4">
+              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                 {filteredMenus.map(menu => {
                   const menuStock = inventories.find(inv => inv.menuId === menu._id)?.quantity || 0
                   
                   return (
-                    <article key={menu._id} className="rounded-[26px] border border-slate-100 p-5 shadow-sm transition hover:shadow-md flex flex-col sm:flex-row gap-4 items-start">
+                    <article key={menu._id} style={{
+                      padding: "16px", borderRadius: "16px",
+                      background: "rgba(255,255,255,0.03)", border: `1px solid ${C.border}`,
+                      transition: "all 0.2s ease", display: "flex", gap: "16px",
+                      alignItems: "flex-start"
+                    }}>
                       {menu.menuPhoto ? (
-                        <img src={menu.menuPhoto} alt={menu.menuName} className="h-20 w-20 rounded-xl object-cover bg-slate-100" />
+                        <img src={menu.menuPhoto} alt={menu.menuName} style={{ width: "64px", height: "64px", borderRadius: "12px", objectFit: "cover", background: "rgba(255,255,255,0.05)" }} />
                       ) : (
-                        <div className="h-20 w-20 rounded-xl bg-orange-100 text-orange-700 flex items-center justify-center font-bold text-xl">
+                        <div style={{ width: "64px", height: "64px", borderRadius: "12px", background: "rgba(59,130,246,0.1)", border: `1px solid ${C.borderAccent}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.5rem", fontWeight: 700, color: C.accentLight }}>
                           {menu.menuName.charAt(0)}
                         </div>
                       )}
-                      <div className="flex-1">
-                        <div className="flex justify-between items-start">
-                          <h3 className="font-semibold text-lg">{menu.menuName}</h3>
-                          <span className="font-bold text-emerald-600">Q{menu.menuPrice}</span>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "4px" }}>
+                          <h3 style={{ margin: 0, fontSize: "0.95rem", fontWeight: 700, color: C.text }}>{menu.menuName}</h3>
+                          <span style={{ fontSize: "0.9rem", fontWeight: 800, color: "#22c55e" }}>Q{menu.menuPrice}</span>
                         </div>
-                        <p className="text-sm text-slate-500 mt-1">{menu.menuCategory}</p>
-                        <p className="text-sm font-medium mt-1">
-                           Stock: <span className={menuStock > 0 ? "text-emerald-600" : "text-rose-500"}>{menuStock} {menuStock === 1 ? 'unidad' : 'unidades'}</span>
+                        <p style={{ margin: "0 0 4px", fontSize: "0.7rem", fontWeight: 500, color: C.accentDim }}>{menu.menuCategory}</p>
+                        <p style={{ margin: "0 0 8px", fontSize: "0.7rem", color: C.textMuted }}>
+                          Stock: <span style={{ color: menuStock > 0 ? "#4ade80" : "#f87171", fontWeight: 600 }}>{menuStock} {menuStock === 1 ? 'unidad' : 'unidades'}</span>
                         </p>
-                        <p className="text-sm text-slate-600 mt-2">{menu.menuDescription}</p>
+                        <p style={{ margin: "0 0 12px", fontSize: "0.75rem", color: C.textMuted, lineHeight: 1.4 }}>{menu.menuDescription}</p>
                         
-                        <div className="mt-4 flex gap-2">
-                          <button onClick={() => handleEdit(menu)} className="px-4 py-1.5 text-xs font-semibold rounded-full border border-slate-200 text-slate-600 hover:bg-slate-50">Editar</button>
-                          <button onClick={() => handleDelete(menu)} className="px-4 py-1.5 text-xs font-semibold rounded-full border border-rose-200 text-rose-600 bg-rose-50 hover:bg-rose-100">Eliminar</button>
+                        <div style={{ display: "flex", gap: "8px" }}>
+                          <button 
+                            onClick={() => handleEdit(menu)} 
+                            style={{
+                              padding: "6px 14px", borderRadius: "100px", fontSize: "0.7rem", fontWeight: 600,
+                              background: "rgba(255,255,255,0.05)", border: `1px solid ${C.border}`,
+                              color: C.textMuted, cursor: "pointer", transition: "all 0.2s ease"
+                            }}
+                            onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.1)"; e.currentTarget.style.color = C.text }}
+                            onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.color = C.textMuted }}
+                          >
+                            Editar
+                          </button>
+                          <button 
+                            onClick={() => handleDelete(menu)} 
+                            style={{
+                              padding: "6px 14px", borderRadius: "100px", fontSize: "0.7rem", fontWeight: 600,
+                              background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)",
+                              color: "#f87171", cursor: "pointer", transition: "all 0.2s ease"
+                            }}
+                            onMouseEnter={e => { e.currentTarget.style.background = "rgba(239,68,68,0.2)" }}
+                            onMouseLeave={e => { e.currentTarget.style.background = "rgba(239,68,68,0.1)" }}
+                          >
+                            Eliminar
+                          </button>
                         </div>
                       </div>
                     </article>
@@ -292,69 +409,165 @@ export const Menus = () => {
           </div>
         </section>
 
-        <aside className="space-y-6">
-          <section className="rounded-[26px] border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="font-display text-xl font-semibold text-slate-900 mb-6">
-              {editing ? 'Editar platillo' : 'Nuevo platillo'}
+        {/* Right Column - Form */}
+        <aside style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+          <section style={{ ...card, animation: "fadeUp 0.4s ease both", animationDelay: "0.16s" }}>
+            <p style={label}>{editing ? 'Editar platillo' : 'Nuevo platillo'}</p>
+            <h2 style={{ fontSize: "1.25rem", fontWeight: 700, color: C.text, margin: "0 0 20px", letterSpacing: "-0.02em" }}>
+              {editing ? 'Editar platillo' : 'Crear nuevo platillo'}
             </h2>
 
-            <form onSubmit={handleSubmit} className="grid gap-4">
-              <label className="text-sm font-semibold text-slate-700">
-                Nombre del platillo
-                <input name="menuName" value={form.menuName} onChange={handleInputChange} className="mt-2 w-full rounded-2xl border px-4 py-3 text-sm" required />
-              </label>
-
-              <div className="grid grid-cols-2 gap-4">
-                <label className="text-sm font-semibold text-slate-700">
-                  Precio (Q)
-                  <input type="number" name="menuPrice" value={form.menuPrice} onChange={handleInputChange} className="mt-2 w-full rounded-2xl border px-4 py-3 text-sm" required />
-                </label>
-                <label className="text-sm font-semibold text-slate-700">
-                  Categoría
-                  <select name="menuCategory" value={form.menuCategory} onChange={handleInputChange} className="mt-2 w-full rounded-2xl border px-4 py-3 text-sm">
-                    <option value="ENTRADA">Entrada</option>
-                    <option value="PLATO_FUERTE">Plato Fuerte</option>
-                    <option value="POSTRE">Postre</option>
-                    <option value="BEBIDA">Bebida</option>
-                  </select>
-                </label>
+            <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                <label style={{ fontSize: "0.75rem", fontWeight: 600, color: C.textMuted }}>Nombre del platillo *</label>
+                <input 
+                  name="menuName" 
+                  value={form.menuName} 
+                  onChange={handleInputChange}
+                  style={{
+                    padding: "12px 16px", borderRadius: "12px",
+                    background: "rgba(255,255,255,0.05)", border: `1px solid ${C.border}`,
+                    color: C.text, fontSize: "0.875rem", outline: "none"
+                  }}
+                  onFocus={e => e.currentTarget.style.borderColor = C.accentLight}
+                  onBlur={e => e.currentTarget.style.borderColor = C.border}
+                  required 
+                />
               </div>
 
-              <label className="text-sm font-semibold text-slate-700">
-                Restaurante
-                <select name="restaurantId" value={form.restaurantId} onChange={handleInputChange} className="mt-2 w-full rounded-2xl border px-4 py-3 text-sm" required>
-                  <option value="">Selecciona uno</option>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                  <label style={{ fontSize: "0.75rem", fontWeight: 600, color: C.textMuted }}>Precio (Q) *</label>
+                  <input 
+                    type="number" 
+                    name="menuPrice" 
+                    value={form.menuPrice} 
+                    onChange={handleInputChange}
+                    style={{
+                      padding: "12px 16px", borderRadius: "12px",
+                      background: "rgba(255,255,255,0.05)", border: `1px solid ${C.border}`,
+                      color: C.text, fontSize: "0.875rem", outline: "none"
+                    }}
+                    onFocus={e => e.currentTarget.style.borderColor = C.accentLight}
+                    onBlur={e => e.currentTarget.style.borderColor = C.border}
+                    required 
+                  />
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                  <label style={{ fontSize: "0.75rem", fontWeight: 600, color: C.textMuted }}>Categoría</label>
+                  <select 
+                    name="menuCategory" 
+                    value={form.menuCategory} 
+                    onChange={handleInputChange}
+                    style={{
+                      padding: "12px 16px", borderRadius: "12px",
+                      background: "rgba(255,255,255,0.05)", border: `1px solid ${C.border}`,
+                      color: C.text, fontSize: "0.875rem", outline: "none", cursor: "pointer"
+                    }}
+                  >
+                    <option value="ENTRADA" style={{ background: C.surface }}>Entrada</option>
+                    <option value="PLATO_FUERTE" style={{ background: C.surface }}>Plato Fuerte</option>
+                    <option value="POSTRE" style={{ background: C.surface }}>Postre</option>
+                    <option value="BEBIDA" style={{ background: C.surface }}>Bebida</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                <label style={{ fontSize: "0.75rem", fontWeight: 600, color: C.textMuted }}>Restaurante *</label>
+                <select 
+                  name="restaurantId" 
+                  value={form.restaurantId} 
+                  onChange={handleInputChange}
+                  style={{
+                    padding: "12px 16px", borderRadius: "12px",
+                    background: "rgba(255,255,255,0.05)", border: `1px solid ${C.border}`,
+                    color: C.text, fontSize: "0.875rem", outline: "none", cursor: "pointer"
+                  }}
+                  required
+                >
+                  <option value="" style={{ background: C.surface }}>Selecciona uno</option>
                   {restaurants.map(r => (
-                    <option key={r._id} value={r._id}>{r.restaurantName}</option>
+                    <option key={r._id} value={r._id} style={{ background: C.surface }}>{r.restaurantName}</option>
                   ))}
                 </select>
-              </label>
+              </div>
 
-              <label className="text-sm font-semibold text-slate-700">
-                Stock (Cantidad disponible)
-                <input type="number" min="0" name="stockQuantity" value={form.stockQuantity} onChange={handleInputChange} placeholder="0" className="mt-2 w-full rounded-2xl border px-4 py-3 text-sm" />
-                <span className="text-xs text-slate-400 font-normal mt-1 block">La cantidad se actualizará directamente en el inventario.</span>
-              </label>
+              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                <label style={{ fontSize: "0.75rem", fontWeight: 600, color: C.textMuted }}>Stock (Cantidad disponible)</label>
+                <input 
+                  type="number" 
+                  min="0" 
+                  name="stockQuantity" 
+                  value={form.stockQuantity} 
+                  onChange={handleInputChange} 
+                  placeholder="0"
+                  style={{
+                    padding: "12px 16px", borderRadius: "12px",
+                    background: "rgba(255,255,255,0.05)", border: `1px solid ${C.border}`,
+                    color: C.text, fontSize: "0.875rem", outline: "none"
+                  }}
+                  onFocus={e => e.currentTarget.style.borderColor = C.accentLight}
+                  onBlur={e => e.currentTarget.style.borderColor = C.border}
+                />
+                <span style={{ fontSize: "0.7rem", color: C.textDim }}>La cantidad se actualizará directamente en el inventario.</span>
+              </div>
 
-              <label className="text-sm font-semibold text-slate-700">
-                Foto del platillo
-                <input type="file" accept="image/*" onChange={handleInputChange} className="mt-2 w-full rounded-2xl border px-4 py-3 text-sm" />
-              </label>
+              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                <label style={{ fontSize: "0.75rem", fontWeight: 600, color: C.textMuted }}>Foto del platillo</label>
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={handleInputChange}
+                  style={{
+                    padding: "8px 12px", borderRadius: "12px",
+                    background: "rgba(255,255,255,0.05)", border: `1px solid ${C.border}`,
+                    color: C.text, fontSize: "0.75rem"
+                  }}
+                />
+              </div>
               
-              {photoPreview && <img src={photoPreview} alt="Preview" className="h-32 w-full object-cover rounded-2xl border" />}
+              {photoPreview && (
+                <img src={photoPreview} alt="Preview" style={{ height: "128px", width: "100%", objectFit: "cover", borderRadius: "12px", border: `1px solid ${C.border}` }} />
+              )}
 
-              <div className="mt-4 flex gap-2">
-                <button type="submit" disabled={saving} className="flex-1 rounded-2xl bg-orange-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-orange-500 disabled:opacity-50">
+              <div style={{ display: "flex", gap: "12px", marginTop: "8px" }}>
+                <button 
+                  type="submit" 
+                  disabled={saving} 
+                  style={{
+                    flex: 1, padding: "14px 20px", borderRadius: "14px",
+                    background: `linear-gradient(135deg, ${C.accent}, ${C.accentLight})`,
+                    border: "none", color: "white", fontWeight: 700,
+                    fontSize: "0.875rem", cursor: "pointer", opacity: saving ? 0.6 : 1,
+                    transition: "all 0.2s ease"
+                  }}
+                  onMouseEnter={e => { if (!saving) { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(59,130,246,0.3)" } }}
+                  onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none" }}
+                >
                   {saving ? 'Guardando...' : 'Guardar'}
                 </button>
                 {editing && (
-                  <button type="button" onClick={resetForm} className="rounded-2xl border px-5 py-3 text-sm font-semibold hover:bg-slate-50">Cancelar</button>
+                  <button 
+                    type="button" 
+                    onClick={resetForm} 
+                    style={{
+                      padding: "14px 20px", borderRadius: "14px",
+                      background: "rgba(255,255,255,0.05)", border: `1px solid ${C.border}`,
+                      color: C.textMuted, fontWeight: 600, fontSize: "0.875rem",
+                      cursor: "pointer", transition: "all 0.2s ease"
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.1)"; e.currentTarget.style.color = C.text }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.color = C.textMuted }}
+                  >
+                    Cancelar
+                  </button>
                 )}
               </div>
             </form>
           </section>
         </aside>
       </div>
-    </section>
+    </div>
   )
 }

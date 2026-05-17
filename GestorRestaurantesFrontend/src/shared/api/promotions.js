@@ -1,7 +1,7 @@
 import { axiosApi } from './api'
 
-export const getActivePromotions = async () => {
-  return axiosApi.get('/promotions/active')
+export const getActivePromotions = async (params = {}) => {
+  return axiosApi.get('/promotions/active', { params })
 }
 
 export const getAllPromotions = async () => {

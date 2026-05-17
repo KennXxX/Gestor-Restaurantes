@@ -10,9 +10,17 @@ export const createInventory = async (req, res) => {
   }
 };
 
-export const getInventories = async (_, res) => {
-  const inventories = await Inventory.find();
-  res.json({ success: true, inventories });
+export const getInventories = async (req, res) => {
+  try {
+    const filter = {};
+    if (req.query.restaurantId) {
+      filter.restaurantId = req.query.restaurantId;
+    }
+    const inventories = await Inventory.find(filter).populate('menuId');
+    res.json({ success: true, inventories });
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
 };
 
 export const getInventoryById = async (req, res) => {
@@ -33,29 +41,49 @@ export const deleteInventory = async (req, res) => {
   res.json({ success: true, message: 'Eliminado' });
 };
 
-// helper para restar
+export const upsertInventory = async (req, res) => {
+  try {
+    const { menuId, restaurantId, quantity } = req.body
+    if (!menuId || !restaurantId) {
+      return res.status(400).json({ success: false, message: 'menuId y restaurantId son obligatorios' })
+    }
+    const inv = await Inventory.findOneAndUpdate(
+      { menuId, restaurantId },
+      { quantity: Number(quantity) || 0 },
+      { new: true, upsert: true }
+    )
+    res.json({ success: true, inventory: inv })
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message })
+  }
+}
+// helper para restar/sumar stock — usado por orders
 export const changeStock = async (menuId, restaurantId, delta) => {
-  const normalizedDelta = Number(delta) || 0;
-
-  if (normalizedDelta === 0) {
-    return Inventory.findOne({ menuId, restaurantId });
-  }
-
-  const query = { menuId, restaurantId };
-
-  if (normalizedDelta < 0) {
-    query.quantity = { $gte: Math.abs(normalizedDelta) };
-  }
-
-  const inv = await Inventory.findOneAndUpdate(
-    query,
-    { $inc: { quantity: normalizedDelta } },
-    { new: true, upsert: normalizedDelta > 0 }
+  // Buscar primero por menuId + restaurantId exacto
+  let inv = await Inventory.findOneAndUpdate(
+    { menuId, restaurantId },
+    { $inc: { quantity: delta } },
+    { new: true }
   );
 
+  // Si no existe ese par exacto, buscar solo por menuId (cualquier restaurante)
   if (!inv) {
-    throw new Error('Stock insuficiente');
+    inv = await Inventory.findOneAndUpdate(
+      { menuId },
+      { $inc: { quantity: delta } },
+      { new: true }
+    );
   }
 
+  // Si tampoco existe ningún registro del menú, crear desde 0
+  if (!inv) {
+    inv = await Inventory.findOneAndUpdate(
+      { menuId, restaurantId },
+      { $inc: { quantity: delta } },
+      { new: true, upsert: true }
+    );
+  }
+
+  if (inv.quantity < 0) throw new Error('Stock insuficiente');
   return inv;
 };

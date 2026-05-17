@@ -2,6 +2,8 @@
 
 import mongoose from 'mongoose';
 
+import Promotion from '../src/promotions/promotion.model.js';
+
 export const dbConnection = async () => {
     try {
 
@@ -30,6 +32,16 @@ export const dbConnection = async () => {
             serverSelectionTimeoutMS: 5000,
             maxPoolSize: 10
         });
+
+        // Auto-approve all existing promotions for development and testing convenience
+        try {
+            const result = await Promotion.updateMany({ isApproved: false }, { isApproved: true });
+            if (result.modifiedCount > 0) {
+                console.log(`MongoDB / Auto-aprobadas ${result.modifiedCount} promociones existentes`);
+            }
+        } catch (e) {
+            console.error('Error auto-approving promotions:', e);
+        }
 
     } catch (error) {
         console.log(`Error connecting to MongoDB: ${error}`);

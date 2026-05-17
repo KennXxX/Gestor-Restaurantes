@@ -35,6 +35,11 @@ const menuSchema = new mongoose.Schema(
             default: true
         },
 
+        menuAvailable: {
+            type: Boolean,
+            default: true
+        },
+
         restaurantId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Restaurant",

@@ -112,6 +112,39 @@ export const getRestaurantById = async (req, res) => {
     }
 };
 
+export const getMyRestaurant = async (req, res) => {
+    try {
+        const adminId = req.userId || req.user?.userId || req.user?.sub || req.user?.uid || req.user?.id || null;
+
+        if (!adminId) {
+            return res.status(401).json({
+                success: false,
+                message: "No se encontró identidad del usuario en el token"
+            });
+        }
+
+        const restaurant = await Restaurant.findOne({ adminId });
+
+        if (!restaurant) {
+            return res.status(404).json({
+                success: false,
+                message: "No tienes un restaurante asignado"
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: restaurant
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Error al obtener tu restaurante",
+            error: error.message
+        });
+    }
+};
+
 export const updateRestaurant = async (req, res) => {
     try {
         const { id } = req.params;
@@ -121,6 +154,17 @@ export const updateRestaurant = async (req, res) => {
                 success: false,
                 message: "El identificador del restaurante no es válido."
             });
+        }
+
+        // Si es administrador de restaurante, verificar propiedad
+        if (req.userRole === 'ADMIN_RESTAURANT' || req.userRole === 'ADMIN_RESTAURANTE') {
+            const restaurant = await Restaurant.findById(id);
+            if (!restaurant || String(restaurant.adminId) !== String(req.userId)) {
+                return res.status(403).json({
+                    success: false,
+                    message: "No tienes permisos para actualizar este restaurante."
+                });
+            }
         }
 
         const updatedRestaurant = await Restaurant.findByIdAndUpdate(id, req.body, {
@@ -202,5 +246,34 @@ export const deleteRestaurant = async (req, res) => {
             message: "Error al eliminar el restaurante",
             error: error.message
         });
+    }
+};
+
+export const assignAdmin = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { adminId } = req.body;
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ success: false, message: 'El ID del restaurante no es válido.' });
+        }
+
+        const restaurant = await Restaurant.findByIdAndUpdate(
+            id,
+            { adminId: adminId || null },
+            { new: true }
+        );
+
+        if (!restaurant) {
+            return res.status(404).json({ success: false, message: 'Restaurante no encontrado.' });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: adminId ? 'Administrador asignado correctamente.' : 'Administrador removido del restaurante.',
+            data: restaurant,
+        });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: 'Error al asignar administrador.', error: error.message });
     }
 };
