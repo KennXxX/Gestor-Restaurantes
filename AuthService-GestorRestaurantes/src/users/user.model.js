@@ -96,6 +96,11 @@ export const UserProfile = sequelize.define(
         isNumeric: { msg: 'El teléfono solo debe contener números.' },
       },
     },
+    Address: {
+      type: DataTypes.TEXT,
+      defaultValue: null,
+      field: 'address',
+    },
   },
   {
     tableName: 'user_profiles',

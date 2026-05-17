@@ -7,6 +7,7 @@ import { DashboardPage } from '../layouts/DashboardPage.jsx'
 import { ClientPage } from '../pages/ClientPage'
 import { ProtectedRoute } from './ProtectedRoute'
 import { RoleGuard } from './RoleGuard'
+import { LandingPage } from '../pages/LandingPage'
 import { Facturas } from '../../features/Facturas/Facturas'
 import { Estadisticas } from '../../features/Estadisticas/Estadisticas'
 import { Restaurantes } from '../../features/Restaurantes/Restaurantes'
@@ -20,7 +21,8 @@ import { Reservations } from '../../features/Reservations/Reservations'
 export const AppRoutes = () => {
   return (
     <Routes>
-      <Route path="/" element={<AuthPage />} />
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/auth" element={<AuthPage />} />
       <Route path="/verify-email" element={<VerifyEmailPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/unauthorized" element={<UnauthorizedPage />} />

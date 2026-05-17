@@ -83,11 +83,11 @@ export const useAuthStore = create(
         }
       },
 
-      register: async ({ name, email, password, phone }) => {
+      register: async (formData) => {
         try {
           set({ loading: true, error: null })
 
-          const { data } = await registerRequest({ name, email, password, phone })
+          const { data } = await registerRequest(formData)
 
           set({
             loading: false,
@@ -117,6 +117,12 @@ export const useAuthStore = create(
           loading: false,
           error: null,
           isLoadingAuth: false,
+        })
+      },
+
+      updateUser: (updatedUser) => {
+        set({
+          user: updatedUser,
         })
       },
     }),

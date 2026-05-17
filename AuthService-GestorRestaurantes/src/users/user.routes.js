@@ -4,6 +4,9 @@ import {
   getUserRoles,
   getUsersByRole,
   createAdminRestaurant,
+  updateProfile,
+  updatePasswordController,
+  deleteAccountController,
 } from './user.controller.js';
 
 import { validateJWT } from '../../middlewares/validate-JWT.js';
@@ -15,17 +18,17 @@ import { ADMIN_ROLE } from '../../helpers/role-constants.js';
 
 const router = Router();
 
+// PUT /api/v1/users/profile - Update user profile
+router.put('/profile', ...updateProfile);
+
+// POST /api/v1/users/change-password - Change password
+router.post('/change-password', ...updatePasswordController);
+
+// DELETE /api/v1/users/account - Delete account
+router.delete('/account', ...deleteAccountController);
+
 // POST /api/v1/users/admin-restaurant
 router.post('/admin-restaurant', ...createAdminRestaurant);
-
-// PUT /api/v1/users/:userId/role
-router.put('/:userId/role', ...updateUserRole);
-
-// GET /api/v1/users/:userId/roles
-router.get('/:userId/roles', ...getUserRoles);
-
-// GET /api/v1/users/by-role/:roleName
-router.get('/by-role/:roleName', ...getUsersByRole);
 
 // GET /api/v1/users/all
 router.get('/all', validateJWT, async (req, res) => {
@@ -51,5 +54,14 @@ router.get('/all', validateJWT, async (req, res) => {
 
   return res.status(200).json({ success: true, users });
 });
+
+// GET /api/v1/users/by-role/:roleName
+router.get('/by-role/:roleName', ...getUsersByRole);
+
+// PUT /api/v1/users/:userId/role
+router.put('/:userId/role', ...updateUserRole);
+
+// GET /api/v1/users/:userId/roles
+router.get('/:userId/roles', ...getUserRoles);
 
 export default router;
