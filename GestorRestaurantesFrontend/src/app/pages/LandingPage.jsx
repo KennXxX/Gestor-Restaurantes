@@ -101,12 +101,28 @@ export const LandingPage = () => {
               WELCOME
             </h1>
             <p className="mt-4 text-xl font-light sm:text-4xl">¡Doblemente Delicioso!</p>
+            <div className="mt-10">
+              <Link
+                to="/restaurantes"
+                className="inline-block rounded-full bg-red-600 px-8 py-4 text-lg font-bold text-white shadow-lg transition hover:scale-105 hover:bg-red-500"
+              >
+                Ver todos los restaurantes
+              </Link>
+            </div>
           </div>
         </main>
       </section>
 
       <section id="restaurantes" className="mx-auto max-w-7xl px-4 py-16 sm:px-8">
-        <h2 className="mb-10 text-3xl font-black text-zinc-900 sm:text-4xl">Nuestros Restaurantes</h2>
+        <div className="mb-10 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+          <h2 className="text-3xl font-black text-zinc-900 sm:text-4xl">Nuestros Restaurantes</h2>
+          <Link
+            to="/restaurantes"
+            className="inline-flex items-center gap-2 font-semibold text-red-600 transition hover:text-red-500"
+          >
+            Ver catálogo completo →
+          </Link>
+        </div>
 
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {restaurantTypes.map((restaurant) => (

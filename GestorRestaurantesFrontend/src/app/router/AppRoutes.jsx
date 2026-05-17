@@ -18,11 +18,13 @@ import { Resenas } from '../../features/Resenas/Resenas'
 import { Orders } from '../../features/Orders/Orders'
 import { Reservations } from '../../features/Reservations/Reservations'
 import { ClientesFrecuentes } from '../../features/ClientesFrecuentes/ClientesFrecuentes'
+import { PublicRestaurantsPage } from '../pages/PublicRestaurantsPage'
 
 export const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
+      <Route path="/restaurantes" element={<PublicRestaurantsPage />} />
       <Route path="/auth" element={<AuthPage />} />
       <Route path="/verify-email" element={<VerifyEmailPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
