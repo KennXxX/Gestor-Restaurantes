@@ -10,13 +10,16 @@ const createTransporter = () => {
     return null;
   }
 
+  const port = parseInt(process.env.SMTP_PORT, 10) || 587;
+  const isSecure = port === 465; // true para 465, false para 587
+
   return nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: 465,
-    secure: true, // true para 465, false para 587
+    host: config.smtp.host,
+    port: port,
+    secure: isSecure,
     auth: {
-      user: process.env.SMTP_USERNAME,
-      pass: process.env.SMTP_PASSWORD,
+      user: config.smtp.username,
+      pass: config.smtp.password,
     },
     // Evitar que las peticiones HTTP queden colgadas si SMTP no responde
     connectionTimeout: 10_000, // 10s

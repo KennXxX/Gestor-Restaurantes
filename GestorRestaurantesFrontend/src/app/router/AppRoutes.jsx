@@ -7,6 +7,7 @@ import { DashboardPage } from '../layouts/DashboardPage.jsx'
 import { ClientPage } from '../pages/ClientPage'
 import { ProtectedRoute } from './ProtectedRoute'
 import { RoleGuard } from './RoleGuard'
+import { LandingPage } from '../pages/LandingPage'
 import { Facturas } from '../../features/Facturas/Facturas'
 import { Estadisticas } from '../../features/Estadisticas/Estadisticas'
 import { Restaurantes } from '../../features/Restaurantes/Restaurantes'
@@ -14,11 +15,17 @@ import { Mesas } from '../../features/Mesas/Mesas'
 import { Inventory } from '../../features/inventory/components/Inventory'
 import { Menus } from '../../features/Menus/Menus'
 import { Resenas } from '../../features/Resenas/Resenas'
+import { Orders } from '../../features/Orders/Orders'
+import { Reservations } from '../../features/Reservations/Reservations'
+import { ClientesFrecuentes } from '../../features/ClientesFrecuentes/ClientesFrecuentes'
+import { PublicRestaurantsPage } from '../pages/PublicRestaurantsPage'
 
 export const AppRoutes = () => {
   return (
     <Routes>
-      <Route path="/" element={<AuthPage />} />
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/restaurantes" element={<PublicRestaurantsPage />} />
+      <Route path="/auth" element={<AuthPage />} />
       <Route path="/verify-email" element={<VerifyEmailPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
@@ -36,8 +43,10 @@ export const AppRoutes = () => {
         <Route path="mesas" element={<Mesas />} />
         <Route path="inventory" element={<Inventory />} />
         <Route path="menus" element={<Menus />} />
+        <Route path="orders" element={<Orders />} />
+        <Route path="reservations" element={<Reservations />} />
+        <Route path="clientes-frecuentes" element={<ClientesFrecuentes />} />
         <Route path="resenas" element={<Resenas />} />
-        <Route path="inventory" element={<Inventory />} />
         <Route path="facturas" element={<Facturas />} />
         <Route path="estadisticas" element={<Estadisticas />} />
       </Route>
@@ -55,4 +64,3 @@ export const AppRoutes = () => {
     </Routes>
   )
 }
-   //AGREGAR RUTA DE INVENTARIO

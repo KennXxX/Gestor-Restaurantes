@@ -3,6 +3,7 @@
 import mongoose from 'mongoose';
 import Table from './table.model.js';
 import Restaurant from '../restaurants/restaurant.model.js';
+import Reservation from '../reservations/reservation.model.js';
 
 export const createTable = async (req, res) => {
     try {
@@ -217,6 +218,107 @@ export const deleteTable = async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Error al eliminar la mesa',
+            error: error.message
+        });
+    }
+};
+
+export const getAvailableTables = async (req, res) => {
+    try {
+        const { restaurantId, startDate, endDate } = req.query;
+
+        if (!restaurantId || !startDate || !endDate) {
+            return res.status(400).json({
+                success: false,
+                message: 'restaurantId, startDate y endDate son obligatorios'
+            });
+        }
+
+        if (!mongoose.Types.ObjectId.isValid(String(restaurantId))) {
+            return res.status(400).json({
+                success: false,
+                message: 'restaurantId no es válido'
+            });
+        }
+
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+
+        if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end <= start) {
+            return res.status(400).json({
+                success: false,
+                message: 'Rango de fechas inválido'
+            });
+        }
+
+        const overlappingReservations = await Reservation.find({
+            restaurantId,
+            status: { $ne: 'CANCELADO' },
+            startDate: { $lt: end },
+            endDate: { $gt: start }
+        }).select('tableId');
+
+        const reservedTableIds = [...new Set(
+            overlappingReservations
+                .flatMap((reservation) => reservation.tableId || [])
+                .map((id) => String(id))
+        )];
+
+        const availableTables = await Table.find({
+            restaurantId,
+            tableActive: true,
+            ...(reservedTableIds.length > 0 ? { _id: { $nin: reservedTableIds } } : {})
+        }).populate('restaurantId', 'restaurantName');
+
+        return res.status(200).json({
+            success: true,
+            data: availableTables,
+            meta: {
+                reservedCount: reservedTableIds.length,
+                availableCount: availableTables.length
+            }
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: 'Error al consultar disponibilidad de mesas',
+            error: error.message
+        });
+    }
+};
+
+export const updateTableAvailability = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { tableActive } = req.body;
+
+        if (!mongoose.Types.ObjectId.isValid(String(id))) {
+            return res.status(400).json({ success: false, message: 'El identificador de la mesa no es válido.' });
+        }
+
+        if (typeof tableActive !== 'boolean') {
+            return res.status(400).json({ success: false, message: 'tableActive debe ser booleano' });
+        }
+
+        const table = await Table.findByIdAndUpdate(
+            id,
+            { tableActive },
+            { new: true, runValidators: true }
+        ).populate('restaurantId', 'restaurantName restaurantEmail');
+
+        if (!table) {
+            return res.status(404).json({ success: false, message: 'La mesa no existe.' });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: 'Disponibilidad de mesa actualizada exitosamente.',
+            data: table
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: 'Error al actualizar disponibilidad de mesa',
             error: error.message
         });
     }

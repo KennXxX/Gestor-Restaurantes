@@ -9,9 +9,10 @@ import { createInvoiceFromOrder } from '../invoices/invoice.controller.js';
 
 export const createOrder = async (req, res) => {
   try {
-    let { restaurantId, tableId, items, adminId, orderType = 'EN_RESTAURANTE', deliveryAddress, coupon } = req.body
+    let { restaurantId, tableId, items, adminId, userId, orderType = 'EN_RESTAURANTE', deliveryAddress, coupon } = req.body
 
     const actorId = req.adminId || adminId || null
+    const customerUserId = userId || null
 
     // Normalize items if sent as stringified JSON or comma separated
     if (typeof items === 'string') {
@@ -103,6 +104,7 @@ export const createOrder = async (req, res) => {
     }
 
     const order = new Order({
+      userId: customerUserId,
       restaurantId,
       tableId: resolvedTableId,
       items: itemsWithPrice,
@@ -152,6 +154,50 @@ export const getOrdersByRestaurant = async (req, res) => {
   }
 }
 
+export const getOrders = async (req, res) => {
+  try {
+    const { restaurantId, status, orderType, userId } = req.query
+    const filter = {}
+
+    if (restaurantId) filter.restaurantId = restaurantId
+    if (status) filter.status = status
+    if (orderType) filter.orderType = orderType
+    if (userId) filter.userId = userId
+
+    const orders = await Order.find(filter)
+      .populate('items.menuId')
+      .populate('tableId')
+      .sort({ createdAt: -1 })
+
+    return res.status(200).json({ success: true, orders })
+  } catch (err) {
+    console.error(err)
+    return res.status(500).json({ success: false, message: 'Error getting orders', error: err && err.message ? err.message : String(err) })
+  }
+}
+
+export const getOrderById = async (req, res) => {
+  try {
+    const { id } = req.params
+    if (!mongoose.Types.ObjectId.isValid(String(id))) {
+      return res.status(400).json({ success: false, message: 'id is not a valid id' })
+    }
+
+    const order = await Order.findById(id)
+      .populate('items.menuId')
+      .populate('tableId')
+
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'Order not found' })
+    }
+
+    return res.status(200).json({ success: true, order })
+  } catch (err) {
+    console.error(err)
+    return res.status(500).json({ success: false, message: 'Error getting order', error: err && err.message ? err.message : String(err) })
+  }
+}
+
 export const updateOrderStatus = async (req, res) => {
   try {
     const { id } = req.params
@@ -188,6 +234,8 @@ export const updateOrderStatus = async (req, res) => {
 
 export default {
   createOrder,
+  getOrders,
+  getOrderById,
   getOrdersByRestaurant,
   updateOrderStatus
 }

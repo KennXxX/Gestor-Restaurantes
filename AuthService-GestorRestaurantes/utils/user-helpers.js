@@ -14,6 +14,11 @@ export const buildUserResponse = (user) => {
     id: user.Id,
     name: user.Name,
     email: user.Email,
+    UserProfile: user.UserProfile ? {
+      Phone: user.UserProfile.Phone,
+      Address: user.UserProfile.Address,
+      Imagen: user.UserProfile.Imagen,
+    } : null,
     phone:
       user.UserProfile && user.UserProfile.Phone ? user.UserProfile.Phone : '',
     profilePicture: profilePictureUrl,
