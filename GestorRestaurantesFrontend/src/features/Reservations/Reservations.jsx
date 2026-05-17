@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { getRestaurants } from '../../shared/api/restaurants'
 import { getTables } from '../../shared/api/tables'
+import { getAllUsers } from '../../shared/api/users'
 import {
   cancelReservation,
   createReservation,
-  getMyReservations,
+  getReservations,
   updateReservation,
   updateReservationStatus,
 } from '../../shared/api/reservations'
@@ -13,6 +14,7 @@ import { showError, showSuccess } from '../../shared/utils/toast'
 const STATUS_OPTIONS = ['PENDIENTE', 'COMPLETADO', 'CANCELADO']
 
 const emptyForm = {
+  userId: '',
   restaurantId: '',
   tableId: [],
   numberPeople: 1,
@@ -45,9 +47,23 @@ const toInputDateTime = (value) => {
   return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
 }
 
+const isClientRole = (user) => {
+  const roles = user?.UserRoles || []
+  return roles.some((entry) => entry?.Role?.Name === 'USER_ROLE')
+}
+
+const getUserId = (user) => String(user?.Id || user?.id || user?._id || '')
+
+const getUserLabel = (user) => {
+  const name = user?.Name || user?.name || 'Usuario sin nombre'
+  const email = user?.Email || user?.email || ''
+  return email ? `${name} (${email})` : name
+}
+
 export const Reservations = () => {
   const [reservations, setReservations] = useState([])
   const [restaurants, setRestaurants] = useState([])
+  const [users, setUsers] = useState([])
   const [tables, setTables] = useState([])
   const [selectedReservation, setSelectedReservation] = useState(null)
   const [editingReservation, setEditingReservation] = useState(null)
@@ -62,17 +78,23 @@ export const Reservations = () => {
     canceled: reservations.filter((r) => r.status === 'CANCELADO').length,
   }), [reservations])
 
+  const usersById = useMemo(() => {
+    return new Map(users.map((user) => [getUserId(user), user]))
+  }, [users])
+
   const loadInitialData = async () => {
     setLoading(true)
     setError(null)
     try {
-      const [reservationsRes, restaurantsRes] = await Promise.all([
-        getMyReservations(),
+      const [reservationsRes, restaurantsRes, usersRes] = await Promise.all([
+        getReservations(),
         getRestaurants({ limit: 100 }),
+        getAllUsers().catch(() => ({ data: { users: [] } })),
       ])
 
       setReservations(reservationsRes.data?.reservations || [])
       setRestaurants(restaurantsRes.data?.data || [])
+      setUsers((usersRes.data?.users || []).filter((user) => isClientRole(user)))
     } catch (err) {
       setError(getErrorMessage(err, 'No se pudo cargar la información de reservaciones.'))
     } finally {
@@ -102,12 +124,37 @@ export const Reservations = () => {
     loadTables(form.restaurantId)
   }, [form.restaurantId])
 
+  useEffect(() => {
+    const peopleCount = Number(form.numberPeople) || 1
+    setForm((prev) => {
+      const filteredTables = prev.tableId.filter((tableId) => {
+        const table = tables.find((entry) => entry._id === tableId)
+        if (!table) return true
+        return Number(table.tableCapacity || 0) >= peopleCount
+      })
+
+      if (filteredTables.length === prev.tableId.length) {
+        return prev
+      }
+
+      return { ...prev, tableId: filteredTables }
+    })
+  }, [form.numberPeople, tables])
+
   const resetForm = () => {
     setForm(emptyForm)
     setEditingReservation(null)
   }
 
   const toggleTableSelection = (tableId) => {
+    const table = tables.find((entry) => entry._id === tableId)
+    const peopleCount = Number(form.numberPeople) || 1
+
+    if (table && Number(table.tableCapacity || 0) < peopleCount) {
+      showError(`La mesa ${table.tableNumber || table.tableName || tableId} no soporta ${peopleCount} personas.`)
+      return
+    }
+
     setForm((prev) => {
       const selected = prev.tableId.includes(tableId)
         ? prev.tableId.filter((id) => id !== tableId)
@@ -120,6 +167,7 @@ export const Reservations = () => {
     setEditingReservation(reservation)
     setSelectedReservation(reservation)
     setForm({
+      userId: reservation.userId || '',
       restaurantId: reservation.restaurantId?._id || reservation.restaurantId || '',
       tableId: (reservation.tableId || []).map((table) => table._id || table),
       numberPeople: reservation.numberPeople || 1,
@@ -134,6 +182,11 @@ export const Reservations = () => {
   const handleSubmit = async (event) => {
     event.preventDefault()
 
+    if (!form.userId) {
+      showError('Selecciona un usuario para la reservación.')
+      return
+    }
+
     if (!form.restaurantId || form.tableId.length === 0) {
       showError('Selecciona restaurante y al menos una mesa.')
       return
@@ -145,6 +198,7 @@ export const Reservations = () => {
     }
 
     const payload = {
+      userId: form.userId,
       restaurantId: form.restaurantId,
       tableId: form.tableId,
       numberPeople: Number(form.numberPeople) || 1,
@@ -204,7 +258,7 @@ export const Reservations = () => {
       <header className="rounded-[28px] border border-sky-200 bg-[radial-gradient(circle_at_top_right,_rgba(14,165,233,0.18),_transparent_60%),linear-gradient(120deg,_#f0f9ff_0%,_#e0f2fe_60%,_#bae6fd_100%)] p-8 shadow-sm">
         <p className="inline-flex rounded-full bg-sky-700 px-4 py-1 text-xs font-semibold uppercase tracking-[0.32em] text-sky-50">Reservations</p>
         <h1 className="font-display mt-4 text-3xl font-semibold text-slate-900 sm:text-4xl">Gestión de reservas</h1>
-        <p className="mt-3 text-sm text-slate-700 sm:text-base">Listado de reservas, creación y edición de reservas, cancelación y relación con mesas o clientes.</p>
+        <p className="mt-3 text-sm text-slate-700 sm:text-base">Listado general de reservas, creación y edición asignadas a usuarios, cancelación y relación con mesas o clientes.</p>
       </header>
 
       <div className="grid gap-6 xl:grid-cols-[1.4fr_1fr]">
@@ -240,7 +294,9 @@ export const Reservations = () => {
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-sm font-semibold text-slate-900">{reservation.restaurantId?.restaurantName || 'Restaurante'}</p>
-                    <p className="text-xs text-slate-500">Cliente: {reservation.userId || 'N/A'}</p>
+                    <p className="text-xs text-slate-500">
+                      Cliente: {usersById.get(String(reservation.userId)) ? getUserLabel(usersById.get(String(reservation.userId))) : reservation.userId || 'N/A'}
+                    </p>
                   </div>
                   <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">{statusLabel(reservation.status)}</span>
                 </div>
@@ -278,6 +334,22 @@ export const Reservations = () => {
 
             <form onSubmit={handleSubmit} className="mt-4 grid gap-3">
               <label className="text-sm font-semibold text-slate-700">
+                Usuario
+                <select
+                  value={form.userId}
+                  onChange={(e) => setForm((prev) => ({ ...prev, userId: e.target.value }))}
+                  className="mt-2 w-full rounded-xl border px-3 py-2 text-sm"
+                >
+                  <option value="">Selecciona un usuario</option>
+                  {users.map((user) => (
+                    <option key={getUserId(user)} value={getUserId(user)}>
+                      {getUserLabel(user)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="text-sm font-semibold text-slate-700">
                 Restaurante
                 <select
                   value={form.restaurantId}
@@ -291,27 +363,6 @@ export const Reservations = () => {
                 </select>
               </label>
 
-              <div>
-                <p className="text-sm font-semibold text-slate-700">Mesas relacionadas</p>
-                <div className="mt-2 grid gap-2 sm:grid-cols-2">
-                  {tables.map((table) => {
-                    const tableId = table._id
-                    const checked = form.tableId.includes(tableId)
-                    return (
-                      <label key={tableId} className={`rounded-xl border px-3 py-2 text-sm ${checked ? 'border-sky-400 bg-sky-50' : 'border-slate-200'}`}>
-                        <input
-                          type="checkbox"
-                          checked={checked}
-                          onChange={() => toggleTableSelection(tableId)}
-                          className="mr-2"
-                        />
-                        {table.tableNumber || `Mesa ${tableId.slice(-4)}`}
-                      </label>
-                    )
-                  })}
-                </div>
-              </div>
-
               <label className="text-sm font-semibold text-slate-700">
                 Número de personas
                 <input
@@ -322,6 +373,36 @@ export const Reservations = () => {
                   className="mt-2 w-full rounded-xl border px-3 py-2 text-sm"
                 />
               </label>
+
+              <div>
+                <p className="text-sm font-semibold text-slate-700">Mesas disponibles</p>
+                <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                  {tables.map((table) => {
+                    const tableId = table._id
+                    const checked = form.tableId.includes(tableId)
+                    const disabled = Number(table.tableCapacity || 0) < Number(form.numberPeople || 1)
+
+                    return (
+                      <label
+                        key={tableId}
+                        className={`rounded-xl border px-3 py-2 text-sm ${checked ? 'border-sky-400 bg-sky-50' : 'border-slate-200'} ${disabled ? 'cursor-not-allowed opacity-50' : ''}`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          disabled={disabled}
+                          onChange={() => toggleTableSelection(tableId)}
+                          className="mr-2"
+                        />
+                        <span className="inline-flex items-center gap-2">
+                          <span>{table.tableNumber || table.tableName || `Mesa ${tableId.slice(-4)}`}</span>
+                          <span className="text-xs text-slate-500">· Cap. {table.tableCapacity || 0}</span>
+                        </span>
+                      </label>
+                    )
+                  })}
+                </div>
+              </div>
 
               <label className="text-sm font-semibold text-slate-700">
                 Tipo de reserva
@@ -393,7 +474,14 @@ export const Reservations = () => {
             {selectedReservation && (
               <div className="mt-4 space-y-2 text-sm text-slate-700">
                 <p><span className="font-semibold">Estado:</span> {statusLabel(selectedReservation.status)}</p>
-                <p><span className="font-semibold">Cliente:</span> {selectedReservation.userId || 'N/A'}</p>
+                <p>
+                  <span className="font-semibold">Cliente:</span>{' '}
+                  {selectedReservation.userId
+                    ? (usersById.get(String(selectedReservation.userId))
+                      ? getUserLabel(usersById.get(String(selectedReservation.userId)))
+                      : selectedReservation.userId)
+                    : 'N/A'}
+                </p>
                 <p><span className="font-semibold">Restaurante:</span> {selectedReservation.restaurantId?.restaurantName || 'N/A'}</p>
                 <p><span className="font-semibold">Mesas:</span> {(selectedReservation.tableId || []).map((t) => t.tableNumber || t._id || t).join(', ') || 'N/A'}</p>
                 <p><span className="font-semibold">Personas:</span> {selectedReservation.numberPeople}</p>

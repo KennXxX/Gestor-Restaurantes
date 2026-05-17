@@ -36,6 +36,10 @@ const handleValidation = async (req, res, next) => {
 };
 
 export const createReservationValidator = [
+    body('userId')
+        .optional()
+        .isString().withMessage('El userId debe ser una cadena'),
+
     body('restaurantId')
         .notEmpty().withMessage('El ID del restaurante es obligatorio')
         .isMongoId().withMessage('El ID del restaurante debe ser válido')
@@ -130,6 +134,10 @@ export const updateReservationValidator = [
     param('id')
         .isMongoId().withMessage('ID de reservación inválido'),
 
+    body('userId')
+        .optional()
+        .isString().withMessage('El userId debe ser una cadena'),
+
     body('restaurantId')
         .optional()
         .isMongoId().withMessage('El ID del restaurante debe ser válido')
@@ -193,7 +201,7 @@ export const updateReservationValidator = [
         .isString().withMessage('La descripción debe ser texto'),
 
     body().custom((value) => {
-        const allowed = ['restaurantId', 'tableId', 'numberPeople', 'typeReservation', 'description', 'startDate', 'endDate', 'status'];
+        const allowed = ['userId', 'restaurantId', 'tableId', 'numberPeople', 'typeReservation', 'description', 'startDate', 'endDate', 'status'];
         const hasAny = allowed.some((key) => value[key] !== undefined);
         if (!hasAny) {
             throw new Error('Debes enviar al menos un campo para actualizar');

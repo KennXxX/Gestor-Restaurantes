@@ -17,6 +17,7 @@ import { Menus } from '../../features/Menus/Menus'
 import { Resenas } from '../../features/Resenas/Resenas'
 import { Orders } from '../../features/Orders/Orders'
 import { Reservations } from '../../features/Reservations/Reservations'
+import { ClientesFrecuentes } from '../../features/ClientesFrecuentes/ClientesFrecuentes'
 
 export const AppRoutes = () => {
   return (
@@ -42,6 +43,7 @@ export const AppRoutes = () => {
         <Route path="menus" element={<Menus />} />
         <Route path="orders" element={<Orders />} />
         <Route path="reservations" element={<Reservations />} />
+        <Route path="clientes-frecuentes" element={<ClientesFrecuentes />} />
         <Route path="resenas" element={<Resenas />} />
         <Route path="facturas" element={<Facturas />} />
         <Route path="estadisticas" element={<Estadisticas />} />

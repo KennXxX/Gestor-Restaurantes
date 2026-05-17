@@ -1,5 +1,9 @@
 import { axiosApi } from './api'
 
+export const getOrders = async (params = {}) => {
+  return axiosApi.get('/orders', { params })
+}
+
 export const getOrdersByRestaurant = async (restaurantId) => {
   return axiosApi.get(`/orders/restaurant/${restaurantId}`)
 }

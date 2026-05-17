@@ -9,9 +9,10 @@ import { createInvoiceFromOrder } from '../invoices/invoice.controller.js';
 
 export const createOrder = async (req, res) => {
   try {
-    let { restaurantId, tableId, items, adminId, orderType = 'EN_RESTAURANTE', deliveryAddress, coupon } = req.body
+    let { restaurantId, tableId, items, adminId, userId, orderType = 'EN_RESTAURANTE', deliveryAddress, coupon } = req.body
 
     const actorId = req.adminId || adminId || null
+    const customerUserId = userId || null
 
     // Normalize items if sent as stringified JSON or comma separated
     if (typeof items === 'string') {
@@ -103,6 +104,7 @@ export const createOrder = async (req, res) => {
     }
 
     const order = new Order({
+      userId: customerUserId,
       restaurantId,
       tableId: resolvedTableId,
       items: itemsWithPrice,
@@ -154,12 +156,13 @@ export const getOrdersByRestaurant = async (req, res) => {
 
 export const getOrders = async (req, res) => {
   try {
-    const { restaurantId, status, orderType } = req.query
+    const { restaurantId, status, orderType, userId } = req.query
     const filter = {}
 
     if (restaurantId) filter.restaurantId = restaurantId
     if (status) filter.status = status
     if (orderType) filter.orderType = orderType
+    if (userId) filter.userId = userId
 
     const orders = await Order.find(filter)
       .populate('items.menuId')

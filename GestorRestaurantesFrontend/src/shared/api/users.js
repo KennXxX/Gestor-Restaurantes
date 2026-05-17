@@ -1,5 +1,9 @@
 import { axiosAuth } from './api'
 
+export const getAllUsers = async () => {
+  return axiosAuth.get('/users/all')
+}
+
 export const updateUserProfile = async (userData) => {
   return axiosAuth.put('/users/profile', userData)
 }

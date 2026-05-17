@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { getRestaurants } from '../../shared/api/restaurants'
 import { getTables } from '../../shared/api/tables'
 import { getMenus } from '../../shared/api/menus'
+import { getAllUsers } from '../../shared/api/users'
 import { createOrder, getOrdersByRestaurant, updateOrderStatus } from '../../shared/api/orders'
 import { showError, showSuccess } from '../../shared/utils/toast'
 
@@ -33,8 +34,22 @@ const orderTypeLabel = (type) => {
   return type
 }
 
+const isClientRole = (user) => {
+  const roles = user?.UserRoles || []
+  return roles.some((entry) => entry?.Role?.Name === 'USER_ROLE')
+}
+
+const getUserId = (user) => String(user?.Id || user?.id || user?._id || '')
+
+const getUserLabel = (user) => {
+  const name = user?.Name || user?.name || 'Usuario sin nombre'
+  const email = user?.Email || user?.email || ''
+  return email ? `${name} (${email})` : name
+}
+
 export const Orders = () => {
   const [restaurants, setRestaurants] = useState([])
+  const [users, setUsers] = useState([])
   const [menus, setMenus] = useState([])
   const [tables, setTables] = useState([])
   const [orders, setOrders] = useState([])
@@ -45,6 +60,7 @@ export const Orders = () => {
   const [restaurantFilter, setRestaurantFilter] = useState('')
 
   const [form, setForm] = useState({
+    userId: '',
     restaurantId: '',
     tableId: '',
     orderType: 'EN_RESTAURANTE',
@@ -62,14 +78,16 @@ export const Orders = () => {
     setLoading(true)
     setError(null)
     try {
-      const [restaurantsRes, menusRes] = await Promise.all([
+      const [restaurantsRes, menusRes, usersRes] = await Promise.all([
         getRestaurants({ limit: 100 }),
         getMenus().catch(() => ({ data: { menus: [] } })),
+        getAllUsers().catch(() => ({ data: { users: [] } })),
       ])
 
       const restaurantList = restaurantsRes.data?.data || []
       setRestaurants(restaurantList)
       setMenus(menusRes.data?.menus || [])
+      setUsers((usersRes.data?.users || []).filter((user) => isClientRole(user)))
 
       if (restaurantList.length > 0) {
         const firstRestaurantId = restaurantList[0]._id
@@ -145,6 +163,7 @@ export const Orders = () => {
 
   const resetForm = () => {
     setForm((prev) => ({
+      userId: '',
       restaurantId: prev.restaurantId,
       tableId: '',
       orderType: 'EN_RESTAURANTE',
@@ -168,6 +187,11 @@ export const Orders = () => {
       return
     }
 
+    if (!form.userId) {
+      showError('Selecciona un usuario para la orden.')
+      return
+    }
+
     if (form.orderType === 'EN_RESTAURANTE' && !form.tableId) {
       showError('Para órdenes en restaurante debes seleccionar una mesa.')
       return
@@ -179,6 +203,7 @@ export const Orders = () => {
     }
 
     const payload = {
+      userId: form.userId,
       restaurantId: form.restaurantId,
       orderType: form.orderType,
       items: cleanItems,
@@ -304,6 +329,22 @@ export const Orders = () => {
           <section className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
             <h2 className="font-display text-xl font-semibold text-slate-900">Crear nueva orden</h2>
             <form onSubmit={handleCreate} className="mt-4 grid gap-3">
+              <label className="text-sm font-semibold text-slate-700">
+                Usuario
+                <select
+                  value={form.userId}
+                  onChange={(e) => setForm((prev) => ({ ...prev, userId: e.target.value }))}
+                  className="mt-2 w-full rounded-xl border px-3 py-2 text-sm"
+                >
+                  <option value="">Selecciona un usuario</option>
+                  {users.map((user) => (
+                    <option key={getUserId(user)} value={getUserId(user)}>
+                      {getUserLabel(user)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
               <label className="text-sm font-semibold text-slate-700">
                 Restaurante
                 <select

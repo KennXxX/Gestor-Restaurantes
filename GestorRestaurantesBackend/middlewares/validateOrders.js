@@ -22,6 +22,10 @@ const handleValidation = (req, res, next) => {
 };
 
 export const createOrderValidator = [
+    body('userId')
+        .optional()
+        .isString().withMessage('El userId debe ser una cadena'),
+
     body('restaurantId')
         .notEmpty().withMessage('El ID del restaurante es obligatorio')
         .isMongoId().withMessage('El ID del restaurante debe ser válido')

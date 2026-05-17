@@ -1,43 +1,35 @@
-import { useNavigate } from 'react-router-dom'
-import { Typography } from "@material-tailwind/react";
-import imgLogo from '../../../assets/img/logoRestaurante.png'
 import { useAuthStore } from '../../../features/auth/store/authStore'
+import imgLogo from '../../../assets/img/logoRestaurante.png'
+import { AvatarUser } from '../ui/AvatarUser'
 
 export const Navbar = () => {
-  const navigate = useNavigate()
-  const logout = useAuthStore((state) => state.logout)
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
 
-  const handleLogout = () => {
-    logout()
-    navigate('/', { replace: true })
-  }
-
   return (
-    <nav className="bg-black shadow-md sticky top-0 z-10">
-      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-2">
+    <nav className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+      <div className="px-6 h-16 flex items-center justify-between gap-4">
+        {/* Brand */}
+        <div className="flex items-center gap-3">
           <img
             src={imgLogo}
-            alt="Kinal Logo"
-            className="h-8 md:h-10 w-auto object-contain"
+            alt="Logo"
+            className="w-10 h-10 rounded-full object-cover border border-slate-200 shadow-sm flex-shrink-0"
+            onError={(e) => {
+              e.target.onerror = null
+              e.target.src = ''
+            }}
           />
-          <Typography variant="h5" className="font-bold text-white">
-            Kinal Admin
-          </Typography>
+          <div>
+            <p className="m-0 text-[0.95rem] font-bold text-slate-900 leading-tight font-display">
+              Gestor Restaurantes
+            </p>
+            <p className="m-0 text-[0.7rem] text-slate-400 font-medium">
+              Panel de administración
+            </p>
+          </div>
         </div>
-        <div className="flex items-center gap-4">
-          {isAuthenticated ? (
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="rounded-2xl border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
-            >
-              Cerrar sesión
-            </button>
-          ) : null}
-        </div>
+        {isAuthenticated && <AvatarUser />}
       </div>
     </nav>
-  );
-};
+  )
+}

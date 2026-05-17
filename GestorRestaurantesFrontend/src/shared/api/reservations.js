@@ -1,5 +1,9 @@
 import { axiosApi } from './api'
 
+export const getReservations = async (params = {}) => {
+  return axiosApi.get('/reservations', { params })
+}
+
 const buildReservationFormData = (payload) => {
   const formData = new FormData()
 
