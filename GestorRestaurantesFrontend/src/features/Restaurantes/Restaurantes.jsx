@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
 import {
   deleteRestaurant,
   getRestaurants,
@@ -143,12 +142,6 @@ export const Restaurantes = () => {
             >
               Actualizar
             </button>
-            <Link
-              to="/dashboard/mesas"
-              className="rounded-full border border-white/20 bg-transparent px-5 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
-            >
-              Gestionar mesas
-            </Link>
           </div>
         </div>
       </header>

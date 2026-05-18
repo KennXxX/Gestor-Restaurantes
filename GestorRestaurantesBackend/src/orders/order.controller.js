@@ -198,6 +198,29 @@ export const getOrderById = async (req, res) => {
   }
 }
 
+export const getMyOrders = async (req, res) => {
+  try {
+    const userId = req.user._id
+
+    const orders = await Order.find({ userId })
+      .populate('restaurantId', 'restaurantName')
+      .populate('tableId', 'tableName tableNumber')
+      .sort({ date: -1 }) // Sort by date descending
+
+    return res.status(200).json({
+      success: true,
+      orders
+    })
+  } catch (err) {
+    console.error('Error fetching user orders:', err)
+    return res.status(500).json({
+      success: false,
+      message: 'Error fetching your orders',
+      error: err.message
+    })
+  }
+}
+
 export const updateOrderStatus = async (req, res) => {
   try {
     const { id } = req.params
@@ -235,6 +258,7 @@ export const updateOrderStatus = async (req, res) => {
 export default {
   createOrder,
   getOrders,
+  getMyOrders,
   getOrderById,
   getOrdersByRestaurant,
   updateOrderStatus

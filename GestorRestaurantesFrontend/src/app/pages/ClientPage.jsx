@@ -1,45 +1,49 @@
-import { useState } from 'react'
 import { useAuthStore } from '../../features/auth/store/authStore'
 import { UserProfile } from '../../features/auth/components/UserProfile'
 import { ReservationView } from '../../features/Reservations/ReservationView'
+import { Outlet, NavLink, useNavigate, useOutletContext } from 'react-router-dom'
 
-const ClientHome = ({ user }) => (
-  <section className="client-hero">
-    <div className="client-hero-copy">
-      <span className="client-hero-tag">Bienvenido cliente</span>
-      <h1 className="client-hero-title">
-        Hola{user?.name ? `, ${user.name}` : ' cliente'}
-      </h1>
-      <p className="client-hero-text">
-        Gestiona tus reservas, pedidos y facturas desde un panel diseñado para tu experiencia en Fuego y Sabor.
-      </p>
-      <div className="client-hero-actions">
-        <button className="client-button client-button-primary" type="button">
-          Ver reservas
-        </button>
-        <button className="client-button client-button-ghost" type="button">
-          Explorar menú
-        </button>
+export const ClientHome = () => {
+  const { user } = useOutletContext();
+  const navigate = useNavigate();
+  return (
+    <section className="client-hero">
+      <div className="client-hero-copy">
+        <span className="client-hero-tag">Bienvenido cliente</span>
+        <h1 className="client-hero-title">
+          Hola{user?.name ? `, ${user.name}` : ' cliente'}
+        </h1>
+        <p className="client-hero-text">
+          Gestiona tus reservas, pedidos y facturas desde un panel diseñado para tu experiencia en Fuego y Sabor.
+        </p>
+        <div className="client-hero-actions">
+          <button className="client-button client-button-primary" type="button" onClick={() => navigate('reservations')}>
+            Ver reservas
+          </button>
+          <button className="client-button client-button-ghost" type="button" onClick={() => navigate('menu')}>
+            Explorar menú
+          </button>
+        </div>
       </div>
-    </div>
-    <div className="client-hero-card">
-      <p className="client-hero-card-title">Tu cuenta</p>
-      <p className="client-hero-card-copy">Acceso rápido a tus datos, órdenes y facturas.</p>
-      <div className="client-hero-stat">
-        <span>Correo</span>
-        <strong>{user?.email ?? 'Sin correo'}</strong>
+      <div className="client-hero-card">
+        <p className="client-hero-card-title">Tu cuenta</p>
+        <p className="client-hero-card-copy">Acceso rápido a tus datos, órdenes y facturas.</p>
+        <div className="client-hero-stat">
+          <span>Correo</span>
+          <strong>{user?.email ?? 'Sin correo'}</strong>
+        </div>
+        <div className="client-hero-stat">
+          <span>Rol</span>
+          <strong>{user?.role ?? 'Cliente'}</strong>
+        </div>
       </div>
-      <div className="client-hero-stat">
-        <span>Rol</span>
-        <strong>{user?.role ?? 'Cliente'}</strong>
-      </div>
-    </div>
-  </section>
-)
+    </section>
+  )
+}
 
-const ClientReservations = () => <ReservationView />
+export const ClientReservations = () => <ReservationView />
 
-const ClientMenu = () => (
+export const ClientMenu = () => (
   <section className="client-section client-feature-section">
     <div className="client-section-header">
       <div>
@@ -64,7 +68,7 @@ const ClientMenu = () => (
   </section>
 )
 
-const ClientInvoices = () => (
+export const ClientInvoices = () => (
   <section className="client-section client-feature-section">
     <div className="client-section-header">
       <div>
@@ -92,7 +96,7 @@ const ClientInvoices = () => (
 export const ClientPage = () => {
   const user = useAuthStore((state) => state.user)
   const logout = useAuthStore((state) => state.logout)
-  const [activeSection, setActiveSection] = useState('home')
+  const navigate = useNavigate()
 
   const userInitials = user?.name
     ? user.name
@@ -102,21 +106,6 @@ export const ClientPage = () => {
         .join('')
     : 'US'
 
-  const renderSection = () => {
-    switch (activeSection) {
-      case 'profile':
-        return <UserProfile user={user} />
-      case 'reservations':
-        return <ClientReservations />
-      case 'menu':
-        return <ClientMenu />
-      case 'invoices':
-        return <ClientInvoices />
-      default:
-        return <ClientHome user={user} />
-    }
-  }
-
   return (
     <div className="client-page-shell">
       <header className="client-navbar">
@@ -124,7 +113,7 @@ export const ClientPage = () => {
           <button
             type="button"
             className="client-brand"
-            onClick={() => setActiveSection('profile')}
+            onClick={() => navigate('profile')}
           >
             <span className="client-brand-mark">{userInitials}</span>
             <div>
@@ -134,34 +123,31 @@ export const ClientPage = () => {
           </button>
 
           <nav className="client-nav-links">
-            <button
-              type="button"
-              className={`client-nav-link ${activeSection === 'home' ? 'client-nav-link--active' : ''}`}
-              onClick={() => setActiveSection('home')}
+            <NavLink
+              to="/client"
+              end
+              className={({ isActive }) => `client-nav-link ${isActive ? 'client-nav-link--active' : ''}`}
             >
               Inicio
-            </button>
-            <button
-              type="button"
-              className={`client-nav-link ${activeSection === 'reservations' ? 'client-nav-link--active' : ''}`}
-              onClick={() => setActiveSection('reservations')}
+            </NavLink>
+            <NavLink
+              to="/client/reservations"
+              className={({ isActive }) => `client-nav-link ${isActive ? 'client-nav-link--active' : ''}`}
             >
               Reservas
-            </button>
-            <button
-              type="button"
-              className={`client-nav-link ${activeSection === 'menu' ? 'client-nav-link--active' : ''}`}
-              onClick={() => setActiveSection('menu')}
+            </NavLink>
+            <NavLink
+              to="/client/menu"
+              className={({ isActive }) => `client-nav-link ${isActive ? 'client-nav-link--active' : ''}`}
             >
               Menú
-            </button>
-            <button
-              type="button"
-              className={`client-nav-link ${activeSection === 'invoices' ? 'client-nav-link--active' : ''}`}
-              onClick={() => setActiveSection('invoices')}
+            </NavLink>
+            <NavLink
+              to="/client/invoices"
+              className={({ isActive }) => `client-nav-link ${isActive ? 'client-nav-link--active' : ''}`}
             >
               Facturas
-            </button>
+            </NavLink>
           </nav>
 
           <button type="button" className="client-logout-button" onClick={logout}>
@@ -171,7 +157,7 @@ export const ClientPage = () => {
       </header>
 
       <main className="client-content">
-        {renderSection()}
+        <Outlet context={{ user }} />
       </main>
     </div>
   )
