@@ -8,6 +8,10 @@ export const getOrdersByRestaurant = async (restaurantId) => {
   return axiosApi.get(`/orders/restaurant/${restaurantId}`)
 }
 
+export const getMyOrders = async () => {
+  return axiosApi.get('/orders/my-orders')
+}
+
 export const createOrder = async (payload) => {
   return axiosApi.post('/orders', payload)
 }

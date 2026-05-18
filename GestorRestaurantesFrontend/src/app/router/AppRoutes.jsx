@@ -4,8 +4,9 @@ import { VerifyEmailPage } from '../../features/auth/pages/VerifyEmailPage'
 import { ResetPasswordPage } from '../../features/auth/pages/ResetPasswordPage'
 import { UnauthorizedPage } from '../../features/auth/pages/UnauthorizedPage'
 import { DashboardPage } from '../layouts/DashboardPage.jsx'
-import { ClientPage } from '../pages/ClientPage'
+import { ClientPage, ClientHome, ClientReservations, ClientMenu, ClientInvoices } from '../pages/ClientPage'
 import { ProtectedRoute } from './ProtectedRoute'
+import { UserProfile } from '../../features/auth/components/UserProfile'
 import { RoleGuard } from './RoleGuard'
 import { LandingPage } from '../pages/LandingPage'
 import { Facturas } from '../../features/Facturas/Facturas'
@@ -20,7 +21,11 @@ import { Reservations } from '../../features/Reservations/Reservations'
 import { ClientesFrecuentes } from '../../features/ClientesFrecuentes/ClientesFrecuentes'
 import { PublicRestaurantsPage } from '../pages/PublicRestaurantsPage'
 
+import { useAuthStore } from '../../features/auth/store/authStore'
+
 export const AppRoutes = () => {
+  const user = useAuthStore((state) => state.user)
+
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
@@ -59,7 +64,13 @@ export const AppRoutes = () => {
             </RoleGuard>
           </ProtectedRoute>
         }
-      />
+      >
+        <Route index element={<ClientHome />} />
+        <Route path="reservations" element={<ClientReservations />} />
+        <Route path="menu" element={<ClientMenu />} />
+        <Route path="invoices" element={<ClientInvoices />} />
+        <Route path="profile" element={<UserProfile user={user} />} />
+      </Route>
    
     </Routes>
   )

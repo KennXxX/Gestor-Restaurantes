@@ -5,6 +5,7 @@ import {
     createOrder,
     getOrderById,
     getOrders,
+    getMyOrders,
     getOrdersByRestaurant,
     updateOrderStatus
 } from './order.controller.js'
@@ -19,6 +20,9 @@ router.post('/', validateJWT, isAdmin, uploadFieldImage.none(), createOrderValid
 
 // Obtener órdenes (listado general con filtros opcionales)
 router.get('/', validateJWT, isAdmin, getOrders)
+
+// Obtener órdenes del cliente actual
+router.get('/my-orders', validateJWT, getMyOrders)
 
 // Obtener detalle de orden
 router.get('/:id', validateJWT, isAdmin, getOrderById)
