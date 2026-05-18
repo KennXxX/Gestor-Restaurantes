@@ -150,6 +150,10 @@ export const validateUpdateMenu = [
         .optional()
         .isBoolean().withMessage('menuActive debe ser true o false'),
 
+    body('menuAvailable')
+        .optional()
+        .isBoolean().withMessage('menuAvailable debe ser true o false'),
+
     body('restaurantId')
         .optional()
         .isMongoId().withMessage('restaurantId no es válido')

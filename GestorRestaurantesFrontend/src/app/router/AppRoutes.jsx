@@ -4,7 +4,7 @@ import { VerifyEmailPage } from '../../features/auth/pages/VerifyEmailPage'
 import { ResetPasswordPage } from '../../features/auth/pages/ResetPasswordPage'
 import { UnauthorizedPage } from '../../features/auth/pages/UnauthorizedPage'
 import { DashboardPage } from '../layouts/DashboardPage.jsx'
-import { ClientPage, ClientHome, ClientReservations, ClientMenu, ClientInvoices } from '../pages/ClientPage'
+import { ClientPage, ClientHome, ClientReservations, ClientMenu, ClientInvoices, ClientOrders } from '../pages/ClientPage'
 import { ProtectedRoute } from './ProtectedRoute'
 import { UserProfile } from '../../features/auth/components/UserProfile'
 import { RoleGuard } from './RoleGuard'
@@ -17,9 +17,11 @@ import { Inventory } from '../../features/inventory/components/Inventory'
 import { Menus } from '../../features/Menus/Menus'
 import { Resenas } from '../../features/Resenas/Resenas'
 import { Orders } from '../../features/Orders/Orders'
+import { AdminRestaurantes } from '../../features/AdminRestaurantes/AdminRestaurantes'
 import { Reservations } from '../../features/Reservations/Reservations'
 import { ClientesFrecuentes } from '../../features/ClientesFrecuentes/ClientesFrecuentes'
 import { PublicRestaurantsPage } from '../pages/PublicRestaurantsPage'
+import { AdminRestaurantePage } from '../pages/AdminRestaurantePage'
 
 import { useAuthStore } from '../../features/auth/store/authStore'
 
@@ -50,11 +52,22 @@ export const AppRoutes = () => {
         <Route path="menus" element={<Menus />} />
         <Route path="orders" element={<Orders />} />
         <Route path="reservations" element={<Reservations />} />
+        <Route path="admin-restaurantes" element={<AdminRestaurantes />} />
         <Route path="clientes-frecuentes" element={<ClientesFrecuentes />} />
         <Route path="resenas" element={<Resenas />} />
         <Route path="facturas" element={<Facturas />} />
         <Route path="estadisticas" element={<Estadisticas />} />
       </Route>
+      <Route
+        path="/admin-restaurante"
+        element={
+          <ProtectedRoute>
+            <RoleGuard allowedRoles={['ADMIN_RESTAURANT']}>
+              <AdminRestaurantePage />
+            </RoleGuard>
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/client"
         element={
@@ -68,6 +81,7 @@ export const AppRoutes = () => {
         <Route index element={<ClientHome />} />
         <Route path="reservations" element={<ClientReservations />} />
         <Route path="menu" element={<ClientMenu />} />
+        <Route path="orders" element={<ClientOrders />} />
         <Route path="invoices" element={<ClientInvoices />} />
         <Route path="profile" element={<UserProfile user={user} />} />
       </Route>

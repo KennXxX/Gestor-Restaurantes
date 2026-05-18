@@ -16,6 +16,10 @@ export const createOrder = async (payload) => {
   return axiosApi.post('/orders', payload)
 }
 
+export const createMyOrder = async (payload) => {
+  return axiosApi.post('/orders/my-order', payload)
+}
+
 export const updateOrderStatus = async (id, status) => {
   return axiosApi.put(`/orders/status/${id}`, { status })
 }

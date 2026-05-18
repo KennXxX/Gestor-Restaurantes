@@ -72,7 +72,12 @@ export const useAuthStore = create(
           return {
             success: true,
             role,
-            redirectTo: role === 'ADMIN_ROLE' ? '/dashboard' : '/client',
+            redirectTo:
+              role === 'ADMIN_ROLE'
+                ? '/dashboard'
+                : role === 'ADMIN_RESTAURANT'
+                  ? '/admin-restaurante'
+                  : '/client',
           }
         } catch (error) {
           const message = error.response?.data?.message ?? 'Error de autenticación.'

@@ -204,3 +204,32 @@ export const deleteRestaurant = async (req, res) => {
         });
     }
 };
+
+export const assignAdmin = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { adminId } = req.body;
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ success: false, message: 'El ID del restaurante no es válido.' });
+        }
+
+        const restaurant = await Restaurant.findByIdAndUpdate(
+            id,
+            { adminId: adminId || null },
+            { new: true }
+        );
+
+        if (!restaurant) {
+            return res.status(404).json({ success: false, message: 'Restaurante no encontrado.' });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: adminId ? 'Administrador asignado correctamente.' : 'Administrador removido del restaurante.',
+            data: restaurant,
+        });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: 'Error al asignar administrador.', error: error.message });
+    }
+};

@@ -50,3 +50,7 @@ export const updateRestaurant = async (id, payload) => {
 export const deleteRestaurant = async (id) => {
   return axiosApi.delete(`/restaurants/${id}`)
 }
+
+export const assignAdmin = async (restaurantId, adminId) => {
+  return axiosApi.put(`/restaurants/${restaurantId}/assign-admin`, { adminId })
+}

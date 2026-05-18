@@ -1,6 +1,7 @@
 import { useAuthStore } from '../../features/auth/store/authStore'
 import { UserProfile } from '../../features/auth/components/UserProfile'
 import { ReservationView } from '../../features/Reservations/ReservationView'
+import { ClientOrderView } from '../../features/Orders/ClientOrderView'
 import { Outlet, NavLink, useNavigate, useOutletContext } from 'react-router-dom'
 
 export const ClientHome = () => {
@@ -42,6 +43,8 @@ export const ClientHome = () => {
 }
 
 export const ClientReservations = () => <ReservationView />
+
+export const ClientOrders = () => <ClientOrderView />
 
 export const ClientMenu = () => (
   <section className="client-section client-feature-section">
@@ -141,6 +144,12 @@ export const ClientPage = () => {
               className={({ isActive }) => `client-nav-link ${isActive ? 'client-nav-link--active' : ''}`}
             >
               Menú
+            </NavLink>
+            <NavLink
+              to="/client/orders"
+              className={({ isActive }) => `client-nav-link ${isActive ? 'client-nav-link--active' : ''}`}
+            >
+              Pedidos
             </NavLink>
             <NavLink
               to="/client/invoices"

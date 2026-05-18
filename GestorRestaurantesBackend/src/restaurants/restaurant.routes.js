@@ -6,7 +6,8 @@ import {
   getRestaurants,
   getRestaurantById,
   updateRestaurant,
-  deleteRestaurant
+  deleteRestaurant,
+  assignAdmin
 } from "./restaurant.controller.js";
 import { uploadFieldImage } from "../../middlewares/file-uploader.js";
 import { createRestaurantValidator, updateRestaurantValidator } from "../../middlewares/validateRestaurants.js";
@@ -43,5 +44,11 @@ router.get("/:id", getRestaurantById);
  * @desc    Eliminar restaurante (soft delete recomendado)
  */
   router.delete("/:id", validateJWT, isAdmin, deleteRestaurant);
+
+/**
+ * @route   PUT /gestorRestaurantes/api/v1/restaurants/:id/assign-admin
+ * @desc    Asignar administrador de restaurante
+ */
+  router.put("/:id/assign-admin", validateJWT, isAdmin, assignAdmin);
 
 export default router;

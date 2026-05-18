@@ -198,6 +198,100 @@ export const getOrderById = async (req, res) => {
   }
 }
 
+export const createMyOrder = async (req, res) => {
+  try {
+    let { restaurantId, tableId, items, orderType = 'EN_RESTAURANTE', deliveryAddress, coupon } = req.body
+
+    const customerUserId = req.userId || req.user?.sub || req.user?.uid || null
+
+    if (typeof items === 'string') {
+      try { items = JSON.parse(items) } catch (_err) {
+        items = items.split(',').map(id => ({ menuId: id.trim(), quantity: 1 }))
+      }
+    }
+
+    const normalizedItems = (items || []).map(item => ({
+      menuId: item.menuId || item.id || item._id || item,
+      quantity: Number(item.quantity) > 0 ? Number(item.quantity) : 1
+    }))
+
+    let total = 0
+    let itemsWithPrice = []
+    if (normalizedItems.length > 0) {
+      const menuIds = normalizedItems.map(item => item.menuId)
+      const menuItems = await Menu.find({ _id: { $in: menuIds } })
+      const priceMap = {}
+      menuItems.forEach(menu => { priceMap[menu._id.toString()] = menu.menuPrice })
+      itemsWithPrice = normalizedItems.map(item => {
+        const price = priceMap[item.menuId] || 0
+        total += price * item.quantity
+        return { menuId: item.menuId, quantity: item.quantity, price }
+      })
+    }
+
+    const shouldRequireAddress = orderType === 'A_DOMICILIO'
+    if (shouldRequireAddress && !deliveryAddress) {
+      return res.status(400).json({ success: false, message: 'deliveryAddress es obligatoria para pedidos a domicilio' })
+    }
+
+    const SHIPPING_FEE = 20
+    const resolvedTableId = orderType === 'EN_RESTAURANTE' ? (tableId || null) : null
+    if (orderType === 'A_DOMICILIO') total += SHIPPING_FEE
+
+    try {
+      for (const item of itemsWithPrice) {
+        await changeStock(item.menuId, restaurantId, -item.quantity)
+      }
+    } catch (stockErr) {
+      if (stockErr.message === 'Stock insuficiente') {
+        return res.status(400).json({ success: false, message: 'Stock insuficiente para uno de los artículos' })
+      }
+      throw stockErr
+    }
+
+    if (coupon) {
+      const now = new Date()
+      const promo = await Promotion.findOne({
+        restaurantId, couponCode: coupon, isActive: true, isApproved: true,
+        $or: [
+          { startDate: null, endDate: null },
+          { startDate: { $lte: now }, endDate: null },
+          { startDate: null, endDate: { $gte: now } },
+          { startDate: { $lte: now }, endDate: { $gte: now } }
+        ]
+      })
+      if (!promo) return res.status(400).json({ success: false, message: 'Cupón inválido o no disponible' })
+    }
+
+    const order = new Order({
+      userId: customerUserId,
+      restaurantId,
+      tableId: resolvedTableId,
+      items: itemsWithPrice,
+      total,
+      coupon: coupon || null,
+      adminId: null,
+      orderType,
+      deliveryAddress: shouldRequireAddress ? deliveryAddress : null
+    })
+
+    const savedOrder = await order.save()
+
+    try {
+      const invoice = await createInvoiceFromOrder(savedOrder)
+      savedOrder.invoiceId = invoice._id
+      await savedOrder.save()
+    } catch (invErr) {
+      console.error('Error generating invoice:', invErr)
+    }
+
+    return res.status(201).json({ success: true, message: 'Pedido creado correctamente', order: savedOrder })
+  } catch (err) {
+    console.error(err)
+    return res.status(500).json({ success: false, message: 'Error al crear el pedido', error: err?.message })
+  }
+}
+
 export const getMyOrders = async (req, res) => {
   try {
     const userId = req.user._id
@@ -257,6 +351,7 @@ export const updateOrderStatus = async (req, res) => {
 
 export default {
   createOrder,
+  createMyOrder,
   getOrders,
   getMyOrders,
   getOrderById,

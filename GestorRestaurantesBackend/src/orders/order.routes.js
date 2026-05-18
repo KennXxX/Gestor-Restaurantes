@@ -3,6 +3,7 @@
 import { Router } from 'express'
 import {
     createOrder,
+    createMyOrder,
     getOrderById,
     getOrders,
     getMyOrders,
@@ -17,6 +18,9 @@ const router = Router()
  
 // Crear orden (accept JSON or form-data without files)
 router.post('/', validateJWT, isAdmin, uploadFieldImage.none(), createOrderValidator, createOrder)
+
+// Crear pedido como cliente autenticado (sin permisos de admin)
+router.post('/my-order', validateJWT, uploadFieldImage.none(), createOrderValidator, createMyOrder)
 
 // Obtener órdenes (listado general con filtros opcionales)
 router.get('/', validateJWT, isAdmin, getOrders)
