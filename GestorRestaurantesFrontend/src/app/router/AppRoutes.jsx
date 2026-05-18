@@ -19,7 +19,9 @@ import { Resenas } from '../../features/Resenas/Resenas'
 import { Orders } from '../../features/Orders/Orders'
 import { Reservations } from '../../features/Reservations/Reservations'
 import { ClientesFrecuentes } from '../../features/ClientesFrecuentes/ClientesFrecuentes'
+import { Promotions } from '../../features/Promotions/Promotions'
 import { PublicRestaurantsPage } from '../pages/PublicRestaurantsPage'
+import { AdminDashboardHome } from '../pages/AdminDashboardHome'
 
 import { useAuthStore } from '../../features/auth/store/authStore'
 
@@ -44,12 +46,14 @@ export const AppRoutes = () => {
           </ProtectedRoute>
         }
       >
+        <Route index element={<AdminDashboardHome />} />
         <Route path="restaurantes" element={<Restaurantes />} />
         <Route path="mesas" element={<Mesas />} />
         <Route path="inventory" element={<Inventory />} />
         <Route path="menus" element={<Menus />} />
         <Route path="orders" element={<Orders />} />
         <Route path="reservations" element={<Reservations />} />
+        <Route path="promociones" element={<Promotions />} />
         <Route path="clientes-frecuentes" element={<ClientesFrecuentes />} />
         <Route path="resenas" element={<Resenas />} />
         <Route path="facturas" element={<Facturas />} />

@@ -2,6 +2,17 @@ import { Link, useLocation } from "react-router-dom";
 
 const navItems = [
   {
+    label: "Inicio",
+    to: "/dashboard",
+    exact: true,
+    icon: (
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 10.5L12 3l9 7.5" />
+        <path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10" />
+      </svg>
+    ),
+  },
+  {
     label: "Mesas",
     to: "/dashboard/mesas",
     icon: (
@@ -44,6 +55,15 @@ const navItems = [
         <line x1="8" y1="2" x2="8" y2="6" />
         <line x1="3" y1="10" x2="21" y2="10" />
         <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01" />
+      </svg>
+    ),
+  },
+  {
+    label: "Promociones",
+    to: "/dashboard/promociones",
+    icon: (
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 2l2.5 5 5.5.8-4 3.9.9 5.6-4.9-2.7-4.9 2.7.9-5.6-4-3.9 5.5-.8L12 2z" />
       </svg>
     ),
   },
@@ -125,7 +145,9 @@ export const Sidebar = () => {
 
       <ul className="list-none m-0 p-0 flex flex-col gap-0.5">
         {navItems.map((item) => {
-          const isActive = location.pathname.startsWith(item.to);
+          const isActive = item.exact
+            ? location.pathname === item.to
+            : location.pathname.startsWith(item.to);
 
           return (
             <li key={item.to}>

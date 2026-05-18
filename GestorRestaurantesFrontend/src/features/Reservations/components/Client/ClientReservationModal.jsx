@@ -114,6 +114,17 @@ export const ClientReservationModal = ({
             </label>
 
             <label className={labelCls}>
+              Cupón de descuento (opcional)
+              <input
+                id="rv-coupon"
+                className={inputCls}
+                placeholder="Ej: FIESTA20"
+                value={form.coupon}
+                onChange={(e) => set('coupon', e.target.value)}
+              />
+            </label>
+
+            <label className={labelCls}>
               Foto (opcional)
               <input id="rv-photo" type="file" accept="image/*" className="mt-1.5 w-full cursor-pointer rounded-xl border border-dashed border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-500" onChange={(e) => set('photo', e.target.files?.[0] || null)} />
             </label>
@@ -226,6 +237,7 @@ export const ClientReservationModal = ({
                 ['🎉', 'Tipo', form.typeReservation === 'PERSONAL' ? 'Personal' : 'Evento especial'],
                 ['🪑', 'Mesas', form.tableId.map((id) => { const t = tables.find((x) => x._id === id); return t ? t.tableName || `Mesa ${id.slice(-4)}` : id }).join(', ')],
                 ...(form.description ? [['📝', 'Nota', form.description]] : []),
+                ...(form.coupon ? [['🏷️', 'Cupón', form.coupon]] : []),
               ].map(([icon, label, value]) => (
                 <div key={label} className="flex items-start justify-between gap-4 border-b border-slate-100 py-2.5 last:border-0 text-sm">
                   <span className="flex items-center gap-2 text-slate-500 shrink-0"><span>{icon}</span>{label}</span>

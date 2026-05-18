@@ -8,7 +8,7 @@ import {
   updateReservation,
 } from '../../shared/api/reservations'
 import { showError, showSuccess } from '../../shared/utils/toast'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useSearchParams } from 'react-router-dom'
 import { getErrorMessage, toInputDateTime, formatDate, STATUS_LABEL, STATUS_COLORS } from './utils/reservationHelpers'
 import { AvailabilityBadge } from './components/Client/AvailabilityBadge'
 import { StepDot } from './components/Client/StepDot'
@@ -24,6 +24,7 @@ const emptyForm = {
   numberPeople: 2,
   typeReservation: 'PERSONAL',
   description: '',
+  coupon: '',
   startDate: '',
   endDate: '',
   photo: null,
@@ -39,6 +40,7 @@ const labelCls = 'flex flex-col text-sm font-semibold text-slate-700'
 export const ReservationView = () => {
   const location = useLocation();
   const prefillRestaurantId = location.state?.prefillRestaurantId || '';
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [activeViewTab, setActiveViewTab] = useState('RESERVATIONS'); // 'RESERVATIONS' or 'HISTORY'
   const [step, setStep] = useState(1)
@@ -79,6 +81,19 @@ export const ReservationView = () => {
       .catch(() => {})
     loadMyReservations()
   }, [loadMyReservations])
+
+  useEffect(() => {
+    const couponParam = searchParams.get('coupon')
+    if (!couponParam) return
+
+    setForm((prev) => ({ ...prev, coupon: couponParam }))
+    setIsModalOpen(true)
+    setStep(1)
+
+    const nextParams = new URLSearchParams(searchParams)
+    nextParams.delete('coupon')
+    setSearchParams(nextParams, { replace: true })
+  }, [searchParams, setSearchParams])
 
   // ── load tables on restaurant change ─────────────────────────────────────
   useEffect(() => {
@@ -159,6 +174,7 @@ export const ReservationView = () => {
       numberPeople: res.numberPeople || 2,
       typeReservation: res.typeReservation || 'PERSONAL',
       description: res.description || '',
+      coupon: res.coupon || '',
       startDate: toInputDateTime(res.startDate),
       endDate: toInputDateTime(res.endDate),
       photo: null,
@@ -197,6 +213,7 @@ export const ReservationView = () => {
       numberPeople: Number(form.numberPeople) || 1,
       typeReservation: form.typeReservation,
       description: form.description,
+      coupon: form.coupon?.trim() || undefined,
       startDate: new Date(form.startDate).toISOString(),
       endDate: new Date(form.endDate).toISOString(),
       photo: form.photo,

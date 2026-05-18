@@ -50,6 +50,19 @@ export const getActivePromotions = async (_req, res) => {
   }
 }
 
+export const getAllPromotions = async (_req, res) => {
+  try {
+    const promotions = await Promotion.find()
+      .populate('restaurantId')
+      .sort({ createdAt: -1 })
+
+    return res.status(200).json({ success: true, promotions })
+  } catch (err) {
+    console.error(err)
+    return res.status(500).json({ success: false, message: 'Error obteniendo promociones', error: err.message })
+  }
+}
+
 export const approvePromotion = async (req, res) => {
   try {
     const { id } = req.params

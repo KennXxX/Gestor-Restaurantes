@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { getRestaurants } from '../../shared/api/restaurants'
 import { getTables } from '../../shared/api/tables'
 import { getMenus } from '../../shared/api/menus'
@@ -25,6 +26,7 @@ export const Orders = () => {
   const [error, setError] = useState(null)
   const [restaurantFilter, setRestaurantFilter] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [searchParams, setSearchParams] = useSearchParams()
 
   const [form, setForm] = useState({
     userId: '',
@@ -32,6 +34,7 @@ export const Orders = () => {
     tableId: '',
     orderType: 'EN_RESTAURANTE',
     deliveryAddress: '',
+    coupon: '',
     items: [emptyItem],
   })
 
@@ -109,6 +112,18 @@ export const Orders = () => {
     loadTables(form.restaurantId)
   }, [form.restaurantId])
 
+  useEffect(() => {
+    const couponParam = searchParams.get('coupon')
+    if (!couponParam) return
+
+    setForm((prev) => ({ ...prev, coupon: couponParam }))
+    setIsModalOpen(true)
+
+    const nextParams = new URLSearchParams(searchParams)
+    nextParams.delete('coupon')
+    setSearchParams(nextParams, { replace: true })
+  }, [searchParams, setSearchParams])
+
   const handleItemChange = (index, key, value) => {
     setForm((prev) => {
       const items = [...prev.items]
@@ -135,6 +150,7 @@ export const Orders = () => {
       tableId: '',
       orderType: 'EN_RESTAURANTE',
       deliveryAddress: '',
+      coupon: '',
       items: [emptyItem],
     }))
   }
@@ -174,6 +190,11 @@ export const Orders = () => {
       restaurantId: form.restaurantId,
       orderType: form.orderType,
       items: cleanItems,
+    }
+
+    const trimmedCoupon = form.coupon?.trim()
+    if (trimmedCoupon) {
+      payload.coupon = trimmedCoupon
     }
 
     if (form.orderType === 'EN_RESTAURANTE') {

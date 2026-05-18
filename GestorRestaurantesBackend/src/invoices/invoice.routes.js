@@ -4,8 +4,10 @@ import {
   getInvoices,
   getIssuedInvoices,
   getInvoicesByRestaurant,
+  getMyInvoices,
   getInvoiceById,
-  exportInvoicePDF
+  exportInvoicePDF,
+  exportMyInvoicePDF
 } from './invoice.controller.js';
 import {
   validateInvoiceId,
@@ -18,6 +20,8 @@ const router = Router();
 router.post('/', validateJWT, isAdmin, validateCreateInvoice, createInvoice);
 router.get('/', validateJWT, isAdmin, getInvoices);
 router.get('/issued', validateJWT, isAdmin, getIssuedInvoices);
+router.get('/my', validateJWT, getMyInvoices);
+router.get('/my/:id/pdf', validateJWT, validateInvoiceId, exportMyInvoicePDF);
 router.get('/restaurant/:restaurantId', validateJWT, isAdmin, getInvoicesByRestaurant);
 router.get('/:id/pdf', validateJWT, isAdmin, validateInvoiceId, exportInvoicePDF);
 router.get('/:id', validateJWT, isAdmin, validateInvoiceId, getInvoiceById);
