@@ -219,6 +219,40 @@ export const Estadisticas = () => {
           </section>
         </aside>
       </div>
+
+      <section className="rounded-[26px] border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-xl font-bold text-slate-900">Platos más vendidos</h2>
+            <p className="text-sm text-slate-500">Los platillos con mayor volumen de venta por categoría.</p>
+          </div>
+          <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700">Top 4</span>
+        </div>
+
+        {loading ? (
+          <p className="mt-8 text-sm text-slate-500">Cargando los platos más vendidos…</p>
+        ) : error ? (
+          <p className="mt-8 text-sm text-rose-500">No se pudieron cargar los platos más vendidos.</p>
+        ) : statistics.bestSellingDishes.length === 0 ? (
+          <p className="mt-8 text-sm text-slate-500">No hay datos de ventas de platillos disponibles.</p>
+        ) : (
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {statistics.bestSellingDishes.slice(0, 4).map((dish) => (
+              <article key={dish.menuId} className="rounded-3xl border border-slate-200 p-4 shadow-sm">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.18em] text-slate-400">{dish.menuCategory?.replace('_', ' ') || 'Sin categoría'}</p>
+                    <h3 className="mt-2 text-lg font-semibold text-slate-900">{dish.dishName}</h3>
+                  </div>
+                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">{dish.unitsSold} uds.</span>
+                </div>
+                <p className="mt-4 text-sm text-slate-500">{dish.restaurantName}</p>
+                <p className="mt-3 text-sm font-semibold text-slate-900">{formatCurrency(dish.revenue)}</p>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
     </section>
   )
 }
