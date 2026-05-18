@@ -85,13 +85,13 @@ function MenuFormModal({ form, setForm, editing, saving, photoPreview, setPhotoP
           </label>
 
           <label className="text-sm font-semibold text-slate-700">
-            DescripciÃ³n
+            Descripción
             <textarea
               name="menuDescription"
               value={form.menuDescription}
               onChange={handleChange}
               rows={2}
-              placeholder="DescripciÃ³n del platillo..."
+              placeholder="Descripcion del platillo..."
               className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-800 outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 resize-none"
             />
           </label>
@@ -112,7 +112,7 @@ function MenuFormModal({ form, setForm, editing, saving, photoPreview, setPhotoP
               />
             </label>
             <label className="text-sm font-semibold text-slate-700">
-              CategorÃ­a
+              Categoría
               <select
                 name="menuCategory"
                 value={form.menuCategory}
@@ -172,11 +172,11 @@ function MenuFormModal({ form, setForm, editing, saving, photoPreview, setPhotoP
             <img src={photoPreview} alt="Vista previa" className="h-36 w-full rounded-2xl border border-slate-100 object-cover" />
           )}
 
-          <div className="grid gap-3 rounded-2xl bg-slate-50 p-4">
+          <div className="grid gap-3 rounded-2xl bg -slate-50 p-4">
             <div className="flex cursor-pointer items-center justify-between gap-3">
               <div>
-                <p className="text-sm font-semibold text-slate-700">Activo en el menÃº</p>
-                <p className="text-xs text-slate-400">El platillo aparece como opciÃ³n en el catÃ¡logo.</p>
+                <p className="text-sm font-semibold text-slate-700">Activo en el menú</p>
+                <p className="text-xs text-slate-400">El platillo aparece como opción en el catálogo.</p>
               </div>
               <button
                 type="button"
@@ -287,7 +287,7 @@ export const Menus = () => {
       setInventories(invRes.data?.inventories || [])
       setPromotions(promoRes.data?.promotions || [])
     } catch (err) {
-      setError(getErrorMessage(err, 'No se pudo cargar la informaciÃ³n.'))
+      setError(getErrorMessage(err, 'No se pudo cargar la información.'))
     } finally {
       setLoading(false)
     }
@@ -397,13 +397,13 @@ export const Menus = () => {
         <div className="relative flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
             <p className="inline-flex rounded-full bg-orange-700 px-4 py-1 text-xs font-semibold uppercase tracking-[0.32em] text-orange-50">
-              MenÃºs
+              Menús
             </p>
             <h1 className="font-display mt-4 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
-              GestiÃ³n de platillos
+              Gestión de platillos
             </h1>
             <p className="mt-3 text-sm text-slate-700 sm:text-base">
-              Crea y administra platillos, define categorÃ­as, precios, disponibilidad e imÃ¡genes. Visualiza las promociones activas de cada restaurante.
+              Crea y administra platillos, define categorías, precios, disponibilidad e imágenes. Visualiza las promociones activas de cada restaurante.
             </p>
           </div>
           <button
@@ -585,7 +585,7 @@ export const Menus = () => {
                     <h3 className="font-semibold text-slate-900 leading-snug">{menu.menuName}</h3>
                     <span className="shrink-0 text-sm font-bold text-emerald-600">Q{menu.menuPrice}</span>
                   </div>
-                  <p className="text-xs text-slate-500 leading-relaxed line-clamp-2">{menu.menuDescription || 'Sin descripciÃ³n.'}</p>
+                  <p className="text-xs text-slate-500 leading-relaxed line-clamp-2">{menu.menuDescription || 'Sin descripción.'}</p>
                   <p className="text-xs text-slate-400">{restaurantName}</p>
 
                   <div className="flex items-center gap-1.5">

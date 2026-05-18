@@ -5,6 +5,7 @@ import { ResetPasswordPage } from '../../features/auth/pages/ResetPasswordPage'
 import { UnauthorizedPage } from '../../features/auth/pages/UnauthorizedPage'
 import { DashboardPage } from '../layouts/DashboardPage.jsx'
 import { ClientPage, ClientHome, ClientReservations, ClientMenu, ClientInvoices, ClientOrders } from '../pages/ClientPage'
+import { ClientReviews } from '../../features/Resenas/ClientReviews'
 import { ProtectedRoute } from './ProtectedRoute'
 import { UserProfile } from '../../features/auth/components/UserProfile'
 import { RoleGuard } from './RoleGuard'
@@ -22,6 +23,8 @@ import { Reservations } from '../../features/Reservations/Reservations'
 import { ClientesFrecuentes } from '../../features/ClientesFrecuentes/ClientesFrecuentes'
 import { PublicRestaurantsPage } from '../pages/PublicRestaurantsPage'
 import { AdminRestaurantePage } from '../pages/AdminRestaurantePage'
+import { AdminRestauranteHome } from '../../features/AdminRestaurantes/AdminRestauranteHome'
+import { AdminUsuarios } from '../../features/AdminUsuarios/AdminUsuarios'
 
 import { useAuthStore } from '../../features/auth/store/authStore'
 
@@ -57,6 +60,7 @@ export const AppRoutes = () => {
         <Route path="resenas" element={<Resenas />} />
         <Route path="facturas" element={<Facturas />} />
         <Route path="estadisticas" element={<Estadisticas />} />
+        <Route path="usuarios" element={<AdminUsuarios />} />
       </Route>
       <Route
         path="/admin-restaurante"
@@ -67,7 +71,17 @@ export const AppRoutes = () => {
             </RoleGuard>
           </ProtectedRoute>
         }
-      />
+      >
+        <Route index element={<AdminRestauranteHome />} />
+        <Route path="menus" element={<Menus />} />
+        <Route path="mesas" element={<Mesas />} />
+        <Route path="orders" element={<Orders />} />
+        <Route path="reservations" element={<Reservations />} />
+        <Route path="inventory" element={<Inventory />} />
+        <Route path="resenas" element={<Resenas />} />
+        <Route path="facturas" element={<Facturas />} />
+        <Route path="estadisticas" element={<Estadisticas />} />
+      </Route>
       <Route
         path="/client"
         element={
@@ -83,6 +97,7 @@ export const AppRoutes = () => {
         <Route path="menu" element={<ClientMenu />} />
         <Route path="orders" element={<ClientOrders />} />
         <Route path="invoices" element={<ClientInvoices />} />
+        <Route path="reviews" element={<ClientReviews />} />
         <Route path="profile" element={<UserProfile user={user} />} />
       </Route>
    

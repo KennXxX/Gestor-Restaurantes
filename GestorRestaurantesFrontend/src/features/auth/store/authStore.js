@@ -37,7 +37,7 @@ export const useAuthStore = create(
           const role = user?.role ?? data.role
           const token = data.accessToken ?? data.token ?? null
 
-          if (!['ADMIN_ROLE', 'USER_ROLE'].includes(role)) {
+          if (!['ADMIN_ROLE', 'USER_ROLE', 'ADMIN_RESTAURANT'].includes(role)) {
             const message = 'No tienes permisos para acceder a esta área.'
             set({
               ...emptySession,
