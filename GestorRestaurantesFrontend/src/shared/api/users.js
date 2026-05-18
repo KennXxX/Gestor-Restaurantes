@@ -12,6 +12,10 @@ export const createAdminRestaurant = async (payload) => {
   return axiosAuth.post('/users/admin-restaurant', payload)
 }
 
+export const sendAssignmentNotification = async (userId, restaurantName) => {
+  return axiosAuth.post('/users/send-assignment-notification', { userId, restaurantName })
+}
+
 export const updateUserRole = async (userId, roleName) => {
   return axiosAuth.put(`/users/${userId}/role`, { roleName })
 }

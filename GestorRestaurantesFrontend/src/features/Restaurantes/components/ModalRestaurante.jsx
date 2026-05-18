@@ -32,6 +32,8 @@ const normalizePhoto = (photo) => {
   return photo
 }
 
+
+
 export const ModalRestaurante = ({ isOpen, onClose, onSaved, restaurantToEdit }) => {
   const [form, setForm] = useState(emptyForm)
   const [saving, setSaving] = useState(false)

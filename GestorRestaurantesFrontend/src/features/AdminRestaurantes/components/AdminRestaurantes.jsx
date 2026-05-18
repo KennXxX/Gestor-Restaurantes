@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { getRestaurants, assignAdmin } from '../../shared/api/restaurants'
-import { getUsersByRole, createAdminRestaurant, sendAssignmentNotification } from '../../shared/api/users'
-import { showError, showSuccess } from '../../shared/utils/toast'
-import { useAuthStore } from '../auth/store/authStore'
-import AdminFormModal from './components/AdminFormModal'
-import AdminInfoModal from './components/AdminInfoModal'
+import { getRestaurants, assignAdmin } from '../../../shared/api/restaurants'
+import { getUsersByRole, createAdminRestaurant, sendAssignmentNotification } from '../../../shared/api/users'
+import { showError, showSuccess } from '../../../shared/utils/toast'
+import { useAuthStore } from '../../auth/store/authStore'
+import AdminFormModal from './AdminFormModal'
+import AdminInfoModal from './AdminInfoModal'
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 const getErrMsg = (err, fallback) =>
@@ -32,17 +32,6 @@ const AdminCard = ({ admin, restaurants, onReassign, onView }) => {
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedRestaurantId, setSelectedRestaurantId] = useState(assignedRestaurant?._id || '')
   const [saving, setSaving] = useState(false)
-
-  useEffect(() => {
-    if (modalOpen) {
-      console.log('DEBUG AdminCard Modal Opened:', {
-        adminId: admin.id,
-        restaurantsCount: restaurants.length,
-        firstRestaurant: restaurants[0],
-        filtered: restaurants.filter((r) => !r.adminId || r.adminId === admin.id),
-      })
-    }
-  }, [modalOpen, admin.id, restaurants])
 
   const handleSaveReassignment = async () => {
     setSaving(true)
@@ -112,6 +101,7 @@ const AdminCard = ({ admin, restaurants, onReassign, onView }) => {
           <div className="w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl">
             <h3 className="text-lg font-semibold text-slate-900">{assignedRestaurant ? 'Reasignar restaurante' : 'Asignar restaurante'}</h3>
             <p className="text-xs text-slate-500 mt-1">Selecciona el restaurante para asignar a este administrador.</p>
+            {console.log('DEBUG - restaurants:', restaurants, 'admin.id:', admin.id, 'filtered:', restaurants.filter((r) => !r.adminId || r.adminId === admin.id))}
             <select
               value={selectedRestaurantId}
               onChange={(e) => setSelectedRestaurantId(e.target.value)}

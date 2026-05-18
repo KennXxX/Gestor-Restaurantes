@@ -151,3 +151,33 @@ export const sendPasswordChangedEmail = async (email, name) => {
     throw error;
   }
 };
+
+export const sendRestaurantAssignmentEmail = async (email, name, restaurantName) => {
+  if (!transporter) {
+    throw new Error('El transportador SMTP no está configurado');
+  }
+
+  try {
+    const mailOptions = {
+      from: `${config.smtp.fromName} <${config.smtp.fromEmail}>`,
+      to: email,
+      subject: `Has sido asignado como administrador de ${restaurantName}`,
+      html: `
+        <h2>Asignación como Administrador de Restaurante</h2>
+        <p>Hola ${name},</p>
+        <p>Te comunicamos que has sido asignado como administrador del restaurante <strong>${restaurantName}</strong>.</p>
+        <p>A partir de ahora tendrás acceso a las herramientas de gestión y administración de este establecimiento.</p>
+        <p>Puedes ingresar a tu panel de control para comenzar a gestionar tu restaurante.</p>
+        <p>Si tienes alguna pregunta o necesitas asistencia, no dudes en contactar a nuestro equipo de soporte.</p>
+        <p>¡Bienvenido al equipo de administradores!</p>
+        <br>
+        <p>Este es un correo automático, por favor no respondas a este mensaje.</p>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+  } catch (error) {
+    console.error('Error al enviar el correo de asignación de restaurante:', error);
+    throw error;
+  }
+};

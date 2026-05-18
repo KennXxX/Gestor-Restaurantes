@@ -2,6 +2,16 @@ import { Link, useLocation } from "react-router-dom";
 
 const navItems = [
   {
+    label: "Inicio",
+    to: "/dashboard",
+    icon: (
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 11.5L12 4l9 7.5" />
+        <path d="M9 21V13h6v8" />
+      </svg>
+    ),
+  },
+  {
     label: "Mesas",
     to: "/dashboard/mesas",
     icon: (
@@ -137,7 +147,7 @@ export const Sidebar = () => {
 
       <ul className="list-none m-0 p-0 flex flex-col gap-0.5">
         {navItems.map((item) => {
-          const isActive = location.pathname.startsWith(item.to);
+          const isActive = item.to === '/dashboard' ? location.pathname === '/dashboard' : location.pathname.startsWith(item.to);
 
           return (
             <li key={item.to}>

@@ -18,6 +18,7 @@ import { Menus } from '../../features/Menus/Menus'
 import { Resenas } from '../../features/Resenas/Resenas'
 import { Orders } from '../../features/Orders/Orders'
 import { AdminRestaurantes } from '../../features/AdminRestaurantes/AdminRestaurantes'
+import { DashboardHome } from '../pages/DashboardHome'
 import { Reservations } from '../../features/Reservations/Reservations'
 import { ClientesFrecuentes } from '../../features/ClientesFrecuentes/ClientesFrecuentes'
 import { PublicRestaurantsPage } from '../pages/PublicRestaurantsPage'
@@ -46,6 +47,7 @@ export const AppRoutes = () => {
           </ProtectedRoute>
         }
       >
+        <Route index element={<DashboardHome />} />
         <Route path="restaurantes" element={<Restaurantes />} />
         <Route path="mesas" element={<Mesas />} />
         <Route path="inventory" element={<Inventory />} />
