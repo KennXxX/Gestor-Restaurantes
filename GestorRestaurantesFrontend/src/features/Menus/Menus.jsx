@@ -142,25 +142,37 @@ export const Menus = () => {
 
     setSaving(true)
     try {
+      const menuPayload = {
+        menuName: form.menuName,
+        menuDescription: form.menuDescription,
+        menuPrice: form.menuPrice,
+        menuCategory: form.menuCategory,
+        restaurantId: form.restaurantId,
+        menuActive: form.menuActive,
+        menuPhoto: form.menuPhoto
+      }
+
+      const inventoryPayload = {
+        menuId: editing?._id,
+        restaurantId: form.restaurantId,
+        quantity: Number(form.stockQuantity) || 0
+      }
+
       if (editing) {
-        await updateMenu(editing._id, form)
+        await updateMenu(editing._id, menuPayload)
         
         // Update Inventory Stock
         const menuInventory = inventories.find(inv => inv.menuId === editing._id)
         if (menuInventory) {
-          await updateInventory(menuInventory._id, { quantity: Number(form.stockQuantity) || 0 })
+          await updateInventory(menuInventory._id, { quantity: inventoryPayload.quantity })
         } else {
           // If no inventory exists for this menu, create one
-          await createInventory({
-            menuId: editing._id,
-            restaurantId: form.restaurantId,
-            quantity: Number(form.stockQuantity) || 0
-          })
+          await createInventory(inventoryPayload)
         }
         
         showSuccess('Menú y stock actualizados.')
       } else {
-        const createdMenuRes = await createMenu(form)
+        const createdMenuRes = await createMenu(menuPayload)
         const createdMenuId = createdMenuRes.data?.menu?._id
         
         // Create Initial Inventory
