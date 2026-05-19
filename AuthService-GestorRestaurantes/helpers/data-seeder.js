@@ -19,46 +19,61 @@ export const seedData = async () => {
     });
   }
 
-  // Verificar si ya existe algún usuario
-  const userCount = await User.count();
-  if (userCount === 0) {
-    const adminRole = await Role.findOne({ where: { Name: ADMIN_ROLE } });
-    if (adminRole) {
-      const userId = generateUserId();
-      const profileId = generateUserId();
-      const emailId = generateUserId();
-      const userRoleId = generateUserId();
-      const password = await hashPassword('Admin1234!');
+  // Seed de usuarios por defecto
+  const seedUsers = [
+    {
+      name: 'Admin',
+      email: 'admin@gestor.local',
+      password: 'Admin1234!',
+      phone: '39539423',
+      roleName: ADMIN_ROLE,
+    },
+    {
+      name: 'Cliente Test',
+      email: 'cliente@gestor.local',
+      password: 'Cliente1234!',
+      phone: '00000000',
+      roleName: USER_ROLE,
+    },
+  ];
 
-      // Crear usuario admin
-      const adminUser = await User.create({
-        Id: userId,
-        Name: 'Admin',
-        Email: 'admin@gestor.local',
-        Password: password,
-        IsActive: true,
-      });
+  for (const seed of seedUsers) {
+    const existing = await User.findOne({ where: { Email: seed.email } });
+    if (existing) continue;
 
-      await UserProfile.create({
-        Id: profileId,
-        UserId: userId,
-        Imagen: '',
-        Phone: '39539423',
-      });
+    const role = await Role.findOne({ where: { Name: seed.roleName } });
+    if (!role) continue;
 
-      await UserEmail.create({
-        Id: emailId,
-        UserId: userId,
-        EmailVerified: true,
-        EmailVerificationToken: null,
-        EmailVerificationTokenExpiry: null,
-      });
+    const userId = generateUserId();
+    const password = await hashPassword(seed.password);
 
-      await UserRole.create({
-        Id: userRoleId,
-        UserId: userId,
-        RoleId: adminRole.Id,
-      });
-    }
+    await User.create({
+      Id: userId,
+      Name: seed.name,
+      Email: seed.email,
+      Password: password,
+      IsActive: true,
+    });
+
+    await UserProfile.create({
+      Id: generateUserId(),
+      UserId: userId,
+      Imagen: '',
+      Phone: seed.phone,
+    });
+
+    await UserEmail.create({
+      Id: generateUserId(),
+      UserId: userId,
+      EmailVerified: true,
+      EmailVerificationToken: null,
+      EmailVerificationTokenExpiry: null,
+    });
+
+    await UserRole.create({
+      Id: generateUserId(),
+      UserId: userId,
+      RoleId: role.Id,
+    });
   }
 };

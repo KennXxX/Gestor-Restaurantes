@@ -81,6 +81,10 @@ const getBestSellingDishes = async (restaurantId = null) => {
         _id: 0,
         menuId: '$_id',
         dishName: { $ifNull: ['$menu.menuName', 'Plato eliminado'] },
+        menuCategory: '$menu.menuCategory',
+        menuDescription: '$menu.menuDescription',
+        menuPrice: { $ifNull: ['$menu.menuPrice', 0] },
+        menuPhoto: '$menu.menuPhoto',
         restaurantName: { $ifNull: ['$restaurant.restaurantName', 'Restaurante no encontrado'] },
         unitsSold: 1,
         revenue: { $round: ['$revenue', 2] }
@@ -89,6 +93,20 @@ const getBestSellingDishes = async (restaurantId = null) => {
     { $sort: { unitsSold: -1, revenue: -1 } },
     { $limit: 20 }
   ])
+}
+
+const getTopSellingMenus = async () => {
+  const bestSelling = await getBestSellingDishes()
+  const categories = ['ENTRADA', 'PLATO_FUERTE', 'POSTRE', 'BEBIDA']
+  const topByCategory = categories
+    .map((category) => bestSelling.find((item) => item.menuCategory === category))
+    .filter(Boolean)
+
+  const remaining = bestSelling
+    .filter((item) => !topByCategory.some((top) => String(top.menuId) === String(item.menuId)))
+    .slice(0, Math.max(0, 4 - topByCategory.length))
+
+  return [...topByCategory, ...remaining].slice(0, 4)
 }
 
 const getPeakHours = async (restaurantId = null) => {
@@ -177,12 +195,30 @@ export const getAdminStatistics = async (_req, res) => {
   }
 }
 
+export const getTopSellingMenusController = async (_req, res) => {
+  try {
+    const topSellingMenus = await getTopSellingMenus()
+    return res.json({ success: true, data: { topSellingMenus } })
+  } catch (error) {
+    console.error(error)
+    return res.status(500).json({ success: false, message: 'Error fetching top selling menus', error: error.message })
+  }
+}
+
 export const getRestaurantStatistics = async (req, res) => {
   try {
     const { restaurantId } = req.params
 
     if (!mongoose.Types.ObjectId.isValid(restaurantId)) {
       return res.status(400).json({ success: false, message: 'Invalid restaurantId' })
+    }
+
+    // Si es administrador de restaurante, verificar propiedad
+    if (req.userRole === 'ADMIN_RESTAURANT' || req.userRole === 'ADMIN_RESTAURANTE') {
+      const restaurant = await Restaurant.findById(restaurantId)
+      if (!restaurant || String(restaurant.adminId) !== String(req.userId)) {
+        return res.status(403).json({ success: false, message: 'No tienes permisos para ver estadísticas de este restaurante' })
+      }
     }
 
     const [restaurant, performance, salesByDish, peakHours] = await Promise.all([

@@ -38,6 +38,12 @@ const reservationSchema = new mongoose.Schema(
             type: String
         },
 
+        coupon: {
+            type: String,
+            default: null,
+            trim: true
+        },
+
         startDate: {
             type: Date,
             required: [true, "Start date is required"]
@@ -65,4 +71,5 @@ const reservationSchema = new mongoose.Schema(
 )
 
 reservationSchema.index({ userId: 1});
+reservationSchema.index({ coupon: 1 });
 export default mongoose.model("Reservation", reservationSchema);

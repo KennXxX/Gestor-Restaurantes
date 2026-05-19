@@ -10,13 +10,16 @@ const createTransporter = () => {
     return null;
   }
 
+  const port = parseInt(process.env.SMTP_PORT, 10) || 587;
+  const isSecure = port === 465; // true para 465, false para 587
+
   return nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: 465,
-    secure: true, // true para 465, false para 587
+    host: config.smtp.host,
+    port: port,
+    secure: isSecure,
     auth: {
-      user: process.env.SMTP_USERNAME,
-      pass: process.env.SMTP_PASSWORD,
+      user: config.smtp.username,
+      pass: config.smtp.password,
     },
     // Evitar que las peticiones HTTP queden colgadas si SMTP no responde
     connectionTimeout: 10_000, // 10s
@@ -145,6 +148,36 @@ export const sendPasswordChangedEmail = async (email, name) => {
     await transporter.sendMail(mailOptions);
   } catch (error) {
     console.error('Error al enviar el correo de cambio de contraseña:', error);
+    throw error;
+  }
+};
+
+export const sendRestaurantAssignmentEmail = async (email, name, restaurantName) => {
+  if (!transporter) {
+    throw new Error('El transportador SMTP no está configurado');
+  }
+
+  try {
+    const mailOptions = {
+      from: `${config.smtp.fromName} <${config.smtp.fromEmail}>`,
+      to: email,
+      subject: `Has sido asignado como administrador de ${restaurantName}`,
+      html: `
+        <h2>Asignación como Administrador de Restaurante</h2>
+        <p>Hola ${name},</p>
+        <p>Te comunicamos que has sido asignado como administrador del restaurante <strong>${restaurantName}</strong>.</p>
+        <p>A partir de ahora tendrás acceso a las herramientas de gestión y administración de este establecimiento.</p>
+        <p>Puedes ingresar a tu panel de control para comenzar a gestionar tu restaurante.</p>
+        <p>Si tienes alguna pregunta o necesitas asistencia, no dudes en contactar a nuestro equipo de soporte.</p>
+        <p>¡Bienvenido al equipo de administradores!</p>
+        <br>
+        <p>Este es un correo automático, por favor no respondas a este mensaje.</p>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+  } catch (error) {
+    console.error('Error al enviar el correo de asignación de restaurante:', error);
     throw error;
   }
 };

@@ -33,6 +33,10 @@ export const getRestaurantById = async (id) => {
   return axiosApi.get(`/restaurants/${id}`)
 }
 
+export const getMyRestaurant = async () => {
+  return axiosApi.get('/restaurants/my')
+}
+
 export const createRestaurant = async (payload) => {
   const formData = buildRestaurantFormData(payload)
 
@@ -49,4 +53,8 @@ export const updateRestaurant = async (id, payload) => {
 
 export const deleteRestaurant = async (id) => {
   return axiosApi.delete(`/restaurants/${id}`)
+}
+
+export const assignAdmin = async (restaurantId, adminId) => {
+  return axiosApi.put(`/restaurants/${restaurantId}/assign-admin`, { adminId })
 }

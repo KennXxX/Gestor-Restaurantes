@@ -33,9 +33,12 @@ export const createMenu = async (req, res) => {
   }
 };
 
-export const getMenus = async (_req, res) => {
+export const getMenus = async (req, res) => {
   try {
-    const menus = await Menu.find();
+    const filter = {}
+    if (req.query.restaurantId) filter.restaurantId = req.query.restaurantId
+    if (req.query.menuActive !== undefined) filter.menuActive = req.query.menuActive === 'true'
+    const menus = await Menu.find(filter);
 
     return res.json({
       success: true,

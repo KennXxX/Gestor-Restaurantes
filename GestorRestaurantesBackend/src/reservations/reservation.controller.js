@@ -23,7 +23,7 @@ const normalizeTableIds = (value) => {
     return [String(value)]
 }
 
-const ensureTableAvailability = async ({ restaurantId, tableIds, startDate, endDate, excludeReservationId = null }) => {
+const ensureTableAvailability = async ({ restaurantId, tableIds, startDate, endDate, numberPeople = 1, excludeReservationId = null }) => {
     if (!restaurantId || !tableIds.length) {
         return { ok: false, message: 'restaurantId y tableId son obligatorios' }
     }
@@ -32,10 +32,18 @@ const ensureTableAvailability = async ({ restaurantId, tableIds, startDate, endD
         _id: { $in: tableIds },
         restaurantId,
         tableActive: true
-    }).select('_id')
+    }).select('_id tableName tableCapacity')
 
     if (activeTables.length !== tableIds.length) {
         return { ok: false, message: 'Una o mas mesas no pertenecen al restaurante o no estan disponibles.' }
+    }
+
+    const tooSmallTable = activeTables.find((table) => Number(table.tableCapacity || 0) < Number(numberPeople || 0))
+    if (tooSmallTable) {
+        return {
+            ok: false,
+            message: `La mesa ${tooSmallTable.tableName || tooSmallTable._id} no soporta ${Number(numberPeople || 0)} personas.`
+        }
     }
 
     const query = {
@@ -62,12 +70,19 @@ export const createReservation = async (req, res) => {
     try {
         const reservationData = { ...(req.body || {}) }
         const userIdFromToken = req.userId || (req.user && (req.user.sub || req.user.uid || req.user.id || req.user.userId))
-        if (userIdFromToken) {
-            reservationData.userId = userIdFromToken
+        const isAdmin = req.userRole === 'ADMIN_ROLE'
+
+        if (isAdmin) {
+            reservationData.userId = reservationData.userId || userIdFromToken || null
+        } else {
+            reservationData.userId = userIdFromToken || null
         }
+
         if (req.file) {
             reservationData.photo = req.file.path
         }
+
+        reservationData.numberPeople = Number(reservationData.numberPeople) || 1
 
         const normalizedTableIds = normalizeTableIds(reservationData.tableId)
         const reservationStart = new Date(reservationData.startDate)
@@ -77,7 +92,8 @@ export const createReservation = async (req, res) => {
             restaurantId: reservationData.restaurantId,
             tableIds: normalizedTableIds,
             startDate: reservationStart,
-            endDate: reservationEnd
+            endDate: reservationEnd,
+            numberPeople: reservationData.numberPeople
         })
 
         if (!availability.ok) {
@@ -249,6 +265,9 @@ export const updateReservation = async (req, res) => {
             updates.tableId = normalizeTableIds(updates.tableId)
         }
 
+        const nextNumberPeople = Number(updates.numberPeople || reservation.numberPeople || 1)
+        updates.numberPeople = nextNumberPeople
+
         const nextType = updates.typeReservation || reservation.typeReservation
         const nextDescription = updates.description !== undefined ? updates.description : reservation.description
         if (nextType === 'EVENTO' && (!nextDescription || String(nextDescription).trim() === '')) {
@@ -268,6 +287,7 @@ export const updateReservation = async (req, res) => {
             tableIds: nextTableIds,
             startDate: nextStart,
             endDate: nextEnd,
+            numberPeople: nextNumberPeople,
             excludeReservationId: reservation._id
         })
 

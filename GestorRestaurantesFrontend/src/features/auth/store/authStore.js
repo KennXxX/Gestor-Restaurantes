@@ -20,7 +20,7 @@ export const useAuthStore = create(
       isLoadingAuth: true,
 
       initializeAuth: () => {
-        const { token, user } = get()
+        const { token } = get()
 
         set({
           isAuthenticated: Boolean(token),
@@ -37,7 +37,7 @@ export const useAuthStore = create(
           const role = user?.role ?? data.role
           const token = data.accessToken ?? data.token ?? null
 
-          if (!['ADMIN_ROLE', 'USER_ROLE'].includes(role)) {
+          if (!['ADMIN_ROLE', 'USER_ROLE', 'ADMIN_RESTAURANT', 'ADMIN_RESTAURANTE'].includes(role)) {
             const message = 'No tienes permisos para acceder a esta área.'
             set({
               ...emptySession,
@@ -69,10 +69,34 @@ export const useAuthStore = create(
             isLoadingAuth: false,
           })
 
+          // Si es administrador de restaurante, obtener y asociar su restaurantId de inmediato
+          if (role === 'ADMIN_RESTAURANT' || role === 'ADMIN_RESTAURANTE') {
+            try {
+              const { getMyRestaurant } = await import('../../../shared/api/restaurants')
+              const { data: myRestData } = await getMyRestaurant()
+              const restaurant = myRestData?.data
+              if (restaurant) {
+                set({
+                  user: {
+                    ...user,
+                    restaurantId: restaurant._id || restaurant.id,
+                  },
+                })
+              }
+            } catch (err) {
+              console.error('Error al precargar restaurantId para el admin:', err)
+            }
+          }
+
           return {
             success: true,
             role,
-            redirectTo: role === 'ADMIN_ROLE' ? '/dashboard' : '/client',
+            redirectTo:
+              role === 'ADMIN_ROLE'
+                ? '/dashboard'
+                : role === 'ADMIN_RESTAURANT' || role === 'ADMIN_RESTAURANTE'
+                  ? '/admin-restaurante'
+                  : '/client',
           }
         } catch (error) {
           const message = error.response?.data?.message ?? 'Error de autenticación.'
@@ -83,11 +107,11 @@ export const useAuthStore = create(
         }
       },
 
-      register: async ({ name, email, password, phone }) => {
+      register: async (formData) => {
         try {
           set({ loading: true, error: null })
 
-          const { data } = await registerRequest({ name, email, password, phone })
+          const { data } = await registerRequest(formData)
 
           set({
             loading: false,
@@ -117,6 +141,12 @@ export const useAuthStore = create(
           loading: false,
           error: null,
           isLoadingAuth: false,
+        })
+      },
+
+      updateUser: (updatedUser) => {
+        set({
+          user: updatedUser,
         })
       },
     }),

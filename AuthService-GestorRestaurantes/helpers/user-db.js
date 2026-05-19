@@ -455,3 +455,164 @@ export const createAdminRestaurantUser = async (userData) => {
     throw error;
   }
 };
+
+export const updateUserProfile = async (userId, profileData) => {
+  const transaction = await User.sequelize.transaction();
+
+  try {
+    const { name, email, phone, address } = profileData;
+
+    // Verificar si el nuevo email ya existe (si es diferente)
+    if (email) {
+      const existingUser = await User.findOne({
+        where: {
+          Email: email.toLowerCase(),
+          Id: { [Op.ne]: userId },
+        },
+      });
+
+      if (existingUser) {
+        const err = new Error('El email ya está registrado por otro usuario');
+        err.status = 409;
+        throw err;
+      }
+    }
+
+    // Actualizar datos del usuario
+    await User.update(
+      {
+        Name: name,
+        Email: email ? email.toLowerCase() : undefined,
+      },
+      {
+        where: { Id: userId },
+        transaction,
+      }
+    );
+
+    // Actualizar perfil del usuario
+    if (phone || address !== undefined) {
+      await UserProfile.update(
+        {
+          Phone: phone,
+          Address: address,
+        },
+        {
+          where: { UserId: userId },
+          transaction,
+        }
+      );
+    }
+
+    await transaction.commit();
+
+    return findUserById(userId);
+  } catch (error) {
+    await transaction.rollback();
+    if (!error.status) {
+      console.error('Error actualizando perfil:', error);
+      error.status = 500;
+      error.message = 'Error al actualizar perfil';
+    }
+    throw error;
+  }
+};
+
+export const changeUserPassword = async (userId, currentPassword, newHashedPassword) => {
+  const transaction = await User.sequelize.transaction();
+
+  try {
+    // Obtener usuario actual
+    const user = await User.findByPk(userId);
+    if (!user) {
+      const err = new Error('Usuario no encontrado');
+      err.status = 404;
+      throw err;
+    }
+
+    // Verificar contraseña actual
+    const { verifyPassword } = await import('../utils/password-utils.js');
+    const passwordMatch = await verifyPassword(user.Password, currentPassword);
+
+    if (!passwordMatch) {
+      const err = new Error('Contraseña actual incorrecta');
+      err.status = 401;
+      throw err;
+    }
+
+    // Actualizar contraseña
+    await User.update(
+      {
+        Password: newHashedPassword,
+      },
+      {
+        where: { Id: userId },
+        transaction,
+      }
+    );
+
+    await transaction.commit();
+  } catch (error) {
+    await transaction.rollback();
+    if (!error.status) {
+      console.error('Error cambiando contraseña:', error);
+      error.status = 500;
+      error.message = 'Error al cambiar contraseña';
+    }
+    throw error;
+  }
+};
+
+export const deleteUserAccount = async (userId) => {
+  const transaction = await User.sequelize.transaction();
+
+  try {
+    // Eliminar roles del usuario
+    await UserRole.destroy(
+      {
+        where: { UserId: userId },
+        transaction,
+      }
+    );
+
+    // Eliminar perfil del usuario
+    await UserProfile.destroy(
+      {
+        where: { UserId: userId },
+        transaction,
+      }
+    );
+
+    // Eliminar email del usuario
+    await UserEmail.destroy(
+      {
+        where: { UserId: userId },
+        transaction,
+      }
+    );
+
+    // Eliminar reset de contraseña
+    await UserPasswordReset.destroy(
+      {
+        where: { UserId: userId },
+        transaction,
+      }
+    );
+
+    // Eliminar usuario
+    await User.destroy(
+      {
+        where: { Id: userId },
+        transaction,
+      }
+    );
+
+    await transaction.commit();
+  } catch (error) {
+    await transaction.rollback();
+    console.error('Error eliminando cuenta:', error);
+    error.status = error.status || 500;
+    error.message = error.message || 'Error al eliminar cuenta';
+    throw error;
+  }
+};

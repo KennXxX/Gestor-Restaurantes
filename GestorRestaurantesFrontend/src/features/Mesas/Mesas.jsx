@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { getRestaurants } from '../../shared/api/restaurants'
 import { createTable, deleteTable, getTables, updateTable } from '../../shared/api/tables'
 import { showError, showSuccess } from '../../shared/utils/toast'
@@ -220,12 +219,6 @@ export const Mesas = () => {
             >
               Actualizar listado
             </button>
-            <Link
-              to="/dashboard/restaurantes"
-              className="rounded-full bg-emerald-700 px-5 py-2 text-sm font-semibold text-white transition hover:bg-emerald-600"
-            >
-              Ir a restaurantes
-            </Link>
           </div>
         </div>
       </header>
