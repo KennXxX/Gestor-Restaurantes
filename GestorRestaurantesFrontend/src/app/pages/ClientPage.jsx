@@ -4,12 +4,15 @@ import { ReservationView } from '../../features/Reservations/ReservationView'
 import { getMyOrders } from '../../shared/api/orders'
 import { getMenus } from '../../shared/api/menus'
 import { getTopSellingMenus } from '../../shared/api/statistics'
+import { getMyReservations } from '../../shared/api/reservations'
+import { getMyInvoices, exportInvoicePdf } from '../../shared/api/invoices'
 import { Outlet, NavLink, useNavigate, useOutletContext, useSearchParams } from 'react-router-dom'
 import FondoImg from '../../assets/img/Fondo.jpg'
 import LogoImg from '../../assets/img/Logo.png'
 import PostresImg from '../../assets/img/Postres.jpg'
 import PlatoImg from '../../assets/img/Plato fuerte.jpg'
 import BebidasImg from '../../assets/img/Bebidas.jpg'
+import { showError } from '../../shared/utils/toast'
 
 export const ClientHome = () => {
   const { user } = useOutletContext();
@@ -18,6 +21,9 @@ export const ClientHome = () => {
   const [ordersLoading, setOrdersLoading] = useState(true)
   const [ordersError, setOrdersError] = useState(null)
   const [featuredMenus, setFeaturedMenus] = useState([])
+  const [nextReservation, setNextReservation] = useState(null)
+  const [reservationLoading, setReservationLoading] = useState(true)
+  const [reservationError, setReservationError] = useState(null)
 
   useEffect(() => {
     const loadOrders = async () => {
@@ -43,8 +49,46 @@ export const ClientHome = () => {
       }
     }
 
+    const loadNextReservation = async () => {
+      setReservationLoading(true)
+      setReservationError(null)
+      try {
+        const response = await getMyReservations()
+        const reservations = response.data?.reservations || []
+        const now = Date.now()
+
+        const activeOrUpcoming = reservations
+          .filter((reservation) => {
+            if (reservation.status === 'CANCELADO') return false
+
+            const start = new Date(reservation.startDate).getTime()
+            const end = new Date(reservation.endDate).getTime()
+
+            if (!Number.isFinite(start)) return false
+
+            // Prefer reservations that are currently active or upcoming.
+            if (Number.isFinite(end)) {
+              return end >= now
+            }
+
+            return start >= now
+          })
+          .sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
+
+        const next = activeOrUpcoming[0] || null
+
+        setNextReservation(next)
+      } catch (err) {
+        setReservationError('No se pudo cargar tu próxima reserva.')
+        setNextReservation(null)
+      } finally {
+        setReservationLoading(false)
+      }
+    }
+
     loadOrders()
     loadFeaturedMenus()
+    loadNextReservation()
   }, [])
 
   const formatOrderDate = (value) => {
@@ -53,6 +97,23 @@ export const ClientHome = () => {
       weekday: 'short',
       day: 'numeric',
       month: 'short',
+    })
+  }
+
+  const formatReservationDate = (value) => {
+    if (!value) return ''
+    return new Date(value).toLocaleDateString('es-GT', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+    })
+  }
+
+  const formatReservationTime = (value) => {
+    if (!value) return ''
+    return new Date(value).toLocaleTimeString('es-GT', {
+      hour: '2-digit',
+      minute: '2-digit',
     })
   }
 
@@ -178,11 +239,29 @@ export const ClientHome = () => {
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs uppercase tracking-[0.28em] text-slate-400">Próxima reserva</p>
-                <h3 className="mt-3 text-xl font-semibold text-white">Viernes, 24 de mayo</h3>
+                <h3 className="mt-3 text-xl font-semibold text-white">
+                  {reservationLoading
+                    ? 'Cargando...'
+                    : nextReservation
+                    ? formatReservationDate(nextReservation.startDate)
+                    : 'Sin reservas próximas'}
+                </h3>
               </div>
-              <span className="rounded-2xl bg-slate-800 px-4 py-2 text-sm text-slate-300">MESA 4</span>
+              {nextReservation && (
+                <span className="rounded-2xl bg-slate-800 px-4 py-2 text-sm text-slate-300">
+                  {(nextReservation.tableId || [])
+                    .map((table) => table.tableNumber || table.tableName || table._id?.slice(-4) || table)
+                    .join(', ')}
+                </span>
+              )}
             </div>
-            <p className="mt-4 text-sm leading-6 text-slate-300">Mesa para 4 personas · Almuerzo · Restaurante Fuego y Sabor</p>
+            <p className="mt-4 text-sm leading-6 text-slate-300">
+              {reservationError
+                ? reservationError
+                : nextReservation
+                ? `${nextReservation.numberPeople || 1} ${(nextReservation.numberPeople || 1) === 1 ? 'persona' : 'personas'} · ${formatReservationTime(nextReservation.startDate)} · ${nextReservation.restaurantId?.restaurantName || 'Restaurante'}`
+                : 'Aún no tienes reservaciones activas. Reserva tu mesa y aparecerá aquí.'}
+            </p>
             <button
               type="button"
               onClick={() => navigate('reservations')}
@@ -335,29 +414,112 @@ export const ClientMenu = () => {
   )
 }
 
-export const ClientInvoices = () => (
-  <section className="mx-auto w-full max-w-7xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
-    <div className="space-y-4 rounded-[32px] border border-slate-200 bg-white p-8 shadow-sm">
-      <div>
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Facturas</p>
-        <h2 className="mt-2 text-3xl font-semibold text-slate-900">Mis facturas</h2>
-      </div>
-      <p className="max-w-2xl text-base leading-7 text-slate-600">
-        Revisa todos tus comprobantes de pago y descarga los documentos que necesites.
-      </p>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="rounded-[28px] border border-slate-200 bg-slate-50 p-6 transition hover:-translate-y-1 hover:shadow-md">
-          <h3 className="text-xl font-semibold text-slate-900">Historial de pagos</h3>
-          <p className="mt-2 text-slate-600">Consulta tus facturas anteriores y el estado de cada transacción.</p>
+export const ClientInvoices = () => {
+  const [invoices, setInvoices] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    const loadInvoices = async () => {
+      setLoading(true)
+      setError(null)
+      try {
+        const response = await getMyInvoices()
+        setInvoices(response.data?.invoices || [])
+      } catch (_err) {
+        setError('No se pudieron cargar tus facturas.')
+        setInvoices([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadInvoices()
+  }, [])
+
+  const handleDownloadPdf = async (invoice) => {
+    try {
+      const response = await exportInvoicePdf(invoice._id)
+      const blob = new Blob([response.data], { type: 'application/pdf' })
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `${invoice.invoiceNumber || `factura-${invoice._id}`}.pdf`
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(url)
+    } catch (_err) {
+      showError('No se pudo descargar la factura.')
+    }
+  }
+
+  return (
+    <section className="mx-auto w-full max-w-7xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
+      <div className="space-y-4 rounded-[32px] border border-slate-200 bg-white p-8 shadow-sm">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Facturas</p>
+          <h2 className="mt-2 text-3xl font-semibold text-slate-900">Mis facturas</h2>
         </div>
-        <div className="rounded-[28px] border border-slate-200 bg-slate-50 p-6 transition hover:-translate-y-1 hover:shadow-md">
-          <h3 className="text-xl font-semibold text-slate-900">Comprobantes</h3>
-          <p className="mt-2 text-slate-600">Descarga tus facturas en PDF para tus registros personales.</p>
-        </div>
+        <p className="max-w-2xl text-base leading-7 text-slate-600">
+          Revisa tus comprobantes reales y descarga tus documentos en PDF cuando lo necesites.
+        </p>
       </div>
-    </div>
-  </section>
-)
+
+      <div className="space-y-4">
+        {loading && (
+          <div className="rounded-[28px] border border-slate-200 bg-slate-50 p-8 text-center text-slate-500">
+            Cargando facturas...
+          </div>
+        )}
+
+        {!loading && error && (
+          <div className="rounded-[28px] border border-rose-200 bg-rose-50 p-8 text-center text-rose-600">
+            {error}
+          </div>
+        )}
+
+        {!loading && !error && invoices.length === 0 && (
+          <div className="rounded-[28px] border border-slate-200 bg-slate-50 p-8 text-center text-slate-500">
+            Aún no tienes facturas disponibles.
+          </div>
+        )}
+
+        {!loading && !error && invoices.length > 0 && (
+          <div className="grid gap-4 lg:grid-cols-2">
+            {invoices.map((invoice) => (
+              <article key={invoice._id} className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Factura</p>
+                    <h3 className="mt-2 text-xl font-semibold text-slate-900">{invoice.invoiceNumber || 'Sin número'}</h3>
+                  </div>
+                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+                    {new Date(invoice.issuedAt).toLocaleDateString('es-GT')}
+                  </span>
+                </div>
+
+                <div className="mt-4 space-y-1 text-sm text-slate-600">
+                  <p>Restaurante: {invoice.restaurantId?.restaurantName || 'N/A'}</p>
+                  <p>Total: <span className="font-semibold text-slate-900">Q{Number(invoice.total || 0).toFixed(2)}</span></p>
+                  <p>Estado pedido: {invoice.orderId?.status || 'N/A'}</p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => handleDownloadPdf(invoice)}
+                  className="mt-5 inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+                >
+                  Descargar PDF
+                </button>
+              </article>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  )
+}
 
 export const ClientPage = () => {
   const user = useAuthStore((state) => state.user)
