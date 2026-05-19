@@ -118,12 +118,20 @@ export const RestaurantDashboard = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <header className="rounded-2xl bg-white p-6 shadow-sm border border-slate-100">
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-600">Panel Administrador</p>
-        <h1 className="mt-3 text-3xl font-bold text-slate-900">{restaurantName}</h1>
-        <p className="mt-2 text-sm text-slate-600">Resumen y métricas de desempeño de tu local</p>
-      </header>
+      {/* Banner Superior Premium */}
+      <div className="rounded-[24px] border border-emerald-100 bg-gradient-to-r from-emerald-50 via-emerald-50/60 to-emerald-100/30 p-6 sm:p-8 flex flex-col justify-between gap-4 overflow-hidden relative shadow-sm">
+        <div className="space-y-3 z-10">
+          <span className="inline-flex rounded-full bg-emerald-100 border border-emerald-200/50 px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider text-emerald-800">
+            Panel Administrador
+          </span>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            {restaurantName}
+          </h1>
+          <p className="text-sm text-slate-500 max-w-[580px] leading-relaxed">
+            Resumen y métricas de desempeño de tu establecimiento en tiempo real.
+          </p>
+        </div>
+      </div>
 
       {/* Loading state */}
       {loading ? (

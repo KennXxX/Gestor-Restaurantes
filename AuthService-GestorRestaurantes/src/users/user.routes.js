@@ -15,7 +15,7 @@ import { findUserById } from '../../helpers/user-db.js';
 import { User } from './user.model.js';
 import { UserProfile, UserEmail } from './user.model.js';
 import { UserRole, Role } from '../auth/role.model.js';
-import { ADMIN_ROLE } from '../../helpers/role-constants.js';
+import { ADMIN_ROLE, ADMIN_RESTAURANT_ROLE } from '../../helpers/role-constants.js';
 
 const router = Router();
 
@@ -39,8 +39,8 @@ router.get('/all', validateJWT, async (req, res) => {
   // Verificar que el usuario sea admin
   const user = req.user;
   const roles = user.UserRoles?.map((ur) => ur.Role?.Name) || [];
-  if (!roles.includes(ADMIN_ROLE)) {
-    return res.status(403).json({ success: false, message: 'Acceso restringido solo para administradores.' });
+  if (!roles.includes(ADMIN_ROLE) && !roles.includes(ADMIN_RESTAURANT_ROLE) && !roles.includes('ADMIN_RESTAURANTE')) {
+    return res.status(403).json({ success: false, message: 'Acceso restringido.' });
   }
 
   // Obtener todos los usuarios con relaciones
