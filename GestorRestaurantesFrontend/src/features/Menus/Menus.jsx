@@ -310,7 +310,7 @@ export const Menus = () => {
 
   const handleEdit = (menu) => {
     setEditing(menu)
-    const menuInventory = inventories.find(inv => inv.menuId === menu._id)
+  const menuInventory = inventories.find(inv => (inv.menuId?._id || inv.menuId) === menu._id)
     setForm({
       menuName: menu.menuName || '',
       menuDescription: menu.menuDescription || '',
@@ -346,7 +346,7 @@ export const Menus = () => {
     try {
       if (editing) {
         await updateMenu(editing._id, form)
-        const menuInventory = inventories.find(inv => inv.menuId === editing._id)
+  const menuInventory = inventories.find(inv => (inv.menuId?._id || inv.menuId) === editing._id)
         if (menuInventory) {
           await updateInventory(menuInventory._id, { quantity: Number(form.stockQuantity) || 0 })
         } else {
@@ -541,7 +541,7 @@ export const Menus = () => {
       {!loading && !error && filteredMenus.length > 0 && (
         <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
           {filteredMenus.map(menu => {
-            const stock = inventories.find(inv => inv.menuId === menu._id)?.quantity ?? 0
+              const stock = inventories.find(inv => (inv.menuId?._id || inv.menuId) === menu._id)?.quantity ?? 0
             const isAvailable = menu.menuAvailable !== false
             const isActive = menu.menuActive !== false
             const categoryColor = CATEGORY_COLORS[menu.menuCategory] || 'bg-slate-100 text-slate-600'

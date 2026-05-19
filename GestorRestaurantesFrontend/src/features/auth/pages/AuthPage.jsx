@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { LoginForm } from '../components/LoginForm'
 import { RegisterForm } from '../components/RegisterForm'
 import { ResendVerificationForm } from '../components/ResendVerificationForm'
@@ -20,7 +21,14 @@ const FloatingIcons = () => {
 }
 
 export const AuthPage = () => {
-  const [mode, setMode] = useState('login')
+  const [searchParams] = useSearchParams()
+  const initialMode = searchParams.get('mode') || 'login'
+  const [mode, setMode] = useState(initialMode)
+  useEffect(() => {
+    // keep mode in sync if query param changes externally
+    const m = searchParams.get('mode')
+    if (m && m !== mode) setMode(m)
+  }, [searchParams])
   const [notice, setNotice] = useState('')
 
   const handleSwitchToLogin = (payload = {}) => {

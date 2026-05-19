@@ -14,6 +14,9 @@ export const createMenu = async (payload) => {
   Object.entries(payload || {}).forEach(([key, value]) => {
     if (value === undefined || value === null || value === '') return
 
+    // stockQuantity is part of inventory and should not be sent to the menus endpoint
+    if (key === 'stockQuantity') return
+
     if (key === 'menuPhoto' && value instanceof File) {
       formData.append('menuPhoto', value)
       return
@@ -34,6 +37,8 @@ export const updateMenu = async (id, payload) => {
 
   Object.entries(payload || {}).forEach(([key, value]) => {
     if (value === undefined || value === null || value === '') return
+    // stockQuantity is part of inventory and should not be sent to the menus endpoint
+    if (key === 'stockQuantity') return
 
     if (key === 'menuPhoto' && value instanceof File) {
       formData.append('menuPhoto', value)

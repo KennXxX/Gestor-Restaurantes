@@ -29,11 +29,11 @@ router.get('/', validateJWT, isAdmin, getOrders)
 // Obtener órdenes del cliente actual
 router.get('/my-orders', validateJWT, getMyOrders)
 
-// Obtener detalle de orden
-router.get('/:id', validateJWT, isAdmin, getOrderById)
- 
 // Obtener órdenes por restaurante
 router.get('/restaurant/:restaurantId', validateJWT, isAdmin, getOrdersByRestaurant)
+
+// Obtener detalle de orden
+router.get('/:id', validateJWT, isAdmin, getOrderById)
  
 // Actualizar estado de orden
 router.put('/status/:id', validateJWT, isAdmin, updateOrderStatusValidator, updateOrderStatus)

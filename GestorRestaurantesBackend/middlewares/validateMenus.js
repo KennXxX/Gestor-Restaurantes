@@ -38,6 +38,7 @@ const allowedUpdateFields = [
     'menuCategory',
     'menuPhoto',
     'menuActive',
+    'menuAvailable',
     'restaurantId'
 ];
 

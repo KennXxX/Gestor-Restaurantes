@@ -1,4 +1,8 @@
 ﻿import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useForm } from 'react-hook-form'
+import { register as registerRequest } from '../../shared/api/auth'
+import toast from 'react-hot-toast'
 import { getAllUsersWithAuthService } from '../../shared/api/auth.js'
 import { toggleUserActive } from '../../shared/api/users.js'
 
@@ -100,7 +104,7 @@ const SortIcon = ({ field, sortField, sortDir }) => {
 export const AdminUsuarios = () => {
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  const [fetchError, setFetchError] = useState('')
   const [search, setSearch] = useState('')
   const [roleFilter, setRoleFilter] = useState('Todos')
   const [page, setPage] = useState(1)
@@ -111,15 +115,60 @@ export const AdminUsuarios = () => {
   const [profileResult, setProfileResult] = useState(null)
   const [profileNotFound, setProfileNotFound] = useState(false)
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const { register, handleSubmit, reset, setError, formState: { errors, isSubmitting } } = useForm()
+  
+  const onCreateSubmit = async (values) => {
+    // Prepare payload expected by backend
+    const payload = {
+      name: values.name,
+      email: values.email,
+      password: values.password,
+      phone: values.phone,
+      role: values.role || 'USER_ROLE',
+    }
+
+    try {
+      // sanitize phone to digits only
+      const phoneSanitized = String(values.phone || '').replace(/\D/g, '').slice(0, 8)
+      if (phoneSanitized.length !== 8) {
+        setError('phone', { type: 'manual', message: 'El teléfono debe tener exactamente 8 dígitos' })
+        return
+      }
+
+      const toastId = toast.loading('Creando usuario...')
+      const { data } = await registerRequest({ ...payload, phone: phoneSanitized })
+      toast.dismiss(toastId)
+      toast.success(data?.message || 'Usuario creado correctamente.')
+      setShowCreateModal(false)
+      reset()
+      await loadUsers()
+    } catch (err) {
+      toast.dismiss()
+      const serverMessage = err?.response?.data?.message
+      const validationErrors = err?.response?.data?.errors
+      if (Array.isArray(validationErrors) && validationErrors.length > 0) {
+        // Map backend validation errors to form fields
+        validationErrors.forEach((e) => {
+          // express-validator uses path like 'phone' or 'email'
+          if (e.path) setError(e.path, { type: 'server', message: e.msg || e.message })
+          else toast.error(e.message || e.msg)
+        })
+      } else {
+        const msg = serverMessage || err?.message || 'Error al crear usuario.'
+        toast.error(msg)
+      }
+    }
+  }
+  const navigate = useNavigate()
 
   const loadUsers = async () => {
     setLoading(true)
-    setError('')
+  setFetchError('')
     try {
       const data = await getAllUsersWithAuthService()
       setUsers(Array.isArray(data?.users) ? data.users : [])
     } catch (err) {
-      setError(err?.response?.data?.message || err?.message || 'No se pudo cargar la lista de usuarios.')
+      setFetchError(err?.response?.data?.message || err?.message || 'No se pudo cargar la lista de usuarios.')
     } finally {
       setLoading(false)
     }
@@ -138,7 +187,9 @@ export const AdminUsuarios = () => {
           return u
         })
       )
-    } catch {
+      await loadUsers()
+    } catch (err) {
+      // If toggling failed, refresh list to show correct state
       await loadUsers()
     } finally {
       setTogglingId(null)
@@ -210,10 +261,8 @@ export const AdminUsuarios = () => {
           </svg>
           <h1 className="text-lg font-bold text-slate-900">Auth administrativo</h1>
         </div>
-        <p className="text-sm text-slate-500">Registro controlado, consulta de perfiles y aprobaciones de cambios.</p>
       </section>
 
-      {/* Action cards */}
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
         <section className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
           <div className="flex items-center gap-2 mb-1">
@@ -347,8 +396,8 @@ export const AdminUsuarios = () => {
             <div className="h-7 w-7 animate-spin rounded-full border-4 border-slate-300 border-t-slate-700" />
             <p className="mt-3 text-sm text-slate-500">Cargando usuarios...</p>
           </div>
-        ) : error ? (
-          <div className="m-5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>
+        ) : fetchError ? (
+          <div className="m-5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{fetchError}</div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center m-5 py-14 text-center rounded-xl border border-dashed border-slate-200">
             <p className="text-sm text-slate-500">No hay usuarios que coincidan.</p>
@@ -498,26 +547,57 @@ export const AdminUsuarios = () => {
       {/* Modal crear usuario */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl border border-slate-100 bg-white p-7 shadow-2xl">
-            <div className="flex items-center justify-between mb-5">
+          <form onSubmit={handleSubmit(onCreateSubmit)} className="w-full max-w-md rounded-2xl border border-slate-100 bg-white p-7 shadow-2xl">
+            <div className="flex items-center justify-between mb-4">
               <h3 className="text-base font-bold text-slate-900">Registrar nuevo usuario</h3>
-              <button type="button" onClick={() => setShowCreateModal(false)}
+              <button type="button" onClick={() => { setShowCreateModal(false); reset() }}
                 className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-100 transition">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
               </button>
             </div>
-            <p className="text-sm text-slate-500 mb-6">
-              El registro de usuarios se gestiona desde el AuthService. Usa el endpoint
-              <span className="mx-1 font-mono text-xs bg-slate-100 px-1.5 py-0.5 rounded">/auth/register</span>
-              para crear nuevos usuarios con rol específico.
-            </p>
-            <button type="button" onClick={() => setShowCreateModal(false)}
-              className="w-full rounded-xl border border-slate-200 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">
-              Cerrar
-            </button>
-          </div>
+
+            <div className="grid gap-3">
+              <div>
+                <label className="text-xs font-semibold text-slate-500">Nombre completo</label>
+                <input {...register('name', { required: 'Nombre es requerido' })} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none" />
+                {errors.name && <p className="text-xs text-rose-500">{errors.name.message}</p>}
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-500">Correo electrónico</label>
+                <input {...register('email', { required: 'Email es requerido', pattern: { value: /\S+@\S+\.\S+/, message: 'Email inválido' } })} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none" />
+                {errors.email && <p className="text-xs text-rose-500">{errors.email.message}</p>}
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-500">Contraseña</label>
+                <input type="password" {...register('password', { required: 'La contraseña es obligatoria', minLength: { value: 8, message: 'La contraseña debe tener al menos 8 caracteres' } })} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none" />
+                {errors.password && <p className="text-xs text-rose-500">{errors.password.message}</p>}
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-500">Teléfono (8 dígitos)</label>
+                <input type="tel" inputMode="numeric" maxLength={8} placeholder="00000000" {...register('phone', { required: 'El teléfono es obligatorio', pattern: { value: /^\d{8}$/, message: 'El teléfono debe tener exactamente 8 dígitos' } })} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none" />
+                {errors.phone && <p className="text-xs text-rose-500">{errors.phone.message}</p>}
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-500">Rol</label>
+                <select {...register('role')} defaultValue="USER_ROLE" className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none">
+                  <option value="USER_ROLE">Cliente</option>
+                  <option value="ADMIN_RESTAURANT">Admin Restaurante</option>
+                  <option value="ADMIN_ROLE">Administrador</option>
+                </select>
+              </div>
+
+              <div className="flex gap-2 pt-3">
+                <button type="button" onClick={() => { setShowCreateModal(false); reset() }} className="flex-1 rounded-xl border border-slate-200 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">Cancelar</button>
+                <button type="submit" disabled={isSubmitting} className="flex-1 rounded-xl bg-emerald-600 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 transition">{isSubmitting ? 'Creando...' : 'Crear usuario'}</button>
+              </div>
+            </div>
+          </form>
         </div>
       )}
     </div>

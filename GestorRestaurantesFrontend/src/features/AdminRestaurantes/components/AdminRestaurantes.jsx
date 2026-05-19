@@ -355,7 +355,7 @@ export const AdminRestaurantes = () => {
             <div className="rounded-2xl border border-dashed border-slate-200 py-12 text-center">
               <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-slate-100 text-slate-400 mx-auto mb-3">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292m7.325 5.776A9 9 0 5210.5 2m0 0a8.966 8.966 0 016.935 2.645" />
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                 </svg>
               </div>
               <p className="text-sm text-slate-500">
