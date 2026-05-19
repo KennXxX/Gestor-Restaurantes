@@ -20,7 +20,7 @@ export const useAuthStore = create(
       isLoadingAuth: true,
 
       initializeAuth: () => {
-        const { token, user } = get()
+        const { token } = get()
 
         set({
           isAuthenticated: Boolean(token),

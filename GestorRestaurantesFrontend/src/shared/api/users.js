@@ -31,3 +31,7 @@ export const changePassword = async (passwordData) => {
 export const deleteAccount = async () => {
   return axiosAuth.delete('/users/account')
 }
+
+export const toggleUserActive = async (userId) => {
+  return axiosAuth.patch(`/users/${userId}/toggle-active`)
+}

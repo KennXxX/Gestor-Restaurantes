@@ -68,4 +68,27 @@ router.put('/:userId/role', ...updateUserRole);
 // GET /api/v1/users/:userId/roles
 router.get('/:userId/roles', ...getUserRoles);
 
+// PATCH /api/v1/users/:userId/toggle-active
+router.patch('/:userId/toggle-active', validateJWT, async (req, res) => {
+  const user = req.user;
+  const roles = user.UserRoles?.map((ur) => ur.Role?.Name) || [];
+  if (!roles.includes(ADMIN_ROLE)) {
+    return res.status(403).json({ success: false, message: 'Acceso restringido solo para administradores.' });
+  }
+
+  const { userId } = req.params;
+  const targetUser = await User.findByPk(userId);
+  if (!targetUser) {
+    return res.status(404).json({ success: false, message: 'Usuario no encontrado.' });
+  }
+
+  await targetUser.update({ IsActive: !targetUser.IsActive });
+
+  return res.status(200).json({
+    success: true,
+    message: `Usuario ${targetUser.IsActive ? 'activado' : 'desactivado'} correctamente.`,
+    isActive: targetUser.IsActive,
+  });
+});
+
 export default router;
