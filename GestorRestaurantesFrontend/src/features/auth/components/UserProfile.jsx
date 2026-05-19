@@ -6,7 +6,6 @@ import {
   deleteAccount,
 } from '../../../shared/api/users'
 import { showSuccess, showError } from '../../../shared/utils/toast'
-import '../styles/user-profile.css'
 
 export const UserProfile = ({ user }) => {
   const logout = useAuthStore((state) => state.logout)
@@ -176,31 +175,31 @@ export const UserProfile = ({ user }) => {
   }
 
   return (
-    <section className="user-profile">
-      <div className="profile-container">
+    <section className="min-h-screen bg-slate-50 py-10">
+      <div className="mx-auto w-full max-w-4xl space-y-8 rounded-[32px] border border-slate-200 bg-white p-8 shadow-sm">
         {/* Encabezado del perfil */}
-        <div className="profile-header">
-          <div className="profile-avatar">
+        <div className="flex flex-col gap-4 rounded-[28px] border border-slate-200 bg-slate-50 p-6 sm:flex-row sm:items-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-slate-900 text-lg font-bold text-white">
             {user?.name
               ?.split(' ')
               .map((part) => part[0]?.toUpperCase())
               .slice(0, 2)
               .join('') || 'US'}
           </div>
-          <div className="profile-header-info">
-            <h1>{user?.name}</h1>
-            <p>{user?.email}</p>
+          <div className="space-y-1">
+            <h1 className="text-2xl font-semibold text-slate-900">{user?.name}</h1>
+            <p className="text-sm text-slate-500">{user?.email}</p>
           </div>
         </div>
 
         {/* Sección de datos personales */}
-        <div className="profile-section">
-          <div className="section-header">
-            <h2>Datos Personales</h2>
+        <div className="space-y-4 rounded-[28px] border border-slate-200 bg-slate-50 p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <h2 className="text-xl font-semibold text-slate-900">Datos Personales</h2>
             {!isEditing && (
               <button
                 type="button"
-                className="btn-primary"
+                className="inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-300"
                 onClick={() => setIsEditing(true)}
               >
                 Editar
@@ -209,41 +208,41 @@ export const UserProfile = ({ user }) => {
           </div>
 
           {isEditing ? (
-            <div className="profile-form">
-              <div className="form-group">
-                <label htmlFor="name">Nombre completo</label>
+            <div className="grid gap-4">
+              <div className="grid gap-2">
+                <label htmlFor="name" className="text-sm font-semibold text-slate-700">Nombre completo</label>
                 <input
                   id="name"
                   type="text"
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  className={errors.name ? 'error' : ''}
+                  className={`rounded-2xl border px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200 ${errors.name ? 'border-rose-500' : 'border-slate-300'}`}
                 />
                 {errors.name && (
-                  <span className="error-message">{errors.name}</span>
+                  <span className="text-sm text-rose-600">{errors.name}</span>
                 )}
               </div>
 
-              <div className="form-group">
-                <label htmlFor="email">Correo electrónico</label>
+              <div className="grid gap-2">
+                <label htmlFor="email" className="text-sm font-semibold text-slate-700">Correo electrónico</label>
                 <input
                   id="email"
                   type="email"
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className={errors.email ? 'error' : ''}
+                  className={`rounded-2xl border px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200 ${errors.email ? 'border-rose-500' : 'border-slate-300'}`}
                 />
                 {errors.email && (
-                  <span className="error-message">{errors.email}</span>
+                  <span className="text-sm text-rose-600">{errors.email}</span>
                 )}
               </div>
 
-              <div className="form-actions">
+              <div className="flex flex-col gap-3 sm:flex-row">
                 <button
                   type="button"
-                  className="btn-primary"
+                  className="inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-300"
                   onClick={handleSaveProfile}
                   disabled={loading}
                 >
@@ -251,7 +250,7 @@ export const UserProfile = ({ user }) => {
                 </button>
                 <button
                   type="button"
-                  className="btn-secondary"
+                  className="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed"
                   onClick={() => {
                     setIsEditing(false)
                     setFormData({
@@ -269,27 +268,27 @@ export const UserProfile = ({ user }) => {
               </div>
             </div>
           ) : (
-            <div className="profile-data">
-              <div className="data-item">
-                <span className="label">Nombre:</span>
-                <span className="value">{user?.name}</span>
+            <div className="grid gap-4 rounded-2xl bg-white p-6 shadow-sm">
+              <div className="space-y-1">
+                <p className="text-sm text-slate-500">Nombre</p>
+                <p className="text-base font-medium text-slate-900">{user?.name}</p>
               </div>
-              <div className="data-item">
-                <span className="label">Email:</span>
-                <span className="value">{user?.email}</span>
+              <div className="space-y-1">
+                <p className="text-sm text-slate-500">Email</p>
+                <p className="text-base font-medium text-slate-900">{user?.email}</p>
               </div>
             </div>
           )}
         </div>
 
         {/* Sección de cambio de contraseña */}
-        <div className="profile-section">
-          <div className="section-header">
-            <h2>Seguridad</h2>
+        <div className="space-y-4 rounded-[28px] border border-slate-200 bg-slate-50 p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <h2 className="text-xl font-semibold text-slate-900">Seguridad</h2>
             {!showChangePassword && (
               <button
                 type="button"
-                className="btn-secondary"
+                className="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed"
                 onClick={() => setShowChangePassword(true)}
               >
                 Cambiar contraseña
@@ -298,60 +297,56 @@ export const UserProfile = ({ user }) => {
           </div>
 
           {showChangePassword && (
-            <div className="profile-form">
-              <div className="form-group">
-                <label htmlFor="currentPassword">Contraseña actual</label>
+            <div className="grid gap-4">
+              <div className="grid gap-2">
+                <label htmlFor="currentPassword" className="text-sm font-semibold text-slate-700">Contraseña actual</label>
                 <input
                   id="currentPassword"
                   type="password"
                   name="currentPassword"
                   value={passwordForm.currentPassword}
                   onChange={handlePasswordChange}
-                  className={errors.currentPassword ? 'error' : ''}
+                  className={`rounded-2xl border px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200 ${errors.currentPassword ? 'border-rose-500' : 'border-slate-300'}`}
                 />
                 {errors.currentPassword && (
-                  <span className="error-message">
-                    {errors.currentPassword}
-                  </span>
+                  <span className="text-sm text-rose-600">{errors.currentPassword}</span>
                 )}
               </div>
 
-              <div className="form-group">
-                <label htmlFor="newPassword">Nueva contraseña</label>
+              <div className="grid gap-2">
+                <label htmlFor="newPassword" className="text-sm font-semibold text-slate-700">Nueva contraseña</label>
                 <input
                   id="newPassword"
                   type="password"
                   name="newPassword"
                   value={passwordForm.newPassword}
                   onChange={handlePasswordChange}
-                  className={errors.newPassword ? 'error' : ''}
+                  className={`rounded-2xl border px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200 ${errors.newPassword ? 'border-rose-500' : 'border-slate-300'}`}
                 />
                 {errors.newPassword && (
-                  <span className="error-message">{errors.newPassword}</span>
+                  <span className="text-sm text-rose-600">{errors.newPassword}</span>
                 )}
               </div>
 
-              <div className="form-group">
-                <label htmlFor="confirmPassword">Confirmar contraseña</label>
+              <div className="grid gap-2">
+                <label htmlFor="confirmPassword" className="text-sm font-semibold text-slate-700">Confirmar contraseña</label>
                 <input
                   id="confirmPassword"
                   type="password"
                   name="confirmPassword"
                   value={passwordForm.confirmPassword}
                   onChange={handlePasswordChange}
-                  className={errors.confirmPassword ? 'error' : ''}
+                  className={`rounded-2xl border px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200 ${errors.confirmPassword ? 'border-rose-500' : 'border-slate-300'}`}
                 />
                 {errors.confirmPassword && (
-                  <span className="error-message">
-                    {errors.confirmPassword}
-                  </span>
+                  <span className="text-sm text-rose-600">{errors.confirmPassword}</span>
                 )}
               </div>
 
-              <div className="form-actions">
+              <div className="flex flex-col gap-3 sm:flex-row">
                 <button
                   type="button"
-                  className="btn-primary"
+                  className="inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-300"
                   onClick={handleChangePassword}
                   disabled={loading}
                 >
@@ -359,7 +354,7 @@ export const UserProfile = ({ user }) => {
                 </button>
                 <button
                   type="button"
-                  className="btn-secondary"
+                  className="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed"
                   onClick={() => {
                     setShowChangePassword(false)
                     setPasswordForm({
@@ -378,18 +373,18 @@ export const UserProfile = ({ user }) => {
         </div>
 
         {/* Sección de eliminar cuenta */}
-        <div className="profile-section danger-section">
-          <div className="section-header">
-            <h2>Zona de peligro</h2>
+        <div className="space-y-4 rounded-[28px] border border-rose-200 bg-rose-50 p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <h2 className="text-xl font-semibold text-slate-900">Zona de peligro</h2>
             <button
               type="button"
-              className="btn-danger"
+              className="inline-flex items-center justify-center rounded-full bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:bg-rose-300"
               onClick={() => setShowDeleteModal(true)}
             >
               Eliminar cuenta
             </button>
           </div>
-          <p className="danger-warning">
+          <p className="text-sm text-rose-700">
             La eliminación de la cuenta es permanente y no se puede deshacer.
           </p>
         </div>
@@ -397,34 +392,29 @@ export const UserProfile = ({ user }) => {
 
       {/* Modal de confirmación para eliminar cuenta */}
       {showDeleteModal && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <div className="modal-header">
-              <h3>Eliminar cuenta</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
+          <div className="w-full max-w-xl rounded-[32px] bg-white p-6 shadow-2xl">
+            <div className="flex items-center justify-between gap-4">
+              <h3 className="text-xl font-semibold text-slate-900">Eliminar cuenta</h3>
               <button
                 type="button"
-                className="modal-close"
+                className="rounded-full px-3 py-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
                 onClick={() => setShowDeleteModal(false)}
               >
                 ✕
               </button>
             </div>
-            <div className="modal-body">
-              <p className="warning-text">
-                ⚠️ Esta acción es permanente y no se puede deshacer.
+            <div className="mt-5 space-y-4">
+              <p className="text-sm font-semibold text-rose-700">⚠️ Esta acción es permanente y no se puede deshacer.</p>
+              <p className="text-slate-600">
+                Se eliminarán todos tus datos personales, historial de reservas, pedidos y facturas.
               </p>
-              <p>
-                Se eliminarán todos tus datos personales, historial de reservas,
-                pedidos y facturas.
-              </p>
-              <p className="confirm-text">
-                ¿Estás seguro de que deseas eliminar tu cuenta?
-              </p>
+              <p className="text-sm font-semibold text-slate-900">¿Estás seguro de que deseas eliminar tu cuenta?</p>
             </div>
-            <div className="modal-footer">
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
               <button
                 type="button"
-                className="btn-secondary"
+                className="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed"
                 onClick={() => setShowDeleteModal(false)}
                 disabled={loading}
               >
@@ -432,7 +422,7 @@ export const UserProfile = ({ user }) => {
               </button>
               <button
                 type="button"
-                className="btn-danger"
+                className="inline-flex items-center justify-center rounded-full bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:cursor-not-allowed"
                 onClick={handleDeleteAccount}
                 disabled={loading}
               >

@@ -7,6 +7,7 @@ import { DashboardPage } from '../layouts/DashboardPage.jsx'
 import { ClientPage, ClientHome, ClientReservations, ClientMenu, ClientInvoices, ClientOrders } from '../pages/ClientPage'
 import { ProtectedRoute } from './ProtectedRoute'
 import { UserProfile } from '../../features/auth/components/UserProfile'
+import { ClientHistory } from '../../features/History/ClientHistory'
 import { RoleGuard } from './RoleGuard'
 import { LandingPage } from '../pages/LandingPage'
 import { Facturas } from '../../features/Facturas/Facturas'
@@ -82,6 +83,7 @@ export const AppRoutes = () => {
       >
         <Route index element={<ClientHome />} />
         <Route path="reservations" element={<ClientReservations />} />
+        <Route path="orders" element={<ClientHistory />} />
         <Route path="menu" element={<ClientMenu />} />
         <Route path="orders" element={<ClientOrders />} />
         <Route path="invoices" element={<ClientInvoices />} />
