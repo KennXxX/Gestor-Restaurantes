@@ -5,6 +5,7 @@ import { getReservations } from '../../shared/api/reservations'
 import { getEventsByReservation } from '../../shared/api/events'
 import { getRestaurants } from '../../shared/api/restaurants'
 import { showError, showInfo, showSuccess } from '../../shared/utils/toast'
+import { FilterBar } from '../../shared/components/ui/FilterBar'
 
 const formatDate = (value) => {
   if (!value) return 'Sin fecha'
@@ -42,6 +43,10 @@ export const Promotions = () => {
     startDate: '',
     endDate: '',
   })
+
+  const [searchTerm, setSearchTerm] = useState('')
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
 
   const resetForm = () => {
     setForm({
@@ -122,8 +127,38 @@ export const Promotions = () => {
     return true
   }
 
-  const activePromotions = promotions.filter((promo) => isPromotionActive(promo))
-  const pendingPromotions = promotions.filter((promo) => promo.isApproved === false)
+  const filteredPromotions = useMemo(() => {
+    return promotions.filter((promo) => {
+      const searchLower = searchTerm.toLowerCase()
+      const title = promo.title || ''
+      const description = promo.description || ''
+      const couponCode = promo.couponCode || ''
+
+      const matchesSearch =
+        !searchTerm ||
+        title.toLowerCase().includes(searchLower) ||
+        description.toLowerCase().includes(searchLower) ||
+        couponCode.toLowerCase().includes(searchLower)
+
+      let matchesDate = true
+      if (startDate || endDate) {
+        const itemDate = new Date(promo.createdAt || promo.startDate)
+        if (!Number.isNaN(itemDate.getTime())) {
+          if (startDate) {
+            matchesDate = matchesDate && itemDate >= new Date(startDate + 'T00:00:00')
+          }
+          if (endDate) {
+            matchesDate = matchesDate && itemDate <= new Date(endDate + 'T23:59:59')
+          }
+        }
+      }
+
+      return matchesSearch && matchesDate
+    })
+  }, [promotions, searchTerm, startDate, endDate])
+
+  const activePromotions = filteredPromotions.filter((promo) => isPromotionActive(promo))
+  const pendingPromotions = filteredPromotions.filter((promo) => promo.isApproved === false)
   const couponPromotions = activePromotions.filter((promo) => promo.couponCode)
 
   const handleCopyCoupon = async (code) => {
@@ -334,6 +369,16 @@ export const Promotions = () => {
                 {loading ? 'Cargando...' : `${activePromotions.length} activas`}
               </span>
             </div>
+
+            <FilterBar
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              startDate={startDate}
+              onStartDateChange={setStartDate}
+              endDate={endDate}
+              onEndDateChange={setEndDate}
+              searchPlaceholder="Buscar por título, descripción o cupón..."
+            />
 
             <div className="mt-5 grid gap-4">
               {activePromotions.length === 0 && !loading && (

@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { getMyReservations } from '../../shared/api/reservations'
 import { getMyOrders } from '../../shared/api/orders'
 import { formatDate, statusLabel, STATUS_COLORS, STATUS_LABEL } from '../Reservations/utils/reservationHelpers'
-import { useNavigate } from 'react-router-dom'
 import { showError } from '../../shared/utils/toast'
+import { FilterBar } from '../../shared/components/ui/FilterBar'
 
 export const ClientHistory = () => {
   const [reservations, setReservations] = useState([])
@@ -11,6 +11,10 @@ export const ClientHistory = () => {
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('ALL') // ALL, RESERVATIONS, ORDERS
   const navigate = useNavigate()
+
+  const [searchTerm, setSearchTerm] = useState('')
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
 
   useEffect(() => {
     const fetchData = async () => {
@@ -48,10 +52,37 @@ export const ClientHistory = () => {
   const filteredReservations = activeTab === 'ORDERS' ? [] : reservations
   const filteredOrders = activeTab === 'RESERVATIONS' ? [] : orders
 
-  const combinedHistory = [
+  const combinedHistory = useMemo(() => [
     ...filteredReservations.map(r => ({ ...r, _type: 'RESERVATION', _date: new Date(r.startDate) })),
     ...filteredOrders.map(o => ({ ...o, _type: 'ORDER', _date: new Date(o.date || o.createdAt || new Date()) }))
-  ].sort((a, b) => b._date - a._date)
+  ].sort((a, b) => b._date - a._date), [filteredReservations, filteredOrders])
+
+  const finalHistory = useMemo(() => {
+    return combinedHistory.filter(item => {
+      const searchLower = searchTerm.toLowerCase()
+      const restaurantName = item.restaurantId?.restaurantName || 'Restaurante'
+      const statusLabelText = item._type === 'RESERVATION' ? STATUS_LABEL[item.status] || item.status : item.status || 'Completado'
+      const typeLabel = item._type === 'RESERVATION' ? 'reserva' : 'pedido'
+
+      const matchesSearch = !searchTerm ||
+        restaurantName.toLowerCase().includes(searchLower) ||
+        statusLabelText.toLowerCase().includes(searchLower) ||
+        typeLabel.toLowerCase().includes(searchLower)
+        
+      let matchesDate = true
+      if (startDate || endDate) {
+        if (!Number.isNaN(item._date.getTime())) {
+          if (startDate) {
+            matchesDate = matchesDate && item._date >= new Date(startDate + 'T00:00:00')
+          }
+          if (endDate) {
+            matchesDate = matchesDate && item._date <= new Date(endDate + 'T23:59:59')
+          }
+        }
+      }
+      return matchesSearch && matchesDate
+    })
+  }, [combinedHistory, searchTerm, startDate, endDate])
 
   return (
     <div className="space-y-6">
@@ -76,7 +107,18 @@ export const ClientHistory = () => {
         </button>
       </div>
 
+        <FilterBar
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          startDate={startDate}
+          onStartDateChange={setStartDate}
+          endDate={endDate}
+          onEndDateChange={setEndDate}
+          searchPlaceholder="Buscar por restaurante, tipo o estado..."
+        />
+
       <div className="space-y-4">
+
         {loading && (
           <div className="py-12 text-center text-slate-500">
             <span className="text-3xl animate-pulse inline-block mb-3">⏳</span>
@@ -84,14 +126,14 @@ export const ClientHistory = () => {
           </div>
         )}
 
-        {!loading && combinedHistory.length === 0 && (
+        {!loading && finalHistory.length === 0 && (
           <div className="py-12 text-center text-slate-500 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
             <span className="text-4xl inline-block mb-3">📭</span>
-            <p>No tienes reservaciones ni pedidos en tu historial.</p>
+            <p>No tienes reservaciones ni pedidos que coincidan en tu historial.</p>
           </div>
         )}
 
-        {!loading && combinedHistory.map((item) => {
+        {!loading && finalHistory.map((item) => {
           if (item._type === 'RESERVATION') {
             return (
               <article key={`res-${item._id}`} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition-shadow">

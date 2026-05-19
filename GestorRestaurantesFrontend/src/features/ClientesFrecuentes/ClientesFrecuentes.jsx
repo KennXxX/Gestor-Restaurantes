@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { getAllUsers } from '../../shared/api/users'
 import { getReservations } from '../../shared/api/reservations'
 import { getOrders } from '../../shared/api/orders'
+import { FilterBar } from '../../shared/components/ui/FilterBar'
 
 const getErrorMessage = (error, fallback) => {
   const data = error?.response?.data
@@ -100,6 +101,8 @@ export const ClientesFrecuentes = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
+  const [searchTerm, setSearchTerm] = useState('')
+
   const loadData = async () => {
     setLoading(true)
     setError(null)
@@ -183,10 +186,21 @@ export const ClientesFrecuentes = () => {
       })
   }, [orders, reservations, users])
 
+  const filteredClientRows = useMemo(() => {
+    if (!searchTerm) return clientRows
+    const lower = searchTerm.toLowerCase()
+    return clientRows.filter(
+      (row) =>
+        row.name.toLowerCase().includes(lower) ||
+        row.userId.toLowerCase().includes(lower) ||
+        (row.favoriteRestaurant && row.favoriteRestaurant.toLowerCase().includes(lower))
+    )
+  }, [clientRows, searchTerm])
+
   const kpis = useMemo(() => {
-    const totalClients = clientRows.length
-    const totalReservations = clientRows.reduce((acc, row) => acc + row.activeReservations, 0)
-    const totalOrders = clientRows.reduce((acc, row) => acc + row.totalOrders, 0)
+    const totalClients = filteredClientRows.length
+    const totalReservations = filteredClientRows.reduce((acc, row) => acc + row.activeReservations, 0)
+    const totalOrders = filteredClientRows.reduce((acc, row) => acc + row.totalOrders, 0)
     const avgVisits = totalClients > 0 ? (totalReservations + totalOrders) / totalClients : 0
 
     return {
@@ -195,7 +209,7 @@ export const ClientesFrecuentes = () => {
       totalOrders,
       avgVisits,
     }
-  }, [clientRows])
+  }, [filteredClientRows])
 
   return (
     <section className="space-y-6 font-body">
@@ -247,11 +261,21 @@ export const ClientesFrecuentes = () => {
 
         {loading && <p className="py-8 text-center text-sm text-slate-500">Cargando clientes frecuentes...</p>}
         {!loading && error && <p className="py-8 text-center text-sm text-rose-500">{error}</p>}
-        {!loading && !error && clientRows.length === 0 && (
-          <p className="py-8 text-center text-sm text-slate-500">No hay historial suficiente para construir el ranking.</p>
+        
+        {!loading && !error && clientRows.length > 0 && (
+          <FilterBar
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            hideDateFilters={true}
+            searchPlaceholder="Buscar por nombre, ID o restaurante..."
+          />
         )}
 
-        {!loading && !error && clientRows.length > 0 && (
+        {!loading && !error && filteredClientRows.length === 0 && (
+          <p className="py-8 text-center text-sm text-slate-500">No hay clientes que coincidan con la búsqueda.</p>
+        )}
+
+        {!loading && !error && filteredClientRows.length > 0 && (
           <div className="mt-5 overflow-x-auto">
             <table className="min-w-full divide-y divide-slate-200 text-sm">
               <thead>
@@ -265,7 +289,7 @@ export const ClientesFrecuentes = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {clientRows.map((row) => (
+                {filteredClientRows.map((row) => (
                   <tr key={row.userId} className="align-top">
                     <td className="px-3 py-4">
                       <p className="font-semibold text-slate-900">{row.name}</p>

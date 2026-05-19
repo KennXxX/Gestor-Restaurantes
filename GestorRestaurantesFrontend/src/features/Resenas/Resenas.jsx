@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { getReviews, deleteReview } from '../../shared/api/reviews'
 import { showError, showSuccess } from '../../shared/utils/toast'
+import { FilterBar } from '../../shared/components/ui/FilterBar'
 
 const getErrorMessage = (error, fallback) => {
   const data = error?.response?.data
@@ -16,7 +17,43 @@ export const Resenas = () => {
   const [error, setError] = useState(null)
   const [selectedReview, setSelectedReview] = useState(null)
 
-  const ratingValues = reviews
+  const [searchTerm, setSearchTerm] = useState('')
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
+
+  const filteredReviews = useMemo(() => {
+    return reviews.filter((review) => {
+      const searchLower = searchTerm.toLowerCase()
+      const userName = review.userName || 'Usuario Anónimo'
+      const comment = review.comment || ''
+      const restaurantName = review.restaurantId?.restaurantName || ''
+      const menuName = review.menuId?.menuName || ''
+
+      const matchesSearch =
+        !searchTerm ||
+        userName.toLowerCase().includes(searchLower) ||
+        comment.toLowerCase().includes(searchLower) ||
+        restaurantName.toLowerCase().includes(searchLower) ||
+        menuName.toLowerCase().includes(searchLower)
+
+      let matchesDate = true
+      if (startDate || endDate) {
+        const itemDate = new Date(review.createdAt)
+        if (!Number.isNaN(itemDate.getTime())) {
+          if (startDate) {
+            matchesDate = matchesDate && itemDate >= new Date(startDate + 'T00:00:00')
+          }
+          if (endDate) {
+            matchesDate = matchesDate && itemDate <= new Date(endDate + 'T23:59:59')
+          }
+        }
+      }
+
+      return matchesSearch && matchesDate
+    })
+  }, [reviews, searchTerm, startDate, endDate])
+
+  const ratingValues = filteredReviews
     .map(review => Number(review.rating))
     .filter(rating => Number.isFinite(rating))
   const averageRating = ratingValues.length > 0
@@ -95,7 +132,7 @@ export const Resenas = () => {
 
           <div className="rounded-3xl border border-white/70 bg-white/85 p-5 shadow-sm backdrop-blur">
             <p className="text-xs uppercase tracking-[0.22em] text-slate-400">Calificaciones registradas</p>
-            <p className="mt-3 font-display text-4xl font-semibold text-slate-900">{reviews.length}</p>
+            <p className="mt-3 font-display text-4xl font-semibold text-slate-900">{filteredReviews.length}</p>
             <p className="mt-2 text-sm text-slate-500">Opiniones ingresadas por clientes</p>
           </div>
 
@@ -116,16 +153,26 @@ export const Resenas = () => {
         <section className="rounded-[26px] border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="font-display text-xl font-semibold text-slate-900 border-b border-slate-100 pb-5">Listado de reseñas</h2>
 
+          <FilterBar
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            startDate={startDate}
+            onStartDateChange={setStartDate}
+            endDate={endDate}
+            onEndDateChange={setEndDate}
+            searchPlaceholder="Buscar por usuario, comentario o establecimiento..."
+          />
+
           <div className="mt-6 space-y-4">
             {loading && <p className="text-center text-sm text-slate-500 py-6">Cargando comentarios...</p>}
             {!loading && error && <p className="text-center text-sm text-rose-500 py-6">{error}</p>}
-            {!loading && !error && reviews.length === 0 && (
-              <p className="text-center text-sm text-slate-500 py-6">Aún no hay reseñas registradas.</p>
+            {!loading && !error && filteredReviews.length === 0 && (
+              <p className="text-center text-sm text-slate-500 py-6">Aún no hay reseñas que coincidan con la búsqueda.</p>
             )}
 
-            {!loading && reviews.length > 0 && (
+            {!loading && filteredReviews.length > 0 && (
               <div className="grid gap-4">
-                {reviews.map(review => (
+                {filteredReviews.map(review => (
                   <article 
                     key={review._id} 
                     onClick={() => setSelectedReview(review)}
