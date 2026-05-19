@@ -155,6 +155,16 @@ export const AdminReservationModal = ({
           </label>
 
           <label className="text-sm font-semibold text-slate-700">
+            Cupón de descuento (opcional)
+            <input
+              value={form.coupon}
+              onChange={(e) => setForm((prev) => ({ ...prev, coupon: e.target.value }))}
+              className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none"
+              placeholder="Ej: FIESTA20"
+            />
+          </label>
+
+          <label className="text-sm font-semibold text-slate-700">
             Foto (opcional)
             <input
               type="file"

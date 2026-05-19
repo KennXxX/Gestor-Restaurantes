@@ -58,6 +58,15 @@ const navItems = [
     ),
   },
   {
+    label: "Promociones",
+    to: "/dashboard/promociones",
+    icon: (
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 2l2.5 5 5.5.8-4 3.9.9 5.6-4.9-2.7-4.9 2.7.9-5.6-4-3.9 5.5-.8L12 2z" />
+      </svg>
+    ),
+  },
+  {
     label: "Clientes frecuentes",
     to: "/dashboard/clientes-frecuentes",
     icon: (
@@ -135,7 +144,7 @@ const navItems = [
   },
 ];
 
-export const Sidebar = () => {
+export const Sidebar = ({ items = navItems }) => {
   const location = useLocation();
 
   return (
@@ -146,8 +155,10 @@ export const Sidebar = () => {
       </p>
 
       <ul className="list-none m-0 p-0 flex flex-col gap-0.5">
-        {navItems.map((item) => {
-          const isActive = item.to === '/dashboard' ? location.pathname === '/dashboard' : location.pathname.startsWith(item.to);
+        {items.map((item) => {
+          const isActive = (item.to === '/dashboard' || item.to === '/admin-restaurante') 
+            ? location.pathname === item.to 
+            : location.pathname.startsWith(item.to);
 
           return (
             <li key={item.to}>

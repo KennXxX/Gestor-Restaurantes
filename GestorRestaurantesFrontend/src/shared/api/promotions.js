@@ -4,6 +4,10 @@ export const getActivePromotions = async (params = {}) => {
   return axiosApi.get('/promotions/active', { params })
 }
 
+export const getAllPromotions = async () => {
+  return axiosApi.get('/promotions')
+}
+
 export const createPromotion = async (payload) => {
   return axiosApi.post('/promotions', payload)
 }

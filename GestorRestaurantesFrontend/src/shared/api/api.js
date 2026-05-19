@@ -4,17 +4,11 @@ import { useAuthStore } from '../../features/auth/store/authStore'
 export const axiosAuth = axios.create({
   baseURL: import.meta.env.VITE_AUTH_URL,
   timeout: 8000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 })
 
 export const axiosApi = axios.create({
   baseURL: import.meta.env.VITE_API_URL ?? import.meta.env.VITE_AUTH_URL,
   timeout: 8000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 })
 
 const attachToken = (clientName) => (config) => {
@@ -132,9 +126,6 @@ axiosApi.interceptors.response.use((response) => response, handleRefreshToken)
 const axiosInventory = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
   timeout: 8000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 })
 
 axiosInventory.interceptors.request.use((config) => {

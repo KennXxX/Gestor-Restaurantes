@@ -8,8 +8,18 @@ export const getIssuedInvoices = async (params = {}) => {
   return axiosApi.get('/invoices/issued', { params })
 }
 
+export const getMyInvoices = async () => {
+  return axiosApi.get('/invoices/my')
+}
+
 export const exportInvoicePdf = async (invoiceId) => {
   return axiosApi.get(`/invoices/${invoiceId}/pdf`, {
+    responseType: 'blob',
+  })
+}
+
+export const exportMyInvoicePdf = async (invoiceId) => {
+  return axiosApi.get(`/invoices/my/${invoiceId}/pdf`, {
     responseType: 'blob',
   })
 }

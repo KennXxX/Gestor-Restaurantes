@@ -37,7 +37,7 @@ export const useAuthStore = create(
           const role = user?.role ?? data.role
           const token = data.accessToken ?? data.token ?? null
 
-          if (!['ADMIN_ROLE', 'USER_ROLE'].includes(role)) {
+          if (!['ADMIN_ROLE', 'USER_ROLE', 'ADMIN_RESTAURANT', 'ADMIN_RESTAURANTE'].includes(role)) {
             const message = 'No tienes permisos para acceder a esta área.'
             set({
               ...emptySession,
@@ -75,7 +75,7 @@ export const useAuthStore = create(
             redirectTo:
               role === 'ADMIN_ROLE'
                 ? '/dashboard'
-                : role === 'ADMIN_RESTAURANT'
+                : role === 'ADMIN_RESTAURANT' || role === 'ADMIN_RESTAURANTE'
                   ? '/admin-restaurante'
                   : '/client',
           }

@@ -107,6 +107,16 @@ export const CreateOrderModal = ({
             )}
           </div>
 
+          <label className="text-sm font-semibold text-slate-700">
+            Cupón de descuento (opcional)
+            <input
+              value={form.coupon}
+              onChange={(e) => setForm((prev) => ({ ...prev, coupon: e.target.value }))}
+              className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100"
+              placeholder="Ej: FUEGO10"
+            />
+          </label>
+
           <div className="space-y-3 mt-2 border-t border-slate-100 pt-4">
             <p className="text-sm font-semibold text-slate-700">Items de la orden</p>
             {form.items.map((item, index) => (

@@ -6,6 +6,7 @@ import {
   deleteAccount,
 } from '../../../shared/api/users'
 import { showSuccess, showError } from '../../../shared/utils/toast'
+import defaultAvatarImg from '../../../assets/img/AvatarUserDefault.webp'
 
 export const UserProfile = ({ user }) => {
   const logout = useAuthStore((state) => state.logout)
@@ -15,6 +16,9 @@ export const UserProfile = ({ user }) => {
   const [showChangePassword, setShowChangePassword] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [loading, setLoading] = useState(false)
+
+  const [selectedFile, setSelectedFile] = useState(null)
+  const [preview, setPreview] = useState(null)
 
   // Estados para edición de perfil
   const [formData, setFormData] = useState({
@@ -33,6 +37,8 @@ export const UserProfile = ({ user }) => {
 
   // Estados para validación
   const [errors, setErrors] = useState({})
+  const profilePicture =
+    user?.profilePicture || user?.ProfilePicture || user?.UserProfile?.Imagen || ''
 
   const validateForm = () => {
     const newErrors = {}
@@ -103,15 +109,21 @@ export const UserProfile = ({ user }) => {
 
     setLoading(true)
     try {
-      const response = await updateUserProfile({
-        name: formData.name,
-        email: formData.email,
-      })
+      const submitData = new FormData()
+      submitData.append('name', formData.name)
+      submitData.append('email', formData.email)
+      if (selectedFile) {
+        submitData.append('profilePicture', selectedFile)
+      }
+
+      const response = await updateUserProfile(submitData)
 
       if (response.data?.success || response.status === 200) {
         showSuccess('Perfil actualizado correctamente')
         updateUser(response.data.user)
         setIsEditing(false)
+        setSelectedFile(null)
+        setPreview(null)
       }
     } catch (error) {
       showError(
@@ -179,13 +191,22 @@ export const UserProfile = ({ user }) => {
       <div className="mx-auto w-full max-w-4xl space-y-8 rounded-[32px] border border-slate-200 bg-white p-8 shadow-sm">
         {/* Encabezado del perfil */}
         <div className="flex flex-col gap-4 rounded-[28px] border border-slate-200 bg-slate-50 p-6 sm:flex-row sm:items-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-slate-900 text-lg font-bold text-white">
-            {user?.name
-              ?.split(' ')
-              .map((part) => part[0]?.toUpperCase())
-              .slice(0, 2)
-              .join('') || 'US'}
-          </div>
+          {profilePicture ? (
+            <img 
+              src={profilePicture} 
+              alt={user.name} 
+              className="h-16 w-16 rounded-3xl object-cover shadow-sm border-2 border-slate-200" 
+              onError={(e) => { e.target.onerror = null; e.target.src = defaultAvatarImg; }}
+            />
+          ) : (
+            <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-slate-900 text-lg font-bold text-white">
+              {user?.name
+                ?.split(' ')
+                .map((part) => part[0]?.toUpperCase())
+                .slice(0, 2)
+                .join('') || 'US'}
+            </div>
+          )}
           <div className="space-y-1">
             <h1 className="text-2xl font-semibold text-slate-900">{user?.name}</h1>
             <p className="text-sm text-slate-500">{user?.email}</p>
@@ -209,6 +230,61 @@ export const UserProfile = ({ user }) => {
 
           {isEditing ? (
             <div className="grid gap-4">
+              <div className="flex flex-col items-center gap-3 sm:gap-4 mb-4">
+                <div className="relative">
+                  {preview || profilePicture ? (
+                    <img
+                      src={preview || profilePicture}
+                      alt="Preview"
+                      className="h-20 sm:h-24 w-20 sm:w-24 rounded-full border-2 border-slate-200 object-cover bg-white"
+                      onError={(e) => { e.target.onerror = null; e.target.src = defaultAvatarImg; }}
+                    />
+                  ) : (
+                    <div className="h-20 sm:h-24 w-20 sm:w-24 rounded-full border-2 border-slate-200 bg-slate-100 flex items-center justify-center">
+                      <svg className="h-10 sm:h-12 w-10 sm:w-12 text-slate-400" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                      </svg>
+                    </div>
+                  )}
+                  <label
+                    htmlFor="profilePictureEdit"
+                    className="absolute bottom-0 right-0 flex h-7 sm:h-8 w-7 sm:w-8 items-center justify-center rounded-full bg-slate-900 cursor-pointer hover:bg-slate-700 transition shadow-md"
+                    title="Cambiar foto de perfil"
+                  >
+                    <svg className="h-3 sm:h-4 w-3 sm:w-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                  </label>
+                  <input
+                    id="profilePictureEdit"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (file) {
+                        setSelectedFile(file)
+                        const reader = new FileReader()
+                        reader.onload = (ev) => setPreview(ev.target?.result)
+                        reader.readAsDataURL(file)
+                      }
+                    }}
+                  />
+                </div>
+                <div className="text-center">
+                  <p className="text-sm font-semibold text-slate-700">Foto de perfil</p>
+                  {selectedFile && (
+                    <button
+                      type="button"
+                      onClick={() => { setPreview(null); setSelectedFile(null); document.getElementById('profilePictureEdit').value = ''; }}
+                      className="mt-1 text-xs font-semibold text-rose-500 hover:text-rose-600 transition"
+                    >
+                      Remover selección
+                    </button>
+                  )}
+                </div>
+              </div>
+
               <div className="grid gap-2">
                 <label htmlFor="name" className="text-sm font-semibold text-slate-700">Nombre completo</label>
                 <input
@@ -260,6 +336,8 @@ export const UserProfile = ({ user }) => {
                       address: user?.UserProfile?.Address || '',
                     })
                     setErrors({})
+                    setPreview(null)
+                    setSelectedFile(null)
                   }}
                   disabled={loading}
                 >
