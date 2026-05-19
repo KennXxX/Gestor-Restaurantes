@@ -23,3 +23,7 @@ export const createMyOrder = async (payload) => {
 export const updateOrderStatus = async (id, status) => {
   return axiosApi.put(`/orders/status/${id}`, { status })
 }
+
+export const updateOrderDetails = async (id, payload) => {
+  return axiosApi.put(`/orders/${id}`, payload)
+}

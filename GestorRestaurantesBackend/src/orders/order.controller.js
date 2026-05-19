@@ -372,6 +372,88 @@ export const updateOrderStatus = async (req, res) => {
   }
 }
 
+export const updateOrder = async (req, res) => {
+  try {
+    const { id } = req.params
+    let { items, tableId, status } = req.body
+
+    const order = await Order.findById(id)
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'Order not found' })
+    }
+
+    if (typeof items === 'string') {
+      try {
+        items = JSON.parse(items)
+      } catch (_err) {
+        items = items.split(',').map(id => ({ menuId: id.trim(), quantity: 1 }))
+      }
+    }
+
+    const normalizedItems = (items || []).map(item => ({
+      menuId: item.menuId || item.id || item._id || item,
+      quantity: Number(item.quantity) > 0 ? Number(item.quantity) : 1
+    }))
+
+    let total = 0
+    let itemsWithPrice = []
+    if (normalizedItems.length > 0) {
+      const menuIds = normalizedItems.map(item => item.menuId)
+      const menuItems = await Menu.find({ _id: { $in: menuIds } })
+
+      const priceMap = {}
+      menuItems.forEach(menu => {
+        priceMap[menu._id.toString()] = menu.menuPrice
+      })
+
+      itemsWithPrice = normalizedItems.map(item => {
+        const price = priceMap[item.menuId.toString()] || 0
+        const lineTotal = price * item.quantity
+        total += lineTotal
+        return {
+          menuId: item.menuId,
+          quantity: item.quantity,
+          price
+        }
+      })
+    }
+
+    const SHIPPING_FEE = 20
+    if (order.orderType === 'A_DOMICILIO') {
+      total += SHIPPING_FEE
+    }
+
+    order.items = itemsWithPrice
+    order.total = total
+    if (tableId !== undefined) {
+      order.tableId = tableId || null
+    }
+    if (status !== undefined) {
+      const previousStatus = order.status
+      if (status === 'CANCELADO' && previousStatus !== 'CANCELADO') {
+        try {
+          for (const item of order.items) {
+            await changeStock(item.menuId, order.restaurantId, item.quantity)
+          }
+        } catch (restockErr) {
+          console.error('Error restocking inventory:', restockErr)
+        }
+      }
+      order.status = status
+    }
+
+    const savedOrder = await order.save()
+    const populated = await Order.findById(savedOrder._id)
+      .populate('items.menuId')
+      .populate('tableId')
+
+    return res.status(200).json({ success: true, message: 'Order updated successfully', order: populated })
+  } catch (err) {
+    console.error(err)
+    return res.status(500).json({ success: false, message: 'Error updating order details', error: err.message })
+  }
+}
+
 export default {
   createOrder,
   createMyOrder,
@@ -379,7 +461,8 @@ export default {
   getMyOrders,
   getOrderById,
   getOrdersByRestaurant,
-  updateOrderStatus
+  updateOrderStatus,
+  updateOrder
 }
 
 

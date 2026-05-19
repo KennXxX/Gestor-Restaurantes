@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuthStore } from '../auth/store/authStore'
-import { getReservations, updateReservationStatus } from '../../shared/api/reservations'
+import { getReservations, updateReservationStatus, createReservation } from '../../shared/api/reservations'
+import { getTables } from '../../shared/api/tables'
 import { getAllUsers } from '../../shared/api/users'
 import { showError, showSuccess } from '../../shared/utils/toast'
 
@@ -14,9 +15,23 @@ export const RestaurantReservations = () => {
   const user = useAuthStore((state) => state.user)
   const [reservations, setReservations] = useState([])
   const [usersList, setUsersList] = useState([])
+  const [tablesList, setTablesList] = useState([])
   const [loading, setLoading] = useState(true)
   const [filterStatus, setFilterStatus] = useState('TODOS')
   const [updatingId, setUpdatingId] = useState(null)
+
+  // Add Reservation States
+  const [showModal, setShowModal] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [formData, setFormData] = useState({
+    userId: '',
+    tableId: [],
+    numberPeople: '',
+    typeReservation: 'PERSONAL',
+    description: '',
+    startDate: '',
+    endDate: ''
+  })
 
   // Search and Pagination States
   const [searchQuery, setSearchQuery] = useState('')
@@ -45,10 +60,21 @@ export const RestaurantReservations = () => {
     }
   }
 
+  const loadTables = async () => {
+    if (!user?.restaurantId) return
+    try {
+      const { data } = await getTables({ restaurantId: user.restaurantId })
+      setTablesList(data?.tables || [])
+    } catch (err) {
+      console.error('Error al cargar la lista de mesas:', err)
+    }
+  }
+
   useEffect(() => {
     if (user?.restaurantId) {
       loadReservations()
       loadUsers()
+      loadTables()
     } else {
       setLoading(false)
     }
@@ -64,6 +90,31 @@ export const RestaurantReservations = () => {
       showError(getErrMsg(err, 'No se pudo actualizar el estado de la reservación.'))
     } finally {
       setUpdatingId(null)
+    }
+  }
+
+  const handleCreateReservationSubmit = async (e) => {
+    e.preventDefault()
+    if (!formData.userId) return showError('Por favor, selecciona un cliente.')
+    if (!formData.tableId || formData.tableId.length === 0) return showError('Por favor, selecciona al menos una mesa.')
+    if (!formData.numberPeople || Number(formData.numberPeople) <= 0) return showError('Por favor, ingresa un número de personas válido.')
+    if (!formData.startDate) return showError('Por favor, selecciona una fecha de inicio.')
+    if (!formData.endDate) return showError('Por favor, selecciona una fecha de finalización.')
+
+    setSaving(true)
+    try {
+      await createReservation({
+        ...formData,
+        restaurantId: user.restaurantId,
+        tableId: formData.tableId
+      })
+      showSuccess('Reservación creada exitosamente.')
+      setShowModal(false)
+      loadReservations()
+    } catch (err) {
+      showError(getErrMsg(err, 'No se pudo crear la reservación.'))
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -123,7 +174,7 @@ export const RestaurantReservations = () => {
   return (
     <div className="space-y-6">
       {/* Banner Superior Premium */}
-      <div className="rounded-[24px] border border-emerald-100 bg-gradient-to-r from-emerald-50 via-emerald-50/60 to-emerald-100/30 p-6 sm:p-8 flex flex-col justify-between gap-4 overflow-hidden relative shadow-sm">
+      <div className="rounded-[24px] border border-emerald-100 bg-gradient-to-r from-emerald-50 via-emerald-50/60 to-emerald-100/30 p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 overflow-hidden relative shadow-sm">
         <div className="space-y-3 z-10">
           <span className="inline-flex rounded-full bg-emerald-100 border border-emerald-200/50 px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider text-emerald-800">
             Reservaciones
@@ -135,6 +186,28 @@ export const RestaurantReservations = () => {
             Supervisa las mesas asignadas, horarios de llegada y solicitudes de tus clientes en tiempo real.
           </p>
         </div>
+
+        <button
+          onClick={() => {
+            setFormData({
+              userId: '',
+              tableId: [],
+              numberPeople: '',
+              typeReservation: 'PERSONAL',
+              description: '',
+              startDate: '',
+              endDate: ''
+            })
+            setShowModal(true)
+          }}
+          className="shrink-0 z-10 rounded-2xl bg-emerald-600 hover:bg-emerald-700 px-6 py-3.5 text-xs font-bold text-white shadow-lg shadow-emerald-600/10 hover:shadow-emerald-600/20 transition active:scale-[0.98] flex items-center gap-2"
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          <span>Nueva Reservación</span>
+        </button>
       </div>
 
       {/* Dynamic Tab Filter & Search Row */}
@@ -471,6 +544,169 @@ export const RestaurantReservations = () => {
                 <polyline points="6 9 12 15 18 9" />
               </svg>
             </span>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Nueva Reservación */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/20 backdrop-blur-sm">
+          <div className="rounded-[24px] border border-slate-100 bg-white shadow-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
+              <h3 className="text-xl font-bold text-slate-900">
+                Nueva Reservación
+              </h3>
+              <button
+                onClick={() => setShowModal(false)}
+                className="rounded-lg p-1.5 hover:bg-slate-50 text-slate-400 hover:text-slate-600 transition"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateReservationSubmit} className="space-y-4">
+              {/* Cliente */}
+              <div>
+                <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-1.5">
+                  Seleccionar Cliente
+                </label>
+                <select
+                  value={formData.userId}
+                  onChange={(e) => setFormData(prev => ({ ...prev, userId: e.target.value }))}
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-bold text-slate-700 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition"
+                  required
+                >
+                  <option value="" disabled>Selecciona un cliente...</option>
+                  {usersList.map(u => (
+                    <option key={u.id || u.Id || u._id} value={u.id || u.Id || u._id}>
+                      {u.name || u.Name || 'Usuario'} ({u.email || u.Email})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Mesas */}
+              <div>
+                <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-1.5">
+                  Seleccionar Mesas (Multiselección)
+                </label>
+                <select
+                  multiple
+                  value={formData.tableId}
+                  onChange={(e) => {
+                    const selected = Array.from(e.target.selectedOptions, option => option.value)
+                    setFormData(prev => ({ ...prev, tableId: selected }))
+                  }}
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-bold text-slate-700 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition min-h-[90px]"
+                  required
+                >
+                  {tablesList.map(t => (
+                    <option key={t._id} value={t._id}>
+                      Mesa #{t.numberTable || t.number} - Capacidad: {t.capacity} personas ({t.location || 'Salón'})
+                    </option>
+                  ))}
+                </select>
+                <p className="text-[10px] text-slate-400 mt-1 font-bold">Mantén presionado Ctrl (o Cmd) para seleccionar más de una mesa.</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                {/* Personas */}
+                <div>
+                  <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-1.5">
+                    Número de Personas
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={formData.numberPeople}
+                    onChange={(e) => setFormData(prev => ({ ...prev, numberPeople: e.target.value }))}
+                    placeholder="Ej. 4"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-bold text-slate-700 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition"
+                    required
+                  />
+                </div>
+
+                {/* Tipo de Reservación */}
+                <div>
+                  <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-1.5">
+                    Tipo de Reservación
+                  </label>
+                  <select
+                    value={formData.typeReservation}
+                    onChange={(e) => setFormData(prev => ({ ...prev, typeReservation: e.target.value }))}
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-bold text-slate-700 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition"
+                  >
+                    <option value="PERSONAL">Personal</option>
+                    <option value="EVENTO">Evento</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                {/* Fecha Inicio */}
+                <div>
+                  <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-1.5">
+                    Fecha/Hora Inicio
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={formData.startDate}
+                    onChange={(e) => setFormData(prev => ({ ...prev, startDate: e.target.value }))}
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-bold text-slate-700 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition"
+                    required
+                  />
+                </div>
+
+                {/* Fecha Fin */}
+                <div>
+                  <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-1.5">
+                    Fecha/Hora Fin
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={formData.endDate}
+                    onChange={(e) => setFormData(prev => ({ ...prev, endDate: e.target.value }))}
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-bold text-slate-700 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Descripción */}
+              <div>
+                <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-1.5">
+                  Descripción / Notas Especiales
+                </label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                  placeholder="Ej. Mesa cerca de la ventana, celebración de cumpleaños..."
+                  rows="3"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-bold text-slate-700 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition"
+                ></textarea>
+              </div>
+
+              {/* Botones de acción */}
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="flex-1 rounded-xl border border-slate-200 px-4 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-50 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="flex-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-4 py-2.5 text-xs font-bold text-white transition disabled:opacity-50"
+                >
+                  {saving ? 'Creando...' : 'Crear Reservación'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
