@@ -4,6 +4,7 @@ import { getRestaurants } from '../../shared/api/restaurants'
 import { getMenus, createMenu, updateMenu, deleteMenu } from '../../shared/api/menus'
 import { getInventories, createInventory, updateInventory } from '../../shared/api/inventory'
 import { showError, showSuccess } from '../../shared/utils/toast'
+import { FilterBar } from '../../shared/components/ui/FilterBar'
 
 const emptyForm = {
   menuName: '',
@@ -34,14 +35,30 @@ export const Menus = () => {
   const [form, setForm] = useState(emptyForm)
   const [editing, setEditing] = useState(null)
   const [photoPreview, setPhotoPreview] = useState(null)
+  
+  const [searchTerm, setSearchTerm] = useState('')
+
+  const filteredMenus = useMemo(() => {
+    return menus.filter(menu => {
+      const searchLower = searchTerm.toLowerCase()
+      const name = menu.menuName || ''
+      const category = menu.menuCategory || ''
+      const price = String(menu.menuPrice || '')
+
+      return !searchTerm || 
+        name.toLowerCase().includes(searchLower) ||
+        category.toLowerCase().includes(searchLower) ||
+        price.toLowerCase().includes(searchLower)
+    })
+  }, [menus, searchTerm])
 
   const stats = useMemo(() => {
     return {
-      total: menus.length,
-      active: menus.filter(m => m.menuActive !== false).length,
-      inactive: menus.filter(m => m.menuActive === false).length
+      total: filteredMenus.length,
+      active: filteredMenus.filter(m => m.menuActive !== false).length,
+      inactive: filteredMenus.filter(m => m.menuActive === false).length
     }
-  }, [menus])
+  }, [filteredMenus])
 
   const loadData = async () => {
     setLoading(true)
@@ -211,16 +228,23 @@ export const Menus = () => {
             </div>
           </div>
 
+          <FilterBar
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            searchPlaceholder="Buscar por nombre, categoría o precio..."
+            hideDateFilters={true}
+          />
+
           <div className="mt-6 space-y-4">
             {loading && <p className="text-center text-sm text-slate-500 py-6">Cargando menús...</p>}
             {!loading && error && <p className="text-center text-sm text-rose-500 py-6">{error}</p>}
-            {!loading && !error && menus.length === 0 && (
-              <p className="text-center text-sm text-slate-500 py-6">No hay platillos creados.</p>
+            {!loading && !error && filteredMenus.length === 0 && (
+              <p className="text-center text-sm text-slate-500 py-6">No hay platillos que coincidan con la búsqueda.</p>
             )}
 
-            {!loading && menus.length > 0 && (
+            {!loading && filteredMenus.length > 0 && (
               <div className="grid gap-4">
-                {menus.map(menu => {
+                {filteredMenus.map(menu => {
                   const menuStock = inventories.find(inv => inv.menuId === menu._id)?.quantity || 0
                   
                   return (

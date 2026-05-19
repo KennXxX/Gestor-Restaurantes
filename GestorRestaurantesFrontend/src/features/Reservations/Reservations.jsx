@@ -24,6 +24,7 @@ import { ReservationStats } from './components/Admin/ReservationStats'
 import { AdminReservationList } from './components/Admin/AdminReservationList'
 import { AdminReservationModal } from './components/Admin/AdminReservationModal'
 import { AdminReservationDetail } from './components/Admin/AdminReservationDetail'
+import { FilterBar } from '../../shared/components/ui/FilterBar'
 
 const emptyForm = {
   userId: '',
@@ -50,17 +51,54 @@ export const Reservations = () => {
   const [error, setError] = useState(null)
   const [form, setForm] = useState(emptyForm)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  
+  const [searchTerm, setSearchTerm] = useState('')
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
+  
   const [searchParams, setSearchParams] = useSearchParams()
-
-  const stats = useMemo(() => ({
-    total: reservations.length,
-    pending: reservations.filter((r) => r.status === 'PENDIENTE').length,
-    canceled: reservations.filter((r) => r.status === 'CANCELADO').length,
-  }), [reservations])
 
   const usersById = useMemo(() => {
     return new Map(users.map((user) => [getUserId(user), user]))
   }, [users])
+
+  const filteredReservations = useMemo(() => {
+    return reservations.filter((reservation) => {
+      const searchLower = searchTerm.toLowerCase()
+      const resId = reservation._id || ''
+      const user = usersById.get(String(reservation.userId || ''))
+      const userLabel = user ? getUserLabel(user) : ''
+      const type = reservation.typeReservation || ''
+
+      const matchesSearch =
+        !searchTerm ||
+        resId.toLowerCase().includes(searchLower) ||
+        userLabel.toLowerCase().includes(searchLower) ||
+        type.toLowerCase().includes(searchLower)
+
+      let matchesDate = true
+      if (startDate || endDate) {
+        const itemDate = new Date(reservation.startDate || reservation.createdAt)
+        if (!Number.isNaN(itemDate.getTime())) {
+          if (startDate) {
+            matchesDate = matchesDate && itemDate >= new Date(startDate + 'T00:00:00')
+          }
+          if (endDate) {
+            matchesDate = matchesDate && itemDate <= new Date(endDate + 'T23:59:59')
+          }
+        }
+      }
+
+      return matchesSearch && matchesDate
+    })
+  }, [reservations, searchTerm, startDate, endDate, usersById])
+
+  const stats = useMemo(() => ({
+    total: filteredReservations.length,
+    pending: filteredReservations.filter((r) => r.status === 'PENDIENTE').length,
+    canceled: filteredReservations.filter((r) => r.status === 'CANCELADO').length,
+  }), [filteredReservations])
+
 
   const loadInitialData = async () => {
     setLoading(true)
@@ -272,10 +310,20 @@ export const Reservations = () => {
 
           <ReservationStats total={stats.total} pending={stats.pending} canceled={stats.canceled} />
 
+          <FilterBar
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            startDate={startDate}
+            onStartDateChange={setStartDate}
+            endDate={endDate}
+            onEndDateChange={setEndDate}
+            searchPlaceholder="Buscar por ID, cliente o tipo..."
+          />
+
           <AdminReservationList
             loading={loading}
             error={error}
-            reservations={reservations}
+            reservations={filteredReservations}
             selectedReservation={selectedReservation}
             setSelectedReservation={setSelectedReservation}
             usersById={usersById}

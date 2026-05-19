@@ -6,6 +6,7 @@ import {
 } from '../../shared/api/restaurants';
 import { showError, showSuccess } from '../../shared/utils/toast';
 import { ModalRestaurante } from './components/ModalRestaurante';
+import { FilterBar } from '../../shared/components/ui/FilterBar';
 
 const getRestaurantId = (restaurant) => restaurant?._id || restaurant?.id
 
@@ -32,16 +33,50 @@ export const Restaurantes = () => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editing, setEditing] = useState(null)
 
+  const [searchTerm, setSearchTerm] = useState('')
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
+
+  const filteredRestaurants = useMemo(() => {
+    return restaurants.filter((restaurant) => {
+      const searchLower = searchTerm.toLowerCase()
+      const name = restaurant.restaurantName || ''
+      const address = restaurant.restaurantAddress || ''
+      const email = restaurant.restaurantEmail || ''
+      
+      const matchesSearch = 
+        !searchTerm ||
+        name.toLowerCase().includes(searchLower) ||
+        address.toLowerCase().includes(searchLower) ||
+        email.toLowerCase().includes(searchLower)
+
+      let matchesDate = true
+      if (startDate || endDate) {
+        const itemDate = new Date(restaurant.createdAt || restaurant.updatedAt)
+        if (!Number.isNaN(itemDate.getTime())) {
+          if (startDate) {
+            matchesDate = matchesDate && itemDate >= new Date(startDate + 'T00:00:00')
+          }
+          if (endDate) {
+            matchesDate = matchesDate && itemDate <= new Date(endDate + 'T23:59:59')
+          }
+        }
+      }
+
+      return matchesSearch && matchesDate
+    })
+  }, [restaurants, searchTerm, startDate, endDate])
+
   const stats = useMemo(() => {
-    const activeCount = restaurants.filter((item) => item.restaurantActive !== false).length
-    const inactiveCount = restaurants.filter((item) => item.restaurantActive === false).length
+    const activeCount = filteredRestaurants.filter((item) => item.restaurantActive !== false).length
+    const inactiveCount = filteredRestaurants.filter((item) => item.restaurantActive === false).length
 
     return {
-      total: restaurants.length,
+      total: filteredRestaurants.length,
       active: activeCount,
       inactive: inactiveCount,
     }
-  }, [restaurants])
+  }, [filteredRestaurants])
 
   const loadRestaurants = async (targetInactive = showInactive) => {
     setLoading(true)
@@ -181,6 +216,16 @@ export const Restaurantes = () => {
             </div>
           </div>
 
+          <FilterBar
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            startDate={startDate}
+            onStartDateChange={setStartDate}
+            endDate={endDate}
+            onEndDateChange={setEndDate}
+            searchPlaceholder="Buscar por nombre, dirección o correo..."
+          />
+
           <div className="mt-5 grid gap-4 sm:grid-cols-3">
             {[
               { label: 'Restaurantes en vista', value: stats.total },
@@ -207,15 +252,15 @@ export const Restaurantes = () => {
               </div>
             )}
 
-            {!loading && !error && restaurants.length === 0 && (
+            {!loading && !error && filteredRestaurants.length === 0 && (
               <div className="rounded-2xl border border-slate-200 bg-white px-4 py-6 text-center text-sm text-slate-500">
-                No hay restaurantes en este estado. Utiliza el botón "Nuevo restaurante" para crear uno.
+                No hay restaurantes que coincidan con los filtros o en este estado. Utiliza el botón "Nuevo restaurante" para crear uno.
               </div>
             )}
 
-            {!loading && !error && restaurants.length > 0 && (
+            {!loading && !error && filteredRestaurants.length > 0 && (
               <div className="grid gap-4 xl:grid-cols-2">
-                {restaurants.map((restaurant) => {
+                {filteredRestaurants.map((restaurant) => {
                   const restaurantId = getRestaurantId(restaurant)
                   const isActive = restaurant.restaurantActive !== false
                   const photoUrl = normalizePhoto(restaurant.restaurantPhoto)

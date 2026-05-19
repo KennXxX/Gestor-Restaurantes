@@ -6,11 +6,12 @@ import { getMenus } from '../../shared/api/menus'
 import { getAllUsers } from '../../shared/api/users'
 import { createOrder, getOrdersByRestaurant, updateOrderStatus } from '../../shared/api/orders'
 import { showError, showSuccess } from '../../shared/utils/toast'
-import { getErrorMessage, isClientRole } from './utils/orderHelpers'
+import { getErrorMessage, isClientRole, orderTypeLabel, statusLabel } from './utils/orderHelpers'
 import { OrderStats } from './components/OrderStats'
 import { OrderList } from './components/OrderList'
 import { OrderDetail } from './components/OrderDetail'
 import { CreateOrderModal } from './components/CreateOrderModal'
+import { FilterBar } from '../../shared/components/ui/FilterBar'
 
 const emptyItem = { menuId: '', quantity: 1 }
 
@@ -26,6 +27,11 @@ export const Orders = () => {
   const [error, setError] = useState(null)
   const [restaurantFilter, setRestaurantFilter] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
+  
+  const [searchTerm, setSearchTerm] = useState('')
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
+  
   const [searchParams, setSearchParams] = useSearchParams()
 
   const [form, setForm] = useState({
@@ -38,11 +44,45 @@ export const Orders = () => {
     items: [emptyItem],
   })
 
+  const filteredOrders = useMemo(() => {
+    return orders.filter((order) => {
+      const searchLower = searchTerm.toLowerCase()
+      const orderIdFull = (order._id || '').toLowerCase()
+      const orderIdRendered = `orden #${(order._id || '').slice(-6)}`.toLowerCase()
+      const customerName = (order.userId?.Name || order.userId?.name || '').toLowerCase()
+      const typeRendered = (orderTypeLabel(order.orderType) || order.orderType || '').toLowerCase()
+      const statusRendered = (statusLabel(order.status) || order.status || '').toLowerCase()
+
+      const matchesSearch =
+        !searchTerm ||
+        orderIdFull.includes(searchLower.replace('#', '')) ||
+        orderIdRendered.includes(searchLower) ||
+        customerName.includes(searchLower) ||
+        typeRendered.includes(searchLower) ||
+        statusRendered.includes(searchLower)
+
+      let matchesDate = true
+      if (startDate || endDate) {
+        const itemDate = new Date(order.createdAt || order.updatedAt)
+        if (!Number.isNaN(itemDate.getTime())) {
+          if (startDate) {
+            matchesDate = matchesDate && itemDate >= new Date(startDate + 'T00:00:00')
+          }
+          if (endDate) {
+            matchesDate = matchesDate && itemDate <= new Date(endDate + 'T23:59:59')
+          }
+        }
+      }
+
+      return matchesSearch && matchesDate
+    })
+  }, [orders, searchTerm, startDate, endDate])
+
   const stats = useMemo(() => ({
-    total: orders.length,
-    pending: orders.filter((o) => o.status === 'EN_PREPARACION').length,
-    completed: orders.filter((o) => o.status === 'ENTREGADO').length,
-  }), [orders])
+    total: filteredOrders.length,
+    pending: filteredOrders.filter((o) => o.status === 'EN_PREPARACION').length,
+    completed: filteredOrders.filter((o) => o.status === 'ENTREGADO').length,
+  }), [filteredOrders])
 
   const loadInitialData = async () => {
     setLoading(true)
@@ -268,8 +308,18 @@ export const Orders = () => {
 
           <OrderStats total={stats.total} pending={stats.pending} completed={stats.completed} />
 
+          <FilterBar
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            startDate={startDate}
+            onStartDateChange={setStartDate}
+            endDate={endDate}
+            onEndDateChange={setEndDate}
+            searchPlaceholder="Buscar por ID, cliente, tipo o estado..."
+          />
+
           <OrderList 
-            orders={orders}
+            orders={filteredOrders}
             loading={loading}
             error={error}
             selectedOrder={selectedOrder}
