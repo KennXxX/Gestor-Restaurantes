@@ -37,7 +37,7 @@ export const useAuthStore = create(
           const role = user?.role ?? data.role
           const token = data.accessToken ?? data.token ?? null
 
-          if (!['ADMIN_ROLE', 'USER_ROLE', 'ADMIN_RESTAURANT'].includes(role)) {
+          if (!['ADMIN_ROLE', 'USER_ROLE', 'ADMIN_RESTAURANT', 'ADMIN_RESTAURANTE'].includes(role)) {
             const message = 'No tienes permisos para acceder a esta área.'
             set({
               ...emptySession,
@@ -69,13 +69,32 @@ export const useAuthStore = create(
             isLoadingAuth: false,
           })
 
+          // Si es administrador de restaurante, obtener y asociar su restaurantId de inmediato
+          if (role === 'ADMIN_RESTAURANT' || role === 'ADMIN_RESTAURANTE') {
+            try {
+              const { getMyRestaurant } = await import('../../../shared/api/restaurants')
+              const { data: myRestData } = await getMyRestaurant()
+              const restaurant = myRestData?.data
+              if (restaurant) {
+                set({
+                  user: {
+                    ...user,
+                    restaurantId: restaurant._id || restaurant.id,
+                  },
+                })
+              }
+            } catch (err) {
+              console.error('Error al precargar restaurantId para el admin:', err)
+            }
+          }
+
           return {
             success: true,
             role,
             redirectTo:
               role === 'ADMIN_ROLE'
                 ? '/dashboard'
-                : role === 'ADMIN_RESTAURANT'
+                : role === 'ADMIN_RESTAURANT' || role === 'ADMIN_RESTAURANTE'
                   ? '/admin-restaurante'
                   : '/client',
           }

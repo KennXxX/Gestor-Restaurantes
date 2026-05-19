@@ -18,7 +18,8 @@ export const createPromotion = async (req, res) => {
       couponCode: couponCode || null,
       discountPercentage: discountPercentage ? Number(discountPercentage) : 0,
       startDate: startDate ? new Date(startDate) : null,
-      endDate: endDate ? new Date(endDate) : null
+      endDate: endDate ? new Date(endDate) : null,
+      isApproved: true // Auto-approved to allow immediate local testing of coupons
     })
 
     await promo.save()
@@ -46,6 +47,19 @@ export const getActivePromotions = async (req, res) => {
       filter.restaurantId = req.query.restaurantId
     }
     const promotions = await Promotion.find(filter).populate('restaurantId')
+
+    return res.status(200).json({ success: true, promotions })
+  } catch (err) {
+    console.error(err)
+    return res.status(500).json({ success: false, message: 'Error obteniendo promociones', error: err.message })
+  }
+}
+
+export const getAllPromotions = async (_req, res) => {
+  try {
+    const promotions = await Promotion.find()
+      .populate('restaurantId')
+      .sort({ createdAt: -1 })
 
     return res.status(200).json({ success: true, promotions })
   } catch (err) {

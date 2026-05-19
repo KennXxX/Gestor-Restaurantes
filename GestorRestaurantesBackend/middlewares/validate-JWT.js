@@ -32,8 +32,16 @@ export const validateJWT = (req, res, next) => {
 }
 
 export const isAdmin = (req, res, next) => {
-  if (req.userRole !== 'ADMIN_ROLE') {
+  if (req.userRole !== 'ADMIN_ROLE' && req.userRole !== 'ADMIN_RESTAURANT' && req.userRole !== 'ADMIN_RESTAURANTE') {
     return res.status(403).json({ success: false, message: 'No tienes permisos para esta acción' })
   }
   next()
 }
+
+export const isSuperAdmin = (req, res, next) => {
+  if (req.userRole !== 'ADMIN_ROLE') {
+    return res.status(403).json({ success: false, message: 'Esta acción requiere rol de Super Administrador' })
+  }
+  next()
+}
+

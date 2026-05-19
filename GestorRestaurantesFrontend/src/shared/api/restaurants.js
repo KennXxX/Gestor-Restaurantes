@@ -33,6 +33,10 @@ export const getRestaurantById = async (id) => {
   return axiosApi.get(`/restaurants/${id}`)
 }
 
+export const getMyRestaurant = async () => {
+  return axiosApi.get('/restaurants/my')
+}
+
 export const createRestaurant = async (payload) => {
   const formData = buildRestaurantFormData(payload)
 

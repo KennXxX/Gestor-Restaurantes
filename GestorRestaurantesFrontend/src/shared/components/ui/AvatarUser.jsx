@@ -26,9 +26,16 @@ export const AvatarUser = () => {
         navigate("/", { replace: true });
     };
 
+    const profilePicture =
+        user?.profilePicture ||
+        user?.ProfilePicture ||
+        user?.UserProfile?.Imagen ||
+        user?.UserProfile?.ProfilePicture ||
+        "";
+
     const avatarSrc =
-        user?.ProfilePicture && user.ProfilePicture.trim() !== ""
-            ? user.ProfilePicture
+        profilePicture && profilePicture.trim() !== ""
+            ? profilePicture
             : defaultAvatarImg;
 
     return (

@@ -244,8 +244,8 @@ export const ClientHome = () => {
                   {reservationLoading
                     ? 'Cargando...'
                     : nextReservation
-                    ? formatReservationDate(nextReservation.startDate)
-                    : 'Sin reservas próximas'}
+                      ? formatReservationDate(nextReservation.startDate)
+                      : 'Sin reservas próximas'}
                 </h3>
               </div>
               {nextReservation && (
@@ -260,8 +260,8 @@ export const ClientHome = () => {
               {reservationError
                 ? reservationError
                 : nextReservation
-                ? `${nextReservation.numberPeople || 1} ${(nextReservation.numberPeople || 1) === 1 ? 'persona' : 'personas'} · ${formatReservationTime(nextReservation.startDate)} · ${nextReservation.restaurantId?.restaurantName || 'Restaurante'}`
-                : 'Aún no tienes reservaciones activas. Reserva tu mesa y aparecerá aquí.'}
+                  ? `${nextReservation.numberPeople || 1} ${(nextReservation.numberPeople || 1) === 1 ? 'persona' : 'personas'} · ${formatReservationTime(nextReservation.startDate)} · ${nextReservation.restaurantId?.restaurantName || 'Restaurante'}`
+                  : 'Aún no tienes reservaciones activas. Reserva tu mesa y aparecerá aquí.'}
             </p>
             <button
               type="button"
@@ -335,7 +335,6 @@ export const ClientMenu = () => {
   const [menus, setMenus] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
->>>>>>> origin/ft/zimri
 
   useEffect(() => {
     const loadMenus = async () => {
@@ -362,10 +361,10 @@ export const ClientMenu = () => {
     ? category === 'PLATO_FUERTE'
       ? 'Platos fuertes'
       : category === 'POSTRE'
-      ? 'Postres'
-      : category === 'BEBIDA'
-      ? 'Bebidas'
-      : category
+        ? 'Postres'
+        : category === 'BEBIDA'
+          ? 'Bebidas'
+          : category
     : 'Todos los menús'
 
   return (
@@ -532,10 +531,10 @@ export const ClientPage = () => {
 
   const userInitials = user?.name
     ? user.name
-        .split(' ')
-        .map((part) => part[0]?.toUpperCase())
-        .slice(0, 2)
-        .join('')
+      .split(' ')
+      .map((part) => part[0]?.toUpperCase())
+      .slice(0, 2)
+      .join('')
     : 'US'
 
   return (
@@ -562,10 +561,9 @@ export const ClientPage = () => {
               to="/client"
               end
               className={({ isActive }) =>
-                `rounded-full px-4 py-2 text-sm font-semibold transition ${
-                  isActive
-                    ? 'bg-orange-500 text-slate-950 shadow-sm'
-                    : 'text-slate-300 hover:bg-slate-900'
+                `rounded-full px-4 py-2 text-sm font-semibold transition ${isActive
+                  ? 'bg-orange-500 text-slate-950 shadow-sm'
+                  : 'text-slate-300 hover:bg-slate-900'
                 }`
               }
             >
@@ -574,10 +572,9 @@ export const ClientPage = () => {
             <NavLink
               to="/client/reservations"
               className={({ isActive }) =>
-                `rounded-full px-4 py-2 text-sm font-semibold transition ${
-                  isActive
-                    ? 'bg-orange-500 text-slate-950 shadow-sm'
-                    : 'text-slate-300 hover:bg-slate-900'
+                `rounded-full px-4 py-2 text-sm font-semibold transition ${isActive
+                  ? 'bg-orange-500 text-slate-950 shadow-sm'
+                  : 'text-slate-300 hover:bg-slate-900'
                 }`
               }
             >
@@ -586,10 +583,9 @@ export const ClientPage = () => {
             <NavLink
               to="/client/menu"
               className={({ isActive }) =>
-                `rounded-full px-4 py-2 text-sm font-semibold transition ${
-                  isActive
-                    ? 'bg-orange-500 text-slate-950 shadow-sm'
-                    : 'text-slate-300 hover:bg-slate-900'
+                `rounded-full px-4 py-2 text-sm font-semibold transition ${isActive
+                  ? 'bg-orange-500 text-slate-950 shadow-sm'
+                  : 'text-slate-300 hover:bg-slate-900'
                 }`
               }
             >
@@ -598,10 +594,9 @@ export const ClientPage = () => {
             <NavLink
               to="/client/orders"
               className={({ isActive }) =>
-                `rounded-full px-4 py-2 text-sm font-semibold transition ${
-                  isActive
-                    ? 'bg-orange-500 text-slate-950 shadow-sm'
-                    : 'text-slate-300 hover:bg-slate-900'
+                `rounded-full px-4 py-2 text-sm font-semibold transition ${isActive
+                  ? 'bg-orange-500 text-slate-950 shadow-sm'
+                  : 'text-slate-300 hover:bg-slate-900'
                 }`
               }
             >
@@ -610,10 +605,9 @@ export const ClientPage = () => {
             <NavLink
               to="/client/invoices"
               className={({ isActive }) =>
-                `rounded-full px-4 py-2 text-sm font-semibold transition ${
-                  isActive
-                    ? 'bg-orange-500 text-slate-950 shadow-sm'
-                    : 'text-slate-300 hover:bg-slate-900'
+                `rounded-full px-4 py-2 text-sm font-semibold transition ${isActive
+                  ? 'bg-orange-500 text-slate-950 shadow-sm'
+                  : 'text-slate-300 hover:bg-slate-900'
                 }`
               }
             >
@@ -637,7 +631,7 @@ export const ClientPage = () => {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <main className="relative z-10 mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <Outlet context={{ user }} />
       </main>
     </div>

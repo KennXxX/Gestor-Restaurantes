@@ -7,6 +7,7 @@ import {
   updateProfile,
   updatePasswordController,
   deleteAccountController,
+  sendAssignmentNotification,
 } from './user.controller.js';
 
 import { validateJWT } from '../../middlewares/validate-JWT.js';
@@ -29,6 +30,9 @@ router.delete('/account', ...deleteAccountController);
 
 // POST /api/v1/users/admin-restaurant
 router.post('/admin-restaurant', ...createAdminRestaurant);
+
+// POST /api/v1/users/send-assignment-notification
+router.post('/send-assignment-notification', ...sendAssignmentNotification);
 
 // GET /api/v1/users/all
 router.get('/all', validateJWT, async (req, res) => {

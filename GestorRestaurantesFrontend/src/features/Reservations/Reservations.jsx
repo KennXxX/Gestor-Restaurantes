@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { getRestaurants } from '../../shared/api/restaurants'
 import { getTables } from '../../shared/api/tables'
 import { getAllUsers } from '../../shared/api/users'
@@ -31,6 +32,7 @@ const emptyForm = {
   numberPeople: 1,
   typeReservation: 'PERSONAL',
   description: '',
+  coupon: '',
   startDate: '',
   endDate: '',
   photo: null,
@@ -48,6 +50,7 @@ export const Reservations = () => {
   const [error, setError] = useState(null)
   const [form, setForm] = useState(emptyForm)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [searchParams, setSearchParams] = useSearchParams()
 
   const stats = useMemo(() => ({
     total: reservations.length,
@@ -102,6 +105,19 @@ export const Reservations = () => {
   }, [form.restaurantId])
 
   useEffect(() => {
+    const couponParam = searchParams.get('coupon')
+    if (!couponParam) return
+
+    setForm({ ...emptyForm, coupon: couponParam })
+    setEditingReservation(null)
+    setIsModalOpen(true)
+
+    const nextParams = new URLSearchParams(searchParams)
+    nextParams.delete('coupon')
+    setSearchParams(nextParams, { replace: true })
+  }, [searchParams, setSearchParams])
+
+  useEffect(() => {
     const peopleCount = Number(form.numberPeople) || 1
     setForm((prev) => {
       const filteredTables = prev.tableId.filter((tableId) => {
@@ -151,6 +167,7 @@ export const Reservations = () => {
       numberPeople: reservation.numberPeople || 1,
       typeReservation: reservation.typeReservation || 'PERSONAL',
       description: reservation.description || '',
+      coupon: reservation.coupon || '',
       startDate: toInputDateTime(reservation.startDate),
       endDate: toInputDateTime(reservation.endDate),
       photo: null,
@@ -183,6 +200,7 @@ export const Reservations = () => {
       numberPeople: Number(form.numberPeople) || 1,
       typeReservation: form.typeReservation,
       description: form.description,
+      coupon: form.coupon?.trim() || undefined,
       startDate: new Date(form.startDate).toISOString(),
       endDate: new Date(form.endDate).toISOString(),
       photo: form.photo,

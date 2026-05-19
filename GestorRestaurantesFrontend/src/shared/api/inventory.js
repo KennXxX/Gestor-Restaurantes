@@ -1,7 +1,7 @@
 import { axiosApi } from './api'
 
-export const getInventories = async () => 
-  axiosApi.get('/inventory')
+export const getInventories = async (params = {}) => 
+  axiosApi.get('/inventory', { params })
 
 export const getInventoryById = async (id) => 
   axiosApi.get(`/inventory/${id}`)

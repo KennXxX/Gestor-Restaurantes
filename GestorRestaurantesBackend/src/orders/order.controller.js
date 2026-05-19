@@ -83,23 +83,32 @@ export const createOrder = async (req, res) => {
       throw stockErr;
     }
 
-    // validate coupon exists if provided – we don't modify total here
+    // validate coupon exists if provided – apply discount to total
     if (coupon) {
       const now = new Date()
       const promo = await Promotion.findOne({
         restaurantId,
-        couponCode: coupon,
-        isActive: true,
-        isApproved: true,
-        $or: [
-          { startDate: null, endDate: null },
-          { startDate: { $lte: now }, endDate: null },
-          { startDate: null, endDate: { $gte: now } },
-          { startDate: { $lte: now }, endDate: { $gte: now } }
-        ]
+        couponCode: { $regex: new RegExp(`^${coupon}$`, 'i') }
       })
       if (!promo) {
-        return res.status(400).json({ success: false, message: 'Cupón inválido o no disponible' })
+        return res.status(400).json({ success: false, message: 'Cupón inválido (no existe)' })
+      }
+      if (!promo.isApproved) {
+        return res.status(400).json({ success: false, message: 'El cupón aún no ha sido aprobado por el administrador global' })
+      }
+      if (!promo.isActive) {
+        return res.status(400).json({ success: false, message: 'El cupón se encuentra inactivo' })
+      }
+      if (
+        (promo.startDate && new Date(promo.startDate) > now) ||
+        (promo.endDate && new Date(promo.endDate) < now)
+      ) {
+        return res.status(400).json({ success: false, message: 'El cupón ha expirado o no está en período de vigencia' })
+      }
+
+      if (promo.discountPercentage > 0) {
+        const discountAmount = (total * promo.discountPercentage) / 100
+        total = Number(Math.max(0, total - discountAmount).toFixed(2))
       }
     }
 
@@ -252,15 +261,29 @@ export const createMyOrder = async (req, res) => {
     if (coupon) {
       const now = new Date()
       const promo = await Promotion.findOne({
-        restaurantId, couponCode: coupon, isActive: true, isApproved: true,
-        $or: [
-          { startDate: null, endDate: null },
-          { startDate: { $lte: now }, endDate: null },
-          { startDate: null, endDate: { $gte: now } },
-          { startDate: { $lte: now }, endDate: { $gte: now } }
-        ]
+        restaurantId,
+        couponCode: { $regex: new RegExp(`^${coupon}$`, 'i') }
       })
-      if (!promo) return res.status(400).json({ success: false, message: 'Cupón inválido o no disponible' })
+      if (!promo) {
+        return res.status(400).json({ success: false, message: 'Cupón inválido (no existe)' })
+      }
+      if (!promo.isApproved) {
+        return res.status(400).json({ success: false, message: 'El cupón aún no ha sido aprobado por el administrador global' })
+      }
+      if (!promo.isActive) {
+        return res.status(400).json({ success: false, message: 'El cupón se encuentra inactivo' })
+      }
+      if (
+        (promo.startDate && new Date(promo.startDate) > now) ||
+        (promo.endDate && new Date(promo.endDate) < now)
+      ) {
+        return res.status(400).json({ success: false, message: 'El cupón ha expirado o no está en período de vigencia' })
+      }
+
+      if (promo.discountPercentage > 0) {
+        const discountAmount = (total * promo.discountPercentage) / 100
+        total = Number(Math.max(0, total - discountAmount).toFixed(2))
+      }
     }
 
     const order = new Order({

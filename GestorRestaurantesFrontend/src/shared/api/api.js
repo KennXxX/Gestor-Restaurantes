@@ -4,17 +4,11 @@ import { useAuthStore } from '../../features/auth/store/authStore'
 export const axiosAuth = axios.create({
   baseURL: import.meta.env.VITE_AUTH_URL,
   timeout: 8000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 })
 
 export const axiosApi = axios.create({
   baseURL: import.meta.env.VITE_API_URL ?? import.meta.env.VITE_AUTH_URL,
   timeout: 8000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 })
 
 const attachToken = (clientName) => (config) => {
@@ -104,11 +98,16 @@ const handleRefreshToken = async (error) => {
       userDetails,
     } = response.data
 
+    const currentUser = useAuthStore.getState().user
+    const updatedUser = userDetails
+      ? { ...userDetails, restaurantId: currentUser?.restaurantId }
+      : currentUser
+
     useAuthStore.setState({
       token: accessToken,
       refreshToken: newRefreshToken ?? refreshToken,
       expiresAt: expiresAt ?? expiresIn ?? null,
-      user: userDetails ?? useAuthStore.getState().user,
+      user: updatedUser,
       isAuthenticated: true,
       isLoadingAuth: false,
     })
@@ -132,9 +131,6 @@ axiosApi.interceptors.response.use((response) => response, handleRefreshToken)
 const axiosInventory = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
   timeout: 8000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 })
 
 axiosInventory.interceptors.request.use((config) => {

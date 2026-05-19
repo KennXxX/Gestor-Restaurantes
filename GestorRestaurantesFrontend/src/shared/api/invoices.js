@@ -17,3 +17,9 @@ export const exportInvoicePdf = async (invoiceId) => {
     responseType: 'blob',
   })
 }
+
+export const exportMyInvoicePdf = async (invoiceId) => {
+  return axiosApi.get(`/invoices/my/${invoiceId}/pdf`, {
+    responseType: 'blob',
+  })
+}
