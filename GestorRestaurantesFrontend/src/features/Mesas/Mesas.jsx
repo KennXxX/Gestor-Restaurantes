@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { getRestaurants } from '../../shared/api/restaurants'
 import { createTable, deleteTable, getTables, updateTable } from '../../shared/api/tables'
 import { showError, showSuccess } from '../../shared/utils/toast'
+import { FilterBar } from '../../shared/components/ui/FilterBar'
 
 const emptyForm = {
   tableName: '',
@@ -30,16 +31,53 @@ export const Mesas = () => {
   const [editing, setEditing] = useState(null)
   const [filters, setFilters] = useState({ status: 'active', restaurantId: '' })
 
+  const [searchTerm, setSearchTerm] = useState('')
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
+
+  const filteredTables = useMemo(() => {
+    return tables.filter((table) => {
+      const searchLower = searchTerm.toLowerCase()
+      const name = table.tableName || ''
+      const capacity = String(table.tableCapacity || '')
+      const restaurantLabel =
+        table.restaurantId?.restaurantName ||
+        restaurants.find((rest) => rest._id === (table.restaurantId?._id || table.restaurantId))?.restaurantName ||
+        ''
+
+      const matchesSearch =
+        !searchTerm ||
+        name.toLowerCase().includes(searchLower) ||
+        capacity.toLowerCase().includes(searchLower) ||
+        restaurantLabel.toLowerCase().includes(searchLower)
+
+      let matchesDate = true
+      if (startDate || endDate) {
+        const itemDate = new Date(table.createdAt || table.updatedAt)
+        if (!Number.isNaN(itemDate.getTime())) {
+          if (startDate) {
+            matchesDate = matchesDate && itemDate >= new Date(startDate + 'T00:00:00')
+          }
+          if (endDate) {
+            matchesDate = matchesDate && itemDate <= new Date(endDate + 'T23:59:59')
+          }
+        }
+      }
+
+      return matchesSearch && matchesDate
+    })
+  }, [tables, searchTerm, startDate, endDate, restaurants])
+
   const stats = useMemo(() => {
-    const activeCount = tables.filter((item) => item.tableActive !== false).length
-    const inactiveCount = tables.filter((item) => item.tableActive === false).length
+    const activeCount = filteredTables.filter((item) => item.tableActive !== false).length
+    const inactiveCount = filteredTables.filter((item) => item.tableActive === false).length
 
     return {
-      total: tables.length,
+      total: filteredTables.length,
       active: activeCount,
       inactive: inactiveCount,
     }
-  }, [tables])
+  }, [filteredTables])
 
   const loadRestaurants = async () => {
     try {
@@ -256,6 +294,16 @@ export const Mesas = () => {
             </div>
           </div>
 
+          <FilterBar
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            startDate={startDate}
+            onStartDateChange={setStartDate}
+            endDate={endDate}
+            onEndDateChange={setEndDate}
+            searchPlaceholder="Buscar por nombre, capacidad o restaurante..."
+          />
+
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
             {[
               { label: 'Mesas en vista', value: stats.total },
@@ -282,15 +330,15 @@ export const Mesas = () => {
               </div>
             )}
 
-            {!loading && !error && tables.length === 0 && (
+            {!loading && !error && filteredTables.length === 0 && (
               <div className="rounded-2xl border border-slate-200 bg-white px-4 py-6 text-center text-sm text-slate-500">
-                No hay mesas para este filtro. Crea una nueva desde el formulario.
+                No hay mesas para este filtro / búsqueda. Crea una nueva desde el formulario.
               </div>
             )}
 
-            {!loading && !error && tables.length > 0 && (
+            {!loading && !error && filteredTables.length > 0 && (
               <div className="grid gap-4">
-                {tables.map((table) => {
+                {filteredTables.map((table) => {
                   const tableId = getTableId(table)
                   const isActive = table.tableActive !== false
                   const restaurantLabel =

@@ -43,11 +43,27 @@ export const deleteInventory = async (req, res) => {
 
 // helper para restar
 export const changeStock = async (menuId, restaurantId, delta) => {
+  const normalizedDelta = Number(delta) || 0;
+
+  if (normalizedDelta === 0) {
+    return Inventory.findOne({ menuId, restaurantId });
+  }
+
+  const query = { menuId, restaurantId };
+
+  if (normalizedDelta < 0) {
+    query.quantity = { $gte: Math.abs(normalizedDelta) };
+  }
+
   const inv = await Inventory.findOneAndUpdate(
-    { menuId, restaurantId },
-    { $inc: { quantity: delta } },
-    { new: true, upsert: true }
+    query,
+    { $inc: { quantity: normalizedDelta } },
+    { new: true, upsert: normalizedDelta > 0 }
   );
-  if (inv.quantity < 0) throw new Error('Stock insuficiente');
+
+  if (!inv) {
+    throw new Error('Stock insuficiente');
+  }
+
   return inv;
 };
