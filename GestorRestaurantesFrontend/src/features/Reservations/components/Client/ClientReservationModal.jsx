@@ -25,6 +25,36 @@ export const ClientReservationModal = ({
   const inputCls = 'mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-sky-400 focus:bg-white focus:ring-2 focus:ring-sky-100'
   const labelCls = 'flex flex-col text-sm font-semibold text-slate-700'
   const set = (key, val) => setForm((p) => ({ ...p, [key]: val }))
+  const mesasNames = (form.tableId || []).map((id) => {
+    const t = tables.find((x) => x._id === id)
+    return t ? (t.tableName || `Mesa ${id.slice(-4)}`) : id
+  }).join(', ')
+  const tableButtons = (filteredTables || []).map((t) => {
+    const selected = form.tableId.includes(t._id)
+    const cap = Number(t.tableCapacity || 0)
+    const peopleIcons = '👤'.repeat(Math.min(cap, 6)) + (cap > 6 ? `+${cap - 6}` : '')
+    return (
+      <button
+        key={t._id}
+        type="button"
+        id={`rv-table-${t._id}`}
+        onClick={() => toggleTable(t._id)}
+        className={`flex flex-col gap-2 rounded-2xl border-2 p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-md
+          ${selected ? 'border-sky-500 bg-sky-50 shadow-sm shadow-sky-100' : 'border-slate-200 bg-white hover:border-sky-300'}`}
+      >
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-bold text-slate-900">🪑 {t.tableName || `Mesa ${t._id.slice(-4)}`}</p>
+          <span className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold
+            ${selected ? 'bg-sky-600 text-white' : 'bg-slate-100 text-slate-400'}`}>
+            {selected ? '✓' : ''}
+          </span>
+        </div>
+        <p className="text-base leading-tight">{peopleIcons}</p>
+        <p className="text-xs font-medium text-slate-500">Capacidad: {cap} {cap === 1 ? 'persona' : 'personas'}</p>
+        {selected && <p className="text-xs font-semibold text-sky-600">✔ Seleccionada</p>}
+      </button>
+    )
+  })
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm transition-all">
@@ -147,7 +177,7 @@ export const ClientReservationModal = ({
               <div>
                 <h2 className="font-display text-xl font-semibold text-slate-900">Elige tu mesa</h2>
                 <p className="mt-1 text-sm text-slate-500">
-                  Mesas con capacidad ≥ {form.numberPeople} personas en{' '}
+                  Mesas disponibles (puedes combinar varias mesas) en{' '}
                   <strong>{selectedRestaurant?.restaurantName || 'el restaurante'}</strong>
                 </p>
               </div>
@@ -176,33 +206,49 @@ export const ClientReservationModal = ({
             )}
 
             {!loadingTables && filteredTables.length > 0 && (
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {filteredTables.map((t) => {
-                  const selected = form.tableId.includes(t._id)
-                  const cap = Number(t.tableCapacity || 0)
-                  const peopleIcons = '👤'.repeat(Math.min(cap, 6)) + (cap > 6 ? `+${cap - 6}` : '')
-                  return (
+              <div>
+                {tables.length > 0 && tables.reduce((s, t) => s + Number(t.tableCapacity || 0), 0) < Number(form.numberPeople || 0) ? (
+                  <div className="mb-3 rounded-xl border border-rose-100 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+                    No existe combinación de mesas que cubra <strong>{form.numberPeople || 0}</strong> personas. Capacidad total disponible: <strong>{tables.reduce((s, t) => s + Number(t.tableCapacity || 0), 0)}</strong>.
+                  </div>
+                ) : null}
+
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  <div className="mb-2 flex items-center justify-between col-span-full">
+                  <div className="text-sm text-slate-600">
+                    <span className="font-medium">Capacidad seleccionada: </span>
+                    {tables.filter(t => form.tableId.includes(t._id)).reduce((s, t) => s + Number(t.tableCapacity || 0), 0)}
+                    <span className="text-slate-400"> / {form.numberPeople || 0}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
                     <button
-                      key={t._id}
                       type="button"
-                      id={`rv-table-${t._id}`}
-                      onClick={() => toggleTable(t._id)}
-                      className={`flex flex-col gap-2 rounded-2xl border-2 p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-md
-                        ${selected ? 'border-sky-500 bg-sky-50 shadow-sm shadow-sky-100' : 'border-slate-200 bg-white hover:border-sky-300'}`}
+                      onClick={() => {
+                        const need = Number(form.numberPeople || 0)
+                        if (!need) return
+                        const available = tables.slice().sort((a,b) => Number(b.tableCapacity || 0) - Number(a.tableCapacity || 0))
+                        const pick = []
+                        let sum = 0
+                        for (const t of available) {
+                          if (sum >= need) break
+                          pick.push(t._id)
+                          sum += Number(t.tableCapacity || 0)
+                        }
+                        if (sum < need) {
+                          alert(`No hay combinación de mesas que cubra ${need} personas.`)
+                          return
+                        }
+                        setForm(prev => ({ ...prev, tableId: pick }))
+                      }}
+                      className="rounded-full border px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50"
                     >
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm font-bold text-slate-900">🪑 {t.tableName || `Mesa ${t._id.slice(-4)}`}</p>
-                        <span className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold
-                          ${selected ? 'bg-sky-600 text-white' : 'bg-slate-100 text-slate-400'}`}>
-                          {selected ? '✓' : ''}
-                        </span>
-                      </div>
-                      <p className="text-base leading-tight">{peopleIcons}</p>
-                      <p className="text-xs font-medium text-slate-500">Capacidad: {cap} {cap === 1 ? 'persona' : 'personas'}</p>
-                      {selected && <p className="text-xs font-semibold text-sky-600">✔ Seleccionada</p>}
+                      Sugerir combinación
                     </button>
-                  )
-                })}
+                    <button type="button" onClick={() => setForm(prev => ({ ...prev, tableId: [] }))} className="rounded-full border px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50">Limpiar</button>
+                  </div>
+                </div>
+                </div>
+                {tableButtons}
               </div>
             )}
 
@@ -210,7 +256,7 @@ export const ClientReservationModal = ({
               <button type="button" onClick={() => setStep(1)} className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50">
                 ← Atrás
               </button>
-              <button type="button" onClick={goNext} className="rounded-xl bg-sky-600 px-5 py-2 text-sm font-semibold text-white hover:bg-sky-500">
+              <button type="button" onClick={goNext} disabled={tables.length > 0 && tables.reduce((s, t) => s + Number(t.tableCapacity || 0), 0) < Number(form.numberPeople || 0)} className="rounded-xl bg-sky-600 px-5 py-2 text-sm font-semibold text-white hover:bg-sky-500 disabled:opacity-50">
                 Siguiente → Confirmar
               </button>
             </div>
@@ -235,7 +281,7 @@ export const ClientReservationModal = ({
                 ['🕐', 'Salida', new Date(form.endDate).toLocaleString('es-GT', { dateStyle: 'medium', timeStyle: 'short' })],
                 ['👥', 'Personas', `${form.numberPeople} ${Number(form.numberPeople) === 1 ? 'persona' : 'personas'}`],
                 ['🎉', 'Tipo', form.typeReservation === 'PERSONAL' ? 'Personal' : 'Evento especial'],
-                ['🪑', 'Mesas', form.tableId.map((id) => { const t = tables.find((x) => x._id === id); return t ? t.tableName || `Mesa ${id.slice(-4)}` : id }).join(', ')],
+                ['🪑', 'Mesas', mesasNames],
                 ...(form.description ? [['📝', 'Nota', form.description]] : []),
                 ...(form.coupon ? [['🏷️', 'Cupón', form.coupon]] : []),
               ].map(([icon, label, value]) => (

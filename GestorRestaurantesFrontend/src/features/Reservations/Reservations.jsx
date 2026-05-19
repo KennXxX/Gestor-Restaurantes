@@ -156,18 +156,13 @@ export const Reservations = () => {
   }, [searchParams, setSearchParams])
 
   useEffect(() => {
-    const peopleCount = Number(form.numberPeople) || 1
+    // Antes se eliminaban automáticamente las mesas seleccionadas si su
+    // capacidad individual era menor que `numberPeople`. Ahora permitimos
+    // combinar varias mesas, por lo que solo nos aseguramos de que las
+    // mesas seleccionadas sigan existiendo cuando cambian las mesas disponibles.
     setForm((prev) => {
-      const filteredTables = prev.tableId.filter((tableId) => {
-        const table = tables.find((entry) => entry._id === tableId)
-        if (!table) return true
-        return Number(table.tableCapacity || 0) >= peopleCount
-      })
-
-      if (filteredTables.length === prev.tableId.length) {
-        return prev
-      }
-
+      const filteredTables = prev.tableId.filter((tableId) => tables.some((entry) => entry._id === tableId))
+      if (filteredTables.length === prev.tableId.length) return prev
       return { ...prev, tableId: filteredTables }
     })
   }, [form.numberPeople, tables])
@@ -179,14 +174,8 @@ export const Reservations = () => {
   }
 
   const toggleTableSelection = (tableId) => {
-    const table = tables.find((entry) => entry._id === tableId)
-    const peopleCount = Number(form.numberPeople) || 1
-
-    if (table && Number(table.tableCapacity || 0) < peopleCount) {
-      showError(`La mesa ${table.tableNumber || table.tableName || tableId} no soporta ${peopleCount} personas.`)
-      return
-    }
-
+    // Permitimos seleccionar cualquier mesa; la validación combinada se
+    // realiza en backend. Aquí solo alternamos la selección.
     setForm((prev) => {
       const selected = prev.tableId.includes(tableId)
         ? prev.tableId.filter((id) => id !== tableId)

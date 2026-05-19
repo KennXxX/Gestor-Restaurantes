@@ -133,9 +133,11 @@ export const ReservationView = () => {
   }, [form.tableId, form.startDate, form.endDate, form.restaurantId, myReservations, editingId])
 
   // ── derived ───────────────────────────────────────────────────────────────
+  // Mostrar todas las mesas y permitir combinar capacidades; la validación
+  // combinada se realiza en backend. Ordenamos por capacidad descendente.
   const filteredTables = useMemo(
-    () => tables.filter((t) => Number(t.tableCapacity || 0) >= Number(form.numberPeople || 1)),
-    [tables, form.numberPeople]
+    () => tables.slice().sort((a, b) => Number(b.tableCapacity || 0) - Number(a.tableCapacity || 0)),
+    [tables]
   )
 
   const selectedRestaurant = useMemo(
@@ -151,12 +153,8 @@ export const ReservationView = () => {
   // ── helpers ───────────────────────────────────────────────────────────────
   const set = (key, val) => setForm((p) => ({ ...p, [key]: val }))
 
+  // Permitir seleccionar cualquier mesa; la validación combinada la hace el backend.
   const toggleTable = (id) => {
-    const t = tables.find((x) => x._id === id)
-    if (t && Number(t.tableCapacity || 0) < Number(form.numberPeople || 1)) {
-      showError(`La mesa "${t.tableName}" no soporta ${form.numberPeople} personas.`)
-      return
-    }
     setForm((p) => ({
       ...p,
       tableId: p.tableId.includes(id) ? p.tableId.filter((x) => x !== id) : [...p.tableId, id],

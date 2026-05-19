@@ -90,6 +90,63 @@ export const AdminReservationModal = ({
 
           <div>
             <p className="text-sm font-semibold text-slate-700">Mesas disponibles</p>
+            <div className="mt-2 mb-2 flex items-center justify-between gap-3">
+              <div className="text-sm text-slate-600">
+                <span className="font-medium">Capacidad seleccionada: </span>
+                {tables.filter(t => form.tableId.includes(t._id)).reduce((s, t) => s + Number(t.tableCapacity || 0), 0)}
+                <span className="text-slate-400"> / {form.numberPeople || 0}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    // sugerir combinacion: elegir mesas grandes primero hasta cubrir numberPeople
+                    const need = Number(form.numberPeople || 0)
+                    if (!need) return
+                    const available = tables.slice().sort((a,b) => Number(b.tableCapacity || 0) - Number(a.tableCapacity || 0))
+                    const pick = []
+                    let sum = 0
+                    for (const t of available) {
+                      if (sum >= need) break
+                      pick.push(t._id)
+                      sum += Number(t.tableCapacity || 0)
+                    }
+                    if (sum < need) {
+                      // no alcanza
+                      alert(`No hay combinación de mesas que cubra ${need} personas.`)
+                      return
+                    }
+                    // aplicar seleccion
+                    setForm(prev => ({ ...prev, tableId: pick }))
+                  }}
+                  className="rounded-full border px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                >
+                  Sugerir combinación
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setForm(prev => ({ ...prev, tableId: [] }))}
+                  className="rounded-full border px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                >
+                  Limpiar
+                </button>
+              </div>
+            </div>
+
+            {/* Mensaje si la capacidad total de las mesas no alcanza */}
+            {tables.length > 0 && (() => {
+              const totalCapacity = tables.reduce((s, t) => s + Number(t.tableCapacity || 0), 0)
+              const need = Number(form.numberPeople || 0)
+              if (totalCapacity < need) {
+                return (
+                  <div className="mt-2 rounded-xl border border-rose-100 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+                    No existe combinación de mesas que cubra <strong>{need}</strong> personas. Capacidad total disponible: <strong>{totalCapacity}</strong>.
+                  </div>
+                )
+              }
+              return null
+            })()}
+
             <div className="mt-2 grid gap-2 sm:grid-cols-3">
               {tables.length === 0 && (
                 <p className="col-span-3 text-xs text-slate-500 italic">Selecciona un restaurante para ver las mesas.</p>
@@ -97,17 +154,16 @@ export const AdminReservationModal = ({
               {tables.map((table) => {
                 const tableId = table._id
                 const checked = form.tableId.includes(tableId)
-                const disabled = Number(table.tableCapacity || 0) < Number(form.numberPeople || 1)
+                // permitimos seleccionar cualquier mesa; la validación de capacidad es combinada en backend
 
                 return (
                   <label
                     key={tableId}
-                    className={`rounded-xl border px-3 py-2 text-sm transition-colors ${checked ? 'border-sky-400 bg-sky-50' : 'border-slate-200 hover:border-sky-200'} ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+                    className={`rounded-xl border px-3 py-2 text-sm transition-colors ${checked ? 'border-sky-400 bg-sky-50' : 'border-slate-200 hover:border-sky-200'} cursor-pointer`}
                   >
                     <input
                       type="checkbox"
                       checked={checked}
-                      disabled={disabled}
                       onChange={() => toggleTableSelection(tableId)}
                       className="mr-2"
                     />
@@ -178,9 +234,16 @@ export const AdminReservationModal = ({
             <button type="button" onClick={onClose} className="rounded-xl border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50">
               Cancelar
             </button>
-            <button type="submit" disabled={saving} className="rounded-xl bg-sky-600 px-6 py-2.5 text-sm font-bold text-white shadow-md hover:bg-sky-500 disabled:opacity-50">
-              {saving ? 'Guardando...' : editingReservation ? 'Actualizar reserva' : 'Crear reserva'}
-            </button>
+            {(() => {
+              const totalCapacity = tables.reduce((s, t) => s + Number(t.tableCapacity || 0), 0)
+              const need = Number(form.numberPeople || 0)
+              const insufficient = tables.length > 0 && totalCapacity < need
+              return (
+                <button type="submit" disabled={saving || insufficient} className="rounded-xl bg-sky-600 px-6 py-2.5 text-sm font-bold text-white shadow-md hover:bg-sky-500 disabled:opacity-50">
+                  {saving ? 'Guardando...' : editingReservation ? 'Actualizar reserva' : 'Crear reserva'}
+                </button>
+              )
+            })()}
           </div>
         </form>
       </div>
