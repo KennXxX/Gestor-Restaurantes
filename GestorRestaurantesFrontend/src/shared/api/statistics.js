@@ -7,3 +7,8 @@ export const getAdminStatistics = async () => {
 export const getTopSellingMenus = async () => {
   return axiosApi.get('/statistics/top-selling')
 }
+
+export const getRestaurantStatistics = async (restaurantId) => {
+  return axiosApi.get(`/statistics/${restaurantId}`)
+}
+

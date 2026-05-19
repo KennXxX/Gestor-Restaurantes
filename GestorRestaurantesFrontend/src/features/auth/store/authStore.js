@@ -69,6 +69,25 @@ export const useAuthStore = create(
             isLoadingAuth: false,
           })
 
+          // Si es administrador de restaurante, obtener y asociar su restaurantId de inmediato
+          if (role === 'ADMIN_RESTAURANT' || role === 'ADMIN_RESTAURANTE') {
+            try {
+              const { getMyRestaurant } = await import('../../../shared/api/restaurants')
+              const { data: myRestData } = await getMyRestaurant()
+              const restaurant = myRestData?.data
+              if (restaurant) {
+                set({
+                  user: {
+                    ...user,
+                    restaurantId: restaurant._id || restaurant.id,
+                  },
+                })
+              }
+            } catch (err) {
+              console.error('Error al precargar restaurantId para el admin:', err)
+            }
+          }
+
           return {
             success: true,
             role,

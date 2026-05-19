@@ -10,9 +10,17 @@ export const createInventory = async (req, res) => {
   }
 };
 
-export const getInventories = async (_, res) => {
-  const inventories = await Inventory.find();
-  res.json({ success: true, inventories });
+export const getInventories = async (req, res) => {
+  try {
+    const filter = {};
+    if (req.query.restaurantId) {
+      filter.restaurantId = req.query.restaurantId;
+    }
+    const inventories = await Inventory.find(filter).populate('menuId');
+    res.json({ success: true, inventories });
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
 };
 
 export const getInventoryById = async (req, res) => {

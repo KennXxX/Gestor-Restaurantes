@@ -1,6 +1,6 @@
 import { orderTypeLabel, statusLabel } from '../utils/orderHelpers'
 
-export const OrderDetail = ({ selectedOrder }) => {
+export const OrderDetail = ({ selectedOrder, handleStatusUpdate }) => {
   return (
     <aside className="space-y-6">
       <section className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm sticky top-6">
@@ -10,7 +10,11 @@ export const OrderDetail = ({ selectedOrder }) => {
           <div className="mt-4 space-y-3 text-sm text-slate-700">
             <div className="flex justify-between border-b border-slate-100 pb-2">
               <span className="font-medium text-slate-500">Estado:</span> 
-              <span className="font-semibold">{statusLabel(selectedOrder.status)}</span>
+              <span className={`font-semibold ${
+                selectedOrder.status === 'ENTREGADO' ? 'text-emerald-600' :
+                selectedOrder.status === 'LISTO' ? 'text-blue-600' :
+                selectedOrder.status === 'CANCELADO' ? 'text-rose-600' : 'text-amber-600'
+              }`}>{statusLabel(selectedOrder.status)}</span>
             </div>
             <div className="flex justify-between border-b border-slate-100 pb-2">
               <span className="font-medium text-slate-500">Tipo:</span> 
@@ -51,6 +55,26 @@ export const OrderDetail = ({ selectedOrder }) => {
                 ))}
               </ul>
             </div>
+
+            {/* Prominent Action Buttons to change status */}
+            {selectedOrder.status !== 'ENTREGADO' && selectedOrder.status !== 'CANCELADO' && (
+              <div className="mt-6 pt-4 border-t border-slate-100 flex flex-col gap-2">
+                {selectedOrder.status === 'EN_PREPARACION' && (
+                  <button
+                    onClick={() => handleStatusUpdate(selectedOrder, 'LISTO')}
+                    className="w-full rounded-xl bg-blue-600 py-3 text-sm font-semibold text-white shadow-md hover:bg-blue-500 transition-all hover:shadow-lg active:scale-[0.98]"
+                  >
+                    Marcar como Listo
+                  </button>
+                )}
+                <button
+                  onClick={() => handleStatusUpdate(selectedOrder, 'ENTREGADO')}
+                  className="w-full rounded-xl bg-emerald-600 py-3 text-sm font-bold text-white shadow-md hover:bg-emerald-500 transition-all hover:shadow-lg active:scale-[0.98]"
+                >
+                  Marcar como Completado
+                </button>
+              </div>
+            )}
           </div>
         )}
       </section>

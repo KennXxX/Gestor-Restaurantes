@@ -213,6 +213,14 @@ export const getRestaurantStatistics = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid restaurantId' })
     }
 
+    // Si es administrador de restaurante, verificar propiedad
+    if (req.userRole === 'ADMIN_RESTAURANT' || req.userRole === 'ADMIN_RESTAURANTE') {
+      const restaurant = await Restaurant.findById(restaurantId)
+      if (!restaurant || String(restaurant.adminId) !== String(req.userId)) {
+        return res.status(403).json({ success: false, message: 'No tienes permisos para ver estadísticas de este restaurante' })
+      }
+    }
+
     const [restaurant, performance, salesByDish, peakHours] = await Promise.all([
       Restaurant.findById(restaurantId).select('restaurantName restaurantEmail restaurantPhone'),
       getRestaurantPerformance(restaurantId),

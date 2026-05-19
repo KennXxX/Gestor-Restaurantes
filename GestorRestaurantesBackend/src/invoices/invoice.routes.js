@@ -2,9 +2,9 @@ import { Router } from 'express';
 import {
   createInvoice,
   getInvoices,
+  getMyInvoices,
   getIssuedInvoices,
   getInvoicesByRestaurant,
-  getMyInvoices,
   getInvoiceById,
   exportInvoicePDF,
   exportMyInvoicePDF
@@ -19,6 +19,8 @@ const router = Router();
 
 router.post('/', validateJWT, isAdmin, validateCreateInvoice, createInvoice);
 router.get('/', validateJWT, isAdmin, getInvoices);
+router.get('/my-invoices', validateJWT, getMyInvoices);
+router.get('/my-invoices/:id/pdf', validateJWT, validateInvoiceId, exportMyInvoicePDF);
 router.get('/issued', validateJWT, isAdmin, getIssuedInvoices);
 router.get('/my', validateJWT, getMyInvoices);
 router.get('/my/:id/pdf', validateJWT, validateInvoiceId, exportMyInvoicePDF);

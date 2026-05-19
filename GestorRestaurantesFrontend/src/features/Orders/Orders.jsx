@@ -278,7 +278,7 @@ export const Orders = () => {
           />
         </section>
 
-        <OrderDetail selectedOrder={selectedOrder} />
+        <OrderDetail selectedOrder={selectedOrder} handleStatusUpdate={handleStatusUpdate} />
 
         <CreateOrderModal 
           isOpen={isModalOpen}

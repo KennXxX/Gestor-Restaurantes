@@ -98,11 +98,16 @@ const handleRefreshToken = async (error) => {
       userDetails,
     } = response.data
 
+    const currentUser = useAuthStore.getState().user
+    const updatedUser = userDetails
+      ? { ...userDetails, restaurantId: currentUser?.restaurantId }
+      : currentUser
+
     useAuthStore.setState({
       token: accessToken,
       refreshToken: newRefreshToken ?? refreshToken,
       expiresAt: expiresAt ?? expiresIn ?? null,
-      user: userDetails ?? useAuthStore.getState().user,
+      user: updatedUser,
       isAuthenticated: true,
       isLoadingAuth: false,
     })

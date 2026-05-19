@@ -2,8 +2,10 @@ import { useEffect, useMemo, useState } from 'react'
 import {
   deleteRestaurant,
   getRestaurants,
+  getMyRestaurant,
   updateRestaurant,
 } from '../../shared/api/restaurants';
+import { useAuthStore } from '../../features/auth/store/authStore'
 import { showError, showSuccess } from '../../shared/utils/toast';
 import { ModalRestaurante } from './components/ModalRestaurante';
 
@@ -24,6 +26,7 @@ const normalizePhoto = (photo) => {
 }
 
 export const Restaurantes = () => {
+  const user = useAuthStore((state) => state.user)
   const [restaurants, setRestaurants] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -48,7 +51,16 @@ export const Restaurantes = () => {
     setError(null)
 
     try {
-      const { data } = await getRestaurants({ restaurantActive: !targetInactive })
+      let data
+      // Si el usuario es admin de restaurante, obtiene solo su restaurante
+      if (user?.roles?.includes('ADMIN_RESTAURANT')) {
+        const response = await getMyRestaurant()
+        data = { data: response.data?.data ? [response.data.data] : [] }
+      } else {
+        // Si es admin general, obtiene todos los restaurantes
+        const response = await getRestaurants({ restaurantActive: !targetInactive })
+        data = response.data
+      }
       setRestaurants(data?.data ?? [])
     } catch (err) {
       const message = getErrorMessage(err, 'No se pudieron cargar los restaurantes.')

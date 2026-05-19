@@ -1,5 +1,8 @@
+import { useEffect } from 'react'
 import { Outlet } from 'react-router-dom'
 import { DashboardContainer } from '../../shared/components/layout/DashboardContainer'
+import { useAuthStore } from '../../features/auth/store/authStore'
+import { getMyRestaurant } from '../../shared/api/restaurants'
 
 const navItems = [
   {
@@ -102,6 +105,28 @@ const navItems = [
 ]
 
 export const AdminRestaurantePage = () => {
+  const { user, updateUser } = useAuthStore()
+
+  useEffect(() => {
+    const checkAndSetRestaurantId = async () => {
+      if (user && !user.restaurantId) {
+        try {
+          const { data } = await getMyRestaurant()
+          const restaurant = data?.data
+          if (restaurant) {
+            updateUser({
+              ...user,
+              restaurantId: restaurant._id || restaurant.id,
+            })
+          }
+        } catch (err) {
+          console.error('Error al precargar restaurantId en la navegación:', err)
+        }
+      }
+    }
+    checkAndSetRestaurantId()
+  }, [user, updateUser])
+
   return (
     <DashboardContainer sidebarItems={navItems}>
       <Outlet />

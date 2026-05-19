@@ -1,37 +1,71 @@
 import { useEffect, useState } from 'react'
 import { useAuthStore } from '../auth/store/authStore'
+import { getTables, createTable } from '../../shared/api/tables'
+import { showError, showSuccess } from '../../shared/utils/toast'
+
+const getErrMsg = (err, fallback) =>
+  err?.response?.data?.errors?.[0]?.message ||
+  err?.response?.data?.message ||
+  err?.message ||
+  fallback
 
 export const RestaurantTables = () => {
   const user = useAuthStore((state) => state.user)
   const [tables, setTables] = useState([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
+  const [adding, setAdding] = useState(false)
   const [formData, setFormData] = useState({
     tableName: '',
     tableCapacity: 2,
   })
 
+  const loadTables = async () => {
+    if (!user?.restaurantId) return
+    try {
+      setLoading(true)
+      const { data } = await getTables({ restaurantId: user.restaurantId })
+      setTables(data?.data || [])
+    } catch (err) {
+      showError(getErrMsg(err, 'No se pudieron cargar las mesas.'))
+    } finally {
+      setLoading(false)
+    }
+  }
+
   useEffect(() => {
-    // TODO: Cargar mesas del restaurante específico
-    // const loadTables = async () => {
-    //   try {
-    //     const { data } = await getTables({ restaurantId: user?.restaurantId })
-    //     setTables(data?.data || [])
-    //   } catch (err) {
-    //     console.error(err)
-    //   } finally {
-    //     setLoading(false)
-    //   }
-    // }
-    // loadTables()
-    setLoading(false)
+    if (user?.restaurantId) {
+      loadTables()
+    } else {
+      setLoading(false)
+    }
   }, [user?.restaurantId])
 
-  const handleAddTable = () => {
-    // TODO: Crear nueva mesa
-    console.log('Crear mesa:', formData)
-    setShowModal(false)
-    setFormData({ tableName: '', tableCapacity: 2 })
+  const handleAddTable = async (e) => {
+    e.preventDefault()
+    if (!formData.tableName.trim()) {
+      return showError('El nombre de la mesa es obligatorio.')
+    }
+    if (!user?.restaurantId) {
+      return showError('No tienes un restaurante asignado para crear mesas.')
+    }
+
+    setAdding(true)
+    try {
+      await createTable({
+        tableName: formData.tableName,
+        tableCapacity: formData.tableCapacity,
+        restaurantId: user.restaurantId,
+      })
+      showSuccess('Mesa creada exitosamente.')
+      setShowModal(false)
+      setFormData({ tableName: '', tableCapacity: 2 })
+      loadTables()
+    } catch (err) {
+      showError(getErrMsg(err, 'No se pudo crear la mesa.'))
+    } finally {
+      setAdding(false)
+    }
   }
 
   return (

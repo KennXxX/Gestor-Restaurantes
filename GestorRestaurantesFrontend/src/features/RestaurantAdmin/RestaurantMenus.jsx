@@ -1,39 +1,78 @@
 import { useEffect, useState } from 'react'
 import { useAuthStore } from '../auth/store/authStore'
+import { getMenus, createMenu } from '../../shared/api/menus'
+import { showError, showSuccess } from '../../shared/utils/toast'
+
+const getErrMsg = (err, fallback) =>
+  err?.response?.data?.errors?.[0]?.message ||
+  err?.response?.data?.message ||
+  err?.message ||
+  fallback
 
 export const RestaurantMenus = () => {
   const user = useAuthStore((state) => state.user)
   const [menus, setMenus] = useState([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
+  const [adding, setAdding] = useState(false)
   const [formData, setFormData] = useState({
-    dishName: '',
+    menuName: '',
     menuPrice: '',
     menuCategory: 'PLATO_FUERTE',
     menuDescription: '',
   })
 
+  const loadMenus = async () => {
+    if (!user?.restaurantId) return
+    try {
+      setLoading(true)
+      const { data } = await getMenus({ restaurantId: user.restaurantId })
+      setMenus(data?.menus || [])
+    } catch (err) {
+      showError(getErrMsg(err, 'No se pudieron cargar los platos del menú.'))
+    } finally {
+      setLoading(false)
+    }
+  }
+
   useEffect(() => {
-    // TODO: Cargar menús del restaurante específico
-    // const loadMenus = async () => {
-    //   try {
-    //     const { data } = await getMenus({ restaurantId: user?.restaurantId })
-    //     setMenus(data?.menus || [])
-    //   } catch (err) {
-    //     console.error(err)
-    //   } finally {
-    //     setLoading(false)
-    //   }
-    // }
-    // loadMenus()
-    setLoading(false)
+    if (user?.restaurantId) {
+      loadMenus()
+    } else {
+      setLoading(false)
+    }
   }, [user?.restaurantId])
 
-  const handleAddMenu = () => {
-    // TODO: Crear nuevo plato
-    console.log('Crear plato:', formData)
-    setShowModal(false)
-    setFormData({ dishName: '', menuPrice: '', menuCategory: 'PLATO_FUERTE', menuDescription: '' })
+  const handleAddMenu = async (e) => {
+    e.preventDefault()
+    if (!formData.menuName.trim()) {
+      return showError('El nombre del plato es obligatorio.')
+    }
+    if (!formData.menuPrice) {
+      return showError('El precio es obligatorio.')
+    }
+    if (!user?.restaurantId) {
+      return showError('No tienes un restaurante asignado para crear platos.')
+    }
+
+    setAdding(true)
+    try {
+      await createMenu({
+        menuName: formData.menuName,
+        menuPrice: Number(formData.menuPrice),
+        menuCategory: formData.menuCategory,
+        menuDescription: formData.menuDescription,
+        restaurantId: user.restaurantId,
+      })
+      showSuccess('Plato agregado exitosamente al menú.')
+      setShowModal(false)
+      setFormData({ menuName: '', menuPrice: '', menuCategory: 'PLATO_FUERTE', menuDescription: '' })
+      loadMenus()
+    } catch (err) {
+      showError(getErrMsg(err, 'No se pudo agregar el plato.'))
+    } finally {
+      setAdding(false)
+    }
   }
 
   return (
@@ -70,10 +109,10 @@ export const RestaurantMenus = () => {
           {menus.map((menu) => (
             <div key={menu._id} className="overflow-hidden rounded-xl border border-slate-100 bg-white shadow-sm">
               {menu.menuPhoto && (
-                <img src={menu.menuPhoto} alt={menu.dishName} className="h-32 w-full object-cover" />
+                <img src={menu.menuPhoto} alt={menu.menuName} className="h-32 w-full object-cover" />
               )}
               <div className="p-4">
-                <h3 className="font-semibold text-slate-900">{menu.dishName}</h3>
+                <h3 className="font-semibold text-slate-900">{menu.menuName}</h3>
                 <p className="mt-1 text-xs text-slate-500">{menu.menuCategory?.replace('_', ' ')}</p>
                 <p className="mt-2 text-lg font-bold text-emerald-600">Q{menu.menuPrice}</p>
               </div>
@@ -92,8 +131,8 @@ export const RestaurantMenus = () => {
                 <label className="block text-sm font-semibold text-slate-700">Nombre del Plato</label>
                 <input
                   type="text"
-                  value={formData.dishName}
-                  onChange={(e) => setFormData({ ...formData, dishName: e.target.value })}
+                  value={formData.menuName}
+                  onChange={(e) => setFormData({ ...formData, menuName: e.target.value })}
                   placeholder="Ej: Carne Asada"
                   className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition"
                 />
