@@ -48,15 +48,22 @@ export const RestaurantReports = () => {
 
   return (
     <div className="space-y-6 print:p-0 print:space-y-4">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 print:hidden">
-        <div>
-          <h2 className="text-3xl font-bold text-slate-900">Módulo de Reportes</h2>
-          <p className="mt-2 text-slate-500">Analiza el rendimiento general, ventas e ingresos del establecimiento</p>
+      {/* Banner Superior Premium */}
+      <div className="rounded-[24px] border border-emerald-100 bg-gradient-to-r from-emerald-50 via-emerald-50/60 to-emerald-100/30 p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 overflow-hidden relative shadow-sm print:hidden">
+        <div className="space-y-3 z-10">
+          <span className="inline-flex rounded-full bg-emerald-100 border border-emerald-200/50 px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider text-emerald-800">
+            Reportes
+          </span>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            Módulo de Reportes
+          </h1>
+          <p className="text-sm text-slate-500 max-w-[580px] leading-relaxed">
+            Analiza el rendimiento general, ventas, platos populares e ingresos del establecimiento.
+          </p>
         </div>
         <button
           onClick={handlePrint}
-          className="rounded-lg bg-slate-800 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-900 transition flex items-center gap-2 self-start sm:self-center"
+          className="rounded-2xl bg-slate-800 px-5 py-3 text-sm font-bold text-white hover:bg-slate-900 transition shadow-sm hover:shadow active:scale-[0.98] flex items-center gap-2 self-start sm:self-center shrink-0 z-10"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-slate-300">
             <polyline points="6 9 6 2 18 2 18 9" />

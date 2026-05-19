@@ -92,82 +92,164 @@ export const RestaurantPromotions = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold text-slate-900">Gestión de Promociones</h2>
-          <p className="mt-2 text-slate-500">Crea y administra ofertas especiales y cupones de descuento</p>
+      {/* Banner Superior Premium */}
+      <div className="rounded-[24px] border border-emerald-100 bg-gradient-to-r from-emerald-50 via-emerald-50/60 to-emerald-100/30 p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 overflow-hidden relative shadow-sm">
+        <div className="space-y-3 z-10">
+          <span className="inline-flex rounded-full bg-emerald-100 border border-emerald-200/50 px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider text-emerald-800">
+            Promociones
+          </span>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            Gestión de Promociones
+          </h1>
+          <p className="text-sm text-slate-500 max-w-[580px] leading-relaxed">
+            Crea y administra ofertas especiales y cupones de descuento para atraer y fidelizar clientes.
+          </p>
         </div>
         <button
           onClick={() => setShowModal(true)}
-          className="rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 transition"
+          className="rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white hover:bg-emerald-500 transition shadow-sm hover:shadow active:scale-[0.98] shrink-0 self-start sm:self-center z-10"
         >
           + Nueva Promoción
         </button>
       </div>
+
 
       {/* Promotions List */}
       {loading ? (
         <div className="text-center text-slate-500 py-12">Cargando promociones...</div>
       ) : promotions.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-12 text-center">
-          <p className="text-slate-500">No tienes promociones creadas aún</p>
+          <p className="text-slate-500 font-medium">No tienes promociones creadas aún</p>
           <button
             onClick={() => setShowModal(true)}
-            className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-600 hover:bg-emerald-100 transition"
+            className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-xs font-bold text-emerald-600 hover:bg-emerald-100 transition"
           >
             Crear primera promoción
           </button>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2">
-          {promotions.map((promo) => (
-            <div key={promo._id} className="rounded-xl border border-slate-100 bg-gradient-to-br from-slate-50/50 to-white shadow-sm p-5 hover:shadow-md transition">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-bold text-slate-900 text-lg">{promo.title}</h3>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                      promo.isApproved
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                        : 'bg-amber-50 text-amber-700 border-amber-200'
-                    }`}>
-                      {promo.isApproved ? 'APROBADA' : 'PENDIENTE'}
-                    </span>
-                  </div>
-                  
-                  {promo.description && <p className="mt-2 text-sm text-slate-500">{promo.description}</p>}
-                  
-                  <div className="mt-4 flex items-center gap-3">
-                    <span className="inline-block rounded-lg bg-emerald-600 px-3 py-1 text-sm font-bold text-white">
-                      {promo.discountPercentage}% OFF
-                    </span>
-                    <div className="flex flex-col">
-                      <span className="text-[10px] text-slate-400 font-semibold uppercase">Cupón</span>
-                      <code className="text-sm font-mono font-bold text-slate-700">{promo.couponCode}</code>
+        <div className="grid gap-6 sm:grid-cols-2">
+          {promotions.map((promo, idx) => {
+            const isApproved = promo.isApproved
+            const isEven = idx % 2 === 0
+            const iconBg = isEven ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 'bg-indigo-50 border-indigo-100 text-indigo-600'
+            const ticketBg = isEven ? 'bg-emerald-50/40 border-l-[3px] border-l-emerald-400 border-dashed' : 'bg-indigo-50/30 border-l-[3px] border-l-indigo-400 border-dashed'
+            const offColor = isEven ? 'text-emerald-600' : 'text-indigo-600'
+
+            // Format dates
+            const formatShortDate = (dateStr) => {
+              if (!dateStr) return 'Indefinida'
+              try {
+                const d = new Date(dateStr)
+                return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`
+              } catch {
+                return '—'
+              }
+            }
+
+            const startDateFormatted = formatShortDate(promo.startDate)
+            const endDateFormatted = formatShortDate(promo.endDate)
+
+            // Determine if active
+            const now = new Date()
+            const isExpired = promo.endDate && new Date(promo.endDate) < now
+            const isActive = isApproved && !isExpired
+
+            return (
+              <div key={promo._id} className="rounded-2xl border border-slate-100 bg-white shadow-sm hover:shadow-md transition-all duration-200 p-5 flex flex-col justify-between">
+                <div>
+                  {/* Top row */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${iconBg} font-bold`}>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+                          <line x1="7" y1="7" x2="7.01" y2="7" />
+                        </svg>
+                      </div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="font-extrabold text-slate-800 text-base leading-tight">{promo.title}</h3>
+                        <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border ${isApproved
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200/50'
+                          : 'bg-amber-50 text-amber-700 border-amber-200/50'
+                          }`}>
+                          {isApproved ? 'APROBADA' : 'PENDIENTE'}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
-                  {(promo.startDate || promo.endDate) && (
-                    <div className="mt-3 text-xs text-slate-400 flex items-center gap-1.5">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                        <line x1="16" y1="2" x2="16" y2="6" />
-                        <line x1="8" y1="2" x2="8" y2="6" />
-                        <line x1="3" y1="10" x2="21" y2="10" />
-                      </svg>
-                      <span>Vigencia:</span>{' '}
-                      {promo.startDate ? new Date(promo.startDate).toLocaleDateString('es-GT') : 'Indefinida'}
-                      {' - '}
-                      {promo.endDate ? new Date(promo.endDate).toLocaleDateString('es-GT') : 'Indefinida'}
+                  {/* Coupon details box */}
+                  <div className={`mt-4 ${ticketBg} rounded-r-xl p-4 flex items-center justify-between border-y border-r border-slate-100/50 relative overflow-hidden`}>
+                    <div className="flex items-center gap-4">
+                      {/* Big Percentage */}
+                      <div className="flex flex-col">
+                        <span className={`text-2xl font-extrabold tracking-tight ${offColor}`}>
+                          {promo.discountPercentage}%
+                        </span>
+                        <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider leading-none mt-0.5">
+                          OFF
+                        </span>
+                      </div>
+
+                      {/* Vertical line divider inside ticket */}
+                      <div className="h-10 w-px bg-slate-200/60 mx-1" />
+
+                      {/* Coupon Info */}
+                      <div className="flex flex-col">
+                        <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest">CUPÓN</span>
+                        <span className="text-sm font-mono font-black text-slate-700 tracking-wider mt-0.5 uppercase">
+                          {promo.couponCode}
+                        </span>
+                      </div>
                     </div>
-                  )}
+
+                    {/* Copy Button */}
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(promo.couponCode);
+                        showSuccess("Código de cupón copiado.");
+                      }}
+                      className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100/50 transition"
+                      title="Copiar cupón"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Bottom row */}
+                <div className="mt-4 pt-3.5 border-t border-slate-100/60 flex items-center justify-between text-xs font-semibold text-slate-500">
+                  <div className="flex items-center gap-1.5">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-slate-400">
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                      <line x1="16" y1="2" x2="16" y2="6" />
+                      <line x1="8" y1="2" x2="8" y2="6" />
+                      <line x1="3" y1="10" x2="21" y2="10" />
+                    </svg>
+                    <span>Vigencia:</span>
+                    <span className="font-bold text-slate-600">{startDateFormatted} – {endDateFormatted}</span>
+                  </div>
+
+                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border ${isActive
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200/30'
+                    : 'bg-rose-50 text-rose-700 border-rose-200/30'
+                    }`}>
+                    <span className={`h-1.5 w-1.5 rounded-full ${isActive ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                    {isActive ? 'Activa' : isExpired ? 'Vencida' : 'Inactiva'}
+                  </span>
                 </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
+
+      {/* Bottom call to action banner */}
+
 
       {/* Modal */}
       {showModal && (
@@ -175,7 +257,7 @@ export const RestaurantPromotions = () => {
           <div className="rounded-2xl border border-slate-100 bg-white shadow-xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
             <h3 className="text-xl font-bold text-slate-900">Nueva Promoción</h3>
             <p className="text-xs text-slate-400 mt-1">Los cupones quedan inactivos hasta que sean aprobados.</p>
-            
+
             <form onSubmit={handleAddPromotion} className="mt-4 space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-slate-700">Título de la Oferta</label>
@@ -223,7 +305,7 @@ export const RestaurantPromotions = () => {
                   />
                 </div>
               </div>
-              
+
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label className="block text-sm font-semibold text-slate-700">Fecha Inicio</label>

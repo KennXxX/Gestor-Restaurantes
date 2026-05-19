@@ -68,10 +68,19 @@ export const RestaurantSettings = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h2 className="text-3xl font-bold text-slate-900">Configuración del Restaurante</h2>
-        <p className="mt-2 text-slate-500">Administra los datos de tu restaurante asignado</p>
+      {/* Banner Superior Premium */}
+      <div className="rounded-[24px] border border-emerald-100 bg-gradient-to-r from-emerald-50 via-emerald-50/60 to-emerald-100/30 p-6 sm:p-8 flex flex-col justify-between gap-4 overflow-hidden relative shadow-sm">
+        <div className="space-y-3 z-10">
+          <span className="inline-flex rounded-full bg-emerald-100 border border-emerald-200/50 px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider text-emerald-800">
+            Configuración
+          </span>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            Configuración del Restaurante
+          </h1>
+          <p className="text-sm text-slate-500 max-w-[580px] leading-relaxed">
+            Administra los datos generales de tu establecimiento, información de contacto y horarios de atención.
+          </p>
+        </div>
       </div>
 
       {/* Settings Form */}
