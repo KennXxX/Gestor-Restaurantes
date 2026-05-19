@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuthStore } from '../auth/store/authStore'
-import { getOrdersByRestaurant, updateOrderStatus } from '../../shared/api/orders'
+import { getOrdersByRestaurant, updateOrderStatus, updateOrderDetails } from '../../shared/api/orders'
+import { getMenus } from '../../shared/api/menus'
 import { showError, showSuccess } from '../../shared/utils/toast'
 
 const getErrMsg = (err, fallback) =>
@@ -16,6 +17,12 @@ export const RestaurantOrders = () => {
   const [filterStatus, setFilterStatus] = useState('TODOS')
   const [updatingId, setUpdatingId] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
+  const [sortBy, setSortBy] = useState('recent')
+  const [editingOrder, setEditingOrder] = useState(null)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editStatus, setEditStatus] = useState('EN_PREPARACION')
+  const [availableMenus, setAvailableMenus] = useState([])
+  const [editItems, setEditItems] = useState([])
 
   const loadOrders = async () => {
     if (!user?.restaurantId) return
@@ -30,9 +37,20 @@ export const RestaurantOrders = () => {
     }
   }
 
+  const loadAvailableMenus = async () => {
+    if (!user?.restaurantId) return
+    try {
+      const { data } = await getMenus({ restaurantId: user.restaurantId })
+      setAvailableMenus(data?.menus || [])
+    } catch (err) {
+      console.error('Error fetching menus:', err)
+    }
+  }
+
   useEffect(() => {
     if (user?.restaurantId) {
       loadOrders()
+      loadAvailableMenus()
     } else {
       setLoading(false)
     }
@@ -51,11 +69,80 @@ export const RestaurantOrders = () => {
     }
   }
 
+  const handleEditOrder = (order) => {
+    setEditingOrder(order)
+    setEditStatus(order.status)
+    const itemsMapped = (order.items || []).map(item => ({
+      menuId: item.menuId?._id || item.menuId || '',
+      quantity: item.quantity || 1,
+      menuName: item.menuId?.menuName || 'Plato',
+      price: item.price || item.menuId?.menuPrice || 0
+    }))
+    setEditItems(itemsMapped)
+    setShowEditModal(true)
+  }
+
+  const handleSaveOrderEdit = async () => {
+    if (!editingOrder) return
+    setUpdatingId(editingOrder._id)
+    try {
+      await updateOrderDetails(editingOrder._id, {
+        status: editStatus,
+        items: editItems
+      })
+      showSuccess('Orden y artículos actualizados exitosamente.')
+      setShowEditModal(false)
+      setEditingOrder(null)
+      loadOrders()
+    } catch (err) {
+      showError(getErrMsg(err, 'No se pudo actualizar la orden.'))
+    } finally {
+      setUpdatingId(null)
+    }
+  }
+
+  const handleQuantityChange = (menuId, amount) => {
+    setEditItems(prev => prev.map(item => {
+      if (item.menuId === menuId) {
+        const newQty = Math.max(1, item.quantity + amount)
+        return { ...item, quantity: newQty }
+      }
+      return item
+    }))
+  }
+
+  const handleRemoveItem = (menuId) => {
+    setEditItems(prev => prev.filter(item => item.menuId !== menuId))
+  }
+
+  const handleAddItem = (menuId) => {
+    if (!menuId) return
+    const exists = editItems.find(item => item.menuId === menuId)
+    if (exists) {
+      handleQuantityChange(menuId, 1)
+      return
+    }
+    const foundMenu = availableMenus.find(m => m._id === menuId)
+    if (!foundMenu) return
+    setEditItems(prev => [...prev, {
+      menuId: foundMenu._id,
+      quantity: 1,
+      menuName: foundMenu.menuName,
+      price: foundMenu.menuPrice
+    }])
+  }
+
   const filteredOrders = orders.filter((o) => {
     const matchesStatus = filterStatus === 'TODOS' || o.status === filterStatus
     const orderIdStr = o._id?.toLowerCase() || ''
     const matchesSearch = searchQuery === '' || orderIdStr.includes(searchQuery.toLowerCase()) || o.userId?.name?.toLowerCase().includes(searchQuery.toLowerCase())
     return matchesStatus && matchesSearch
+  })
+
+  const sortedOrders = [...filteredOrders].sort((a, b) => {
+    const dateA = new Date(a.createdAt || 0)
+    const dateB = new Date(b.createdAt || 0)
+    return sortBy === 'recent' ? dateB - dateA : dateA - dateB
   })
 
   const totalOrdersCount = orders.length
@@ -288,8 +375,9 @@ export const RestaurantOrders = () => {
           {/* Sort selector dropdown */}
           <div className="relative w-full sm:w-[180px]">
             <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
               className="appearance-none w-full rounded-2xl border border-slate-200 bg-white py-2.5 pl-4 pr-10 text-xs font-bold text-slate-600 hover:border-slate-300 focus:outline-none shadow-sm transition"
-              defaultValue="recent"
             >
               <option value="recent">Más recientes</option>
               <option value="oldest">Más antiguas</option>
@@ -316,7 +404,7 @@ export const RestaurantOrders = () => {
         </div>
       ) : (
         <div className="space-y-6">
-          {filteredOrders.map((order) => (
+          {sortedOrders.map((order) => (
             <div
               key={order._id}
               className={`rounded-2xl border border-slate-100 bg-white shadow-sm hover:shadow-md transition-all duration-200 p-5 ${cardBorderAccents[order.status] || cardBorderAccents.EN_PREPARACION}`}
@@ -345,6 +433,16 @@ export const RestaurantOrders = () => {
 
                 {/* Right Side: Dates and Action Menu */}
                 <div className="flex items-center gap-3 self-end sm:self-start">
+                  <button
+                    onClick={() => handleEditOrder(order)}
+                    className="rounded-xl border border-slate-200 hover:border-emerald-600 hover:bg-emerald-50 px-3.5 py-2 text-xs font-bold text-slate-700 hover:text-emerald-700 transition active:scale-[0.98] flex items-center gap-1 shrink-0"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                      <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                    </svg>
+                    <span>Editar</span>
+                  </button>
                   <div className="flex flex-col items-end gap-0.5 text-xs text-slate-500 font-bold">
                     <div className="flex items-center gap-1.5">
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-slate-400">
@@ -470,6 +568,147 @@ export const RestaurantOrders = () => {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Modal de Edición de Orden */}
+      {showEditModal && editingOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/20 backdrop-blur-sm">
+          <div className="rounded-2xl border border-slate-100 bg-white shadow-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <h3 className="text-xl font-bold text-slate-900">
+              Editar Orden #{editingOrder._id?.slice(-6).toUpperCase()}
+            </h3>
+            
+            <div className="mt-4 space-y-4">
+              {/* Estado */}
+              <div>
+                <label className="block text-sm font-semibold text-slate-700">Estado de la Orden</label>
+                <select
+                  value={editStatus}
+                  onChange={(e) => setEditStatus(e.target.value)}
+                  className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition"
+                >
+                  <option value="EN_PREPARACION">Pendiente (En Preparación)</option>
+                  <option value="LISTO">Listo (Preparado)</option>
+                  <option value="ENTREGADO">Completado (Entregado)</option>
+                  <option value="CANCELADO">Cancelado</option>
+                </select>
+              </div>
+
+              {/* Artículos de la Orden */}
+              <div className="pt-2">
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Artículos en la Orden</label>
+                
+                {editItems.length === 0 ? (
+                  <div className="text-center py-6 border border-dashed border-slate-200 rounded-xl bg-slate-50/50 text-xs font-semibold text-slate-400">
+                    No hay artículos en la orden. Agrega uno abajo.
+                  </div>
+                ) : (
+                  <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
+                    {editItems.map((item) => (
+                      <div key={item.menuId} className="flex items-center justify-between bg-slate-50 border border-slate-100 rounded-xl p-3">
+                        <div className="flex-1 min-w-0 pr-2">
+                          <span className="block text-xs font-extrabold text-slate-800 truncate">{item.menuName}</span>
+                          <span className="block text-[10px] text-slate-400 font-bold">Q{Number(item.price).toFixed(2)} c/u</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {/* Botón menos */}
+                          <button
+                            type="button"
+                            onClick={() => handleQuantityChange(item.menuId, -1)}
+                            className="h-6 w-6 rounded-md bg-white border border-slate-200 text-slate-600 hover:border-slate-300 font-black flex items-center justify-center text-xs active:scale-95"
+                          >
+                            -
+                          </button>
+                          <span className="text-xs font-extrabold text-slate-700 min-w-[20px] text-center">{item.quantity}</span>
+                          {/* Botón más */}
+                          <button
+                            type="button"
+                            onClick={() => handleQuantityChange(item.menuId, 1)}
+                            className="h-6 w-6 rounded-md bg-white border border-slate-200 text-slate-600 hover:border-slate-300 font-black flex items-center justify-center text-xs active:scale-95"
+                          >
+                            +
+                          </button>
+                          {/* Botón eliminar */}
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveItem(item.menuId)}
+                            className="h-6 w-6 rounded-md bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center transition ml-1"
+                          >
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                              <line x1="18" y1="6" x2="6" y2="18" />
+                              <line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Agregar nuevo plato */}
+              <div className="pt-2 border-t border-slate-100">
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Agregar Artículo</label>
+                <div className="flex gap-2">
+                  <select
+                    id="add-item-select"
+                    className="flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 focus:border-emerald-500 focus:outline-none"
+                    defaultValue=""
+                  >
+                    <option value="" disabled>Selecciona un plato...</option>
+                    {availableMenus
+                      .filter(menu => !editItems.some(item => item.menuId === menu._id))
+                      .map(menu => (
+                        <option key={menu._id} value={menu._id}>
+                          {menu.menuName} (Q{Number(menu.menuPrice).toFixed(2)})
+                        </option>
+                      ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const select = document.getElementById('add-item-select')
+                      if (select && select.value) {
+                        handleAddItem(select.value)
+                        select.value = ""
+                      }
+                    }}
+                    className="rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/50 px-3.5 py-2 text-xs font-bold text-emerald-700 transition active:scale-95"
+                  >
+                    Agregar
+                  </button>
+                </div>
+              </div>
+
+              {/* Total estimado */}
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-slate-800 font-extrabold text-sm bg-emerald-50/50 border border-emerald-100/60 p-3 rounded-xl">
+                <span>Nuevo Total estimado:</span>
+                <span className="text-emerald-700">
+                  Q{(editItems.reduce((acc, item) => acc + item.price * item.quantity, 0) + (editingOrder.orderType === 'A_DOMICILIO' ? 20 : 0)).toFixed(2)}
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-6 flex gap-3">
+              <button
+                onClick={() => {
+                  setShowEditModal(false)
+                  setEditingOrder(null)
+                }}
+                className="flex-1 rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition"
+              >
+                Cancelar
+              </button>
+              <button
+                disabled={updatingId === editingOrder._id || editItems.length === 0}
+                onClick={handleSaveOrderEdit}
+                className="flex-1 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 transition disabled:opacity-50"
+              >
+                {updatingId === editingOrder._id ? 'Guardando...' : 'Guardar Cambios'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

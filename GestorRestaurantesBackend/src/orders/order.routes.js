@@ -8,7 +8,8 @@ import {
     getOrders,
     getMyOrders,
     getOrdersByRestaurant,
-    updateOrderStatus
+    updateOrderStatus,
+    updateOrder
 } from './order.controller.js'
 import { uploadFieldImage } from '../../middlewares/file-uploader.js'
 import { createOrderValidator, updateOrderStatusValidator } from '../../middlewares/validateOrders.js'
@@ -36,5 +37,8 @@ router.get('/restaurant/:restaurantId', validateJWT, isAdmin, getOrdersByRestaur
  
 // Actualizar estado de orden
 router.put('/status/:id', validateJWT, isAdmin, updateOrderStatusValidator, updateOrderStatus)
- 
+
+// Actualizar orden completa (incluyendo items)
+router.put('/:id', validateJWT, isAdmin, uploadFieldImage.none(), updateOrder)
+
 export default router
