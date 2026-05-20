@@ -38,11 +38,11 @@ const ensureTableAvailability = async ({ restaurantId, tableIds, startDate, endD
         return { ok: false, message: 'Una o mas mesas no pertenecen al restaurante o no estan disponibles.' }
     }
 
-    const tooSmallTable = activeTables.find((table) => Number(table.tableCapacity || 0) < Number(numberPeople || 0))
-    if (tooSmallTable) {
+    const totalCapacity = activeTables.reduce((sum, t) => sum + Number(t.tableCapacity || 0), 0)
+    if (totalCapacity < Number(numberPeople || 0)) {
         return {
             ok: false,
-            message: `La mesa ${tooSmallTable.tableName || tooSmallTable._id} no soporta ${Number(numberPeople || 0)} personas.`
+            message: `La capacidad combinada de las mesas (${totalCapacity}) no es suficiente para ${Number(numberPeople || 0)} personas.`
         }
     }
 

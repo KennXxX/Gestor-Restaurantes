@@ -372,7 +372,7 @@ export const AdminDashboardHome = () => {
           <div className="grid gap-3">
             {activityHighlights.map((item, index) => (
               <div
-                key={item.title}
+                key={`highlight-${item.title ?? ''}-${index}`}
                 className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur animate-fadeIn"
                 style={{ animationDelay: `${index * 0.08}s` }}
               >
@@ -501,9 +501,9 @@ export const AdminDashboardHome = () => {
                   No hay alertas de stock por debajo de {LOW_STOCK_THRESHOLD} unidades.
                 </div>
               ) : (
-                inventoryAlerts.map((item) => (
+                inventoryAlerts.map((item, i) => (
                   <div
-                    key={item.name}
+                    key={`alert-${item.name ?? ''}-${i}`}
                     className="flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3"
                   >
                     <div>
@@ -585,8 +585,8 @@ export const AdminDashboardHome = () => {
                   Top platos
                 </p>
                 <div className="mt-2 space-y-2 text-sm text-slate-700">
-                  {(stats?.bestSellingDishes ?? []).slice(0, 3).map((dish) => (
-                    <div key={`${dish.menuId}-${dish.dishName}`} className="flex items-center justify-between">
+                  {(stats?.bestSellingDishes ?? []).slice(0, 3).map((dish, i) => (
+                    <div key={`dish-${dish.menuId ?? ''}-${i}`} className="flex items-center justify-between">
                       <span>{dish.dishName}</span>
                       <span className="text-xs font-semibold text-slate-500">
                         {formatNumber(dish.unitsSold)} uds

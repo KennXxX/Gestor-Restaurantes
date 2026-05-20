@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useAuthStore } from '../../features/auth/store/authStore'
 import { ReservationView } from '../../features/Reservations/ReservationView'
 import { ClientOrderView } from '../../features/Orders/ClientOrderView'
 import { getMyOrders } from '../../shared/api/orders'
 import { getMenus } from '../../shared/api/menus'
+import { getRestaurants } from '../../shared/api/restaurants'
 import { getTopSellingMenus } from '../../shared/api/statistics'
 import { getMyReservations } from '../../shared/api/reservations'
 import { getMyInvoices, exportInvoicePdf } from '../../shared/api/invoices'
@@ -329,88 +330,274 @@ export const ClientReservations = () => <ReservationView />
 
 export const ClientOrders = () => <ClientOrderView />
 
-export const ClientMenu = () => {
-  const [searchParams] = useSearchParams()
-  const category = searchParams.get('category') || ''
-  const [menus, setMenus] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+const MENU_CATEGORIES = [
+  { key: 'ENTRADA',      label: 'Entradas',       accent: 'text-amber-300',  badge: 'bg-amber-500/15 text-amber-300',  border: 'border-amber-500/30' },
+  { key: 'PLATO_FUERTE', label: 'Platos Fuertes', accent: 'text-orange-300', badge: 'bg-orange-500/15 text-orange-300', border: 'border-orange-500/30' },
+  { key: 'BEBIDA',       label: 'Bebidas',         accent: 'text-sky-300',    badge: 'bg-sky-500/15 text-sky-300',       border: 'border-sky-500/30' },
+  { key: 'POSTRE',       label: 'Postres',         accent: 'text-pink-300',   badge: 'bg-pink-500/15 text-pink-300',     border: 'border-pink-500/30' },
+]
+
+function MenuCard({ menu, compact = false }) {
+  const restaurantName = menu.restaurantId?.restaurantName || null
+  return (
+    <article className={`group overflow-hidden rounded-[24px] border border-white/10 bg-slate-950/70 transition hover:border-orange-400/20 hover:bg-slate-900 ${
+      compact ? 'w-44 shrink-0' : ''
+    }`}>
+      {menu.menuPhoto ? (
+        <img
+          src={menu.menuPhoto}
+          alt={menu.menuName}
+          className={`w-full object-cover transition duration-300 group-hover:scale-105 ${compact ? 'h-32' : 'h-44'}`}
+        />
+      ) : (
+        <div className={`flex items-center justify-center bg-slate-900 text-4xl font-bold text-slate-600 ${compact ? 'h-32' : 'h-44'}`}>
+          {menu.menuName?.charAt(0) || 'M'}
+        </div>
+      )}
+      <div className="p-3">
+        <p className="truncate text-sm font-semibold text-white">{menu.menuName}</p>
+        {!compact && <p className="mt-1 line-clamp-2 text-xs leading-5 text-slate-400">{menu.menuDescription}</p>}
+        <p className="mt-1 text-sm font-bold text-orange-400">Q{menu.menuPrice}</p>
+        {restaurantName && (
+          <p className="mt-1 truncate text-xs text-slate-500">{restaurantName}</p>
+        )}
+      </div>
+    </article>
+  )
+}
+
+function RestaurantPicker({ restaurants, selectedId, onChange }) {
+  const [open, setOpen] = useState(false)
+  const ref = React.useRef(null)
 
   useEffect(() => {
-    const loadMenus = async () => {
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  const all = [{ _id: '', restaurantName: 'Restaurantes generales', restaurantPhoto: null }, ...restaurants]
+  const active = all.find((r) => r._id === selectedId) || all[0]
+
+  return (
+    <div ref={ref} className="relative flex flex-col gap-2 sm:items-end">
+      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Restaurante</p>
+
+      {/* Tarjeta activa */}
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="group relative h-24 w-72 overflow-hidden rounded-[24px] border border-white/10 shadow-lg transition hover:border-orange-400/30"
+      >
+        {active.restaurantPhoto ? (
+          <img src={active.restaurantPhoto} alt={active.restaurantName} className="absolute inset-0 h-full w-full object-cover brightness-50 transition duration-300 group-hover:brightness-60" />
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-950" />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+        <div className="relative flex h-full items-end justify-between px-4 pb-3">
+          <p className="text-sm font-bold text-white drop-shadow">{active.restaurantName}</p>
+          <svg
+            className={`h-4 w-4 shrink-0 text-slate-300 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+            fill="none" stroke="currentColor" viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
+      </button>
+
+      {/* Dropdown de tarjetas */}
+      {open && (
+        <div className="absolute right-0 top-full z-40 mt-2 flex w-72 flex-col gap-2 rounded-[28px] border border-white/10 bg-slate-900/95 p-3 shadow-[0_24px_80px_-20px_rgba(0,0,0,0.8)] backdrop-blur-md">
+          {all.map((r) => (
+            <button
+              key={r._id}
+              type="button"
+              onClick={() => { onChange(r._id); setOpen(false) }}
+              className={`group relative h-20 w-full overflow-hidden rounded-[20px] border transition ${
+                r._id === selectedId
+                  ? 'border-orange-500/60 ring-2 ring-orange-500/20'
+                  : 'border-white/10 hover:border-orange-400/30'
+              }`}
+            >
+              {r.restaurantPhoto ? (
+                <img src={r.restaurantPhoto} alt={r.restaurantName} className="absolute inset-0 h-full w-full object-cover brightness-50 transition duration-300 group-hover:brightness-60" />
+              ) : (
+                <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-950" />
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+              <div className="relative flex h-full items-end px-4 pb-3">
+                <p className="text-sm font-bold text-white drop-shadow">{r.restaurantName}</p>
+                {r._id === selectedId && (
+                  <span className="ml-auto shrink-0 rounded-full bg-orange-500 px-2 py-0.5 text-xs font-bold text-slate-950">Activo</span>
+                )}
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+
+  const cat = MENU_CATEGORIES.find((c) => c.key === category)
+  const items = menus.filter((m) => m.menuCategory === category)
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-4 backdrop-blur-sm sm:items-center"
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-4xl max-h-[88vh] overflow-y-auto rounded-[32px] border border-white/10 bg-slate-900 p-6 shadow-[0_40px_120px_-40px_rgba(15,23,42,0.9)]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-4 mb-6">
+          <div>
+            <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] ${cat?.badge}`}>{cat?.label}</span>
+            <h2 className="mt-3 text-2xl font-semibold text-white">{cat?.label}</h2>
+            <p className="mt-1 text-sm text-slate-400">{items.length} platillo{items.length !== 1 ? 's' : ''}</p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full border border-slate-700 bg-slate-950/80 p-2 text-slate-400 transition hover:border-slate-500 hover:text-white"
+          >
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+        {items.length === 0 ? (
+          <div className="rounded-[24px] border border-dashed border-white/10 bg-slate-950/40 py-16 text-center text-sm text-slate-500">
+            No hay platillos disponibles en esta categoría.
+          </div>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {items.map((menu) => <MenuCard key={menu._id} menu={menu} />)}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+export const ClientMenu = () => {
+  const [menus, setMenus] = useState([])
+  const [restaurants, setRestaurants] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [selectedRestaurantId, setSelectedRestaurantId] = useState('')
+  const [modalCategory, setModalCategory] = useState(null)
+
+  useEffect(() => {
+    const loadData = async () => {
       setLoading(true)
       setError(null)
       try {
-        const response = await getMenus()
-        setMenus(response.data?.menus || [])
-      } catch (err) {
+        const [menusRes, restaurantsRes] = await Promise.all([
+          getMenus(),
+          getRestaurants({ limit: 100, restaurantActive: true }),
+        ])
+        setMenus(menusRes.data?.menus || [])
+        setRestaurants(restaurantsRes.data?.data || [])
+      } catch (_err) {
         setError('No se pudo cargar el menú.')
       } finally {
         setLoading(false)
       }
     }
-
-    loadMenus()
+    loadData()
   }, [])
 
-  const filteredMenus = category
-    ? menus.filter((menu) => menu.menuCategory === category)
+  const visibleMenus = selectedRestaurantId
+    ? menus.filter((m) => String(m.restaurantId?._id || m.restaurantId) === selectedRestaurantId)
     : menus
 
-  const categoryLabel = category
-    ? category === 'PLATO_FUERTE'
-      ? 'Platos fuertes'
-      : category === 'POSTRE'
-        ? 'Postres'
-        : category === 'BEBIDA'
-          ? 'Bebidas'
-          : category
-    : 'Todos los menús'
+  const selectedRestaurant = restaurants.find((r) => r._id === selectedRestaurantId)
 
   return (
-    <section className="mx-auto w-full max-w-7xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
-      <div className="space-y-4 rounded-[32px] border border-slate-200 bg-white p-8 shadow-sm">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Menú</p>
-            <h2 className="mt-2 text-3xl font-semibold text-slate-900">{categoryLabel}</h2>
-          </div>
-          <p className="max-w-2xl text-base leading-7 text-slate-600">
-            {category
-              ? `Explora los ${categoryLabel.toLowerCase()} disponibles en nuestro restaurante.`
-              : 'Descubre nuestros platos, bebidas y postres favoritos.'}
-          </p>
-        </div>
-      </div>
+    <section className="relative overflow-hidden">
+      <div className="mx-auto max-w-7xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
 
-      <div className="grid gap-6">
-        {loading && <div className="rounded-[32px] border border-slate-200 bg-slate-50 p-8 text-center text-slate-500">Cargando menú...</div>}
-        {!loading && error && <div className="rounded-[32px] border border-rose-200 bg-rose-50 p-8 text-center text-rose-600">{error}</div>}
-        {!loading && !error && filteredMenus.length === 0 && (
-          <div className="rounded-[32px] border border-slate-200 bg-slate-50 p-8 text-center text-slate-500">
-            No se encontraron platillos para esta categoría.
+        {/* HEADER */}
+        <header className="rounded-[32px] border border-slate-800/80 bg-slate-900/70 p-8 shadow-[0_40px_120px_-40px_rgba(15,23,42,0.8)] backdrop-blur-sm">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="inline-flex items-center gap-2 rounded-full bg-orange-500/15 px-4 py-2 text-sm font-semibold uppercase tracking-[0.26em] text-orange-300">
+                Carta del restaurante
+              </p>
+              <h1 className="mt-6 text-4xl font-semibold tracking-tight text-white sm:text-5xl">
+                Descubre nuestra <span className="text-orange-400">carta</span>
+              </h1>
+              <p className="mt-4 max-w-xl text-base leading-8 text-slate-300">
+                {selectedRestaurant
+                  ? `Mostrando el menú de ${selectedRestaurant.restaurantName}.`
+                  : 'Explora entradas, platos fuertes, bebidas y postres de todos nuestros restaurantes.'}
+              </p>
+            </div>
+
+            {/* Selector de restaurante */}
+            <RestaurantPicker
+              restaurants={restaurants}
+              selectedId={selectedRestaurantId}
+              onChange={setSelectedRestaurantId}
+            />
+          </div>
+        </header>
+
+        {/* ESTADOS */}
+        {loading && (
+          <div className="rounded-[32px] border border-white/10 bg-slate-900/80 p-10 text-center text-slate-400">
+            Cargando menú...
           </div>
         )}
-        {!loading && filteredMenus.length > 0 && (
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {filteredMenus.map((menu) => (
-              <article key={menu._id} className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1">
-                {menu.menuPhoto ? (
-                  <img src={menu.menuPhoto} alt={menu.menuName} className="h-52 w-full object-cover" />
-                ) : (
-                  <div className="flex h-52 items-center justify-center bg-slate-100 text-5xl font-bold text-slate-400">{menu.menuName?.charAt(0)}</div>
-                )}
-                <div className="p-5">
-                  <div className="flex items-center justify-between gap-4">
-                    <h3 className="text-xl font-semibold text-slate-900">{menu.menuName}</h3>
-                    <span className="text-lg font-semibold text-orange-600">Q{menu.menuPrice}</span>
-                  </div>
-                  <p className="mt-2 text-sm text-slate-500 uppercase tracking-[0.14em]">{menu.menuCategory?.replace('_', ' ')}</p>
-                  <p className="mt-3 text-sm leading-6 text-slate-600">{menu.menuDescription}</p>
+        {!loading && error && (
+          <div className="rounded-[32px] border border-rose-500/20 bg-rose-500/10 p-10 text-center text-rose-300">{error}</div>
+        )}
+
+        {/* LISTAS POR CATEGORÍA */}
+        {!loading && !error && MENU_CATEGORIES.map(({ key, label, accent, badge, border }) => {
+          const items = visibleMenus.filter((m) => m.menuCategory === key)
+          return (
+            <section key={key} className="rounded-[32px] border border-white/10 bg-slate-900/80 p-6 shadow-[0_24px_80px_-40px_rgba(15,23,42,0.9)]">
+              <div className="flex items-center justify-between gap-4 mb-5">
+                <div>
+                  <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] ${badge}`}>{label}</span>
+                  <p className="mt-1.5 text-xs text-slate-500">{items.length} platillo{items.length !== 1 ? 's' : ''}</p>
                 </div>
-              </article>
-            ))}
-          </div>
+              </div>
+
+              {items.length === 0 ? (
+                <div className="rounded-[24px] border border-dashed border-white/10 bg-slate-950/40 py-8 text-center text-sm text-slate-500">
+                  Sin platillos en esta categoría
+                  {selectedRestaurantId ? ' para este restaurante' : ''}.
+                </div>
+              ) : (
+                <div className="flex gap-4 overflow-x-auto pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                  {items.map((menu) => (
+                    <MenuCard key={menu._id} menu={menu} compact />
+                  ))}
+                  {/* Card ver más al final */}
+                  <button
+                    type="button"
+                    onClick={() => setModalCategory(key)}
+                    className={`flex w-36 shrink-0 flex-col items-center justify-center gap-2 rounded-[24px] border ${border} bg-slate-950/40 px-4 py-6 transition hover:bg-slate-950/70`}
+                  >
+                    <span className={`text-3xl font-bold ${accent}`}>+{items.length}</span>
+                    <span className="text-xs font-semibold text-slate-300">Ver todos</span>
+                  </button>
+                </div>
+              )}
+            </section>
+          )
+        })}
+
+        {/* MODAL */}
+        {modalCategory && (
+          <MenuModal
+            category={modalCategory}
+            menus={visibleMenus}
+            onClose={() => setModalCategory(null)}
+          />
         )}
       </div>
     </section>

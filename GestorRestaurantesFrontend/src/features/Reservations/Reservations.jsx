@@ -271,7 +271,7 @@ export const Reservations = () => {
           <h1 className="font-display mt-4 text-3xl font-semibold text-slate-900 sm:text-4xl">Gestión de reservas</h1>
           <p className="mt-3 text-sm text-slate-700 sm:text-base">Listado general de reservas, creación y edición asignadas a usuarios, cancelación y relación con mesas o clientes.</p>
         </div>
-        <button 
+        <button
           onClick={() => { resetForm(); setIsModalOpen(true); }}
           className="rounded-xl bg-sky-600 px-6 py-3 text-sm font-bold text-white shadow-lg hover:bg-sky-500 transition-all"
         >

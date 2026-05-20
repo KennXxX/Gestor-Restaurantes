@@ -203,20 +203,6 @@ export const Estadisticas = () => {
             </div>
           </section>
 
-          <section className="rounded-[26px] border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-xl font-bold text-slate-900">Cobertura del endpoint</h2>
-            <div className="mt-4 space-y-3 text-sm text-slate-600">
-              <div className="rounded-2xl bg-slate-50 px-4 py-3">
-                demandByRestaurants alimenta los KPIs de ingresos, ordenes y restaurantes activos.
-              </div>
-              <div className="rounded-2xl bg-slate-50 px-4 py-3">
-                bestSellingDishes se usa para mostrar el plato con mayor volumen de venta.
-              </div>
-              <div className="rounded-2xl bg-slate-50 px-4 py-3">
-                peakOrderHours se representa en barras para visualizar horas de mayor demanda.
-              </div>
-            </div>
-          </section>
         </aside>
       </div>
 
