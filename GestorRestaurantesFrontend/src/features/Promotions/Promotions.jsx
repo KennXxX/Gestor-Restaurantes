@@ -157,9 +157,9 @@ export const Promotions = () => {
     })
   }, [promotions, searchTerm, startDate, endDate])
 
-  const activePromotions = filteredPromotions.filter((promo) => isPromotionActive(promo))
+  const activePromotions = filteredPromotions.filter((promo) => promo.isApproved === true && promo.isActive !== false)
   const pendingPromotions = filteredPromotions.filter((promo) => promo.isApproved === false)
-  const couponPromotions = activePromotions.filter((promo) => promo.couponCode)
+  const couponPromotions = activePromotions.filter((promo) => promo.couponCode && isPromotionActive(promo))
 
   const handleCopyCoupon = async (code) => {
     if (!code) return
@@ -236,7 +236,7 @@ export const Promotions = () => {
           </div>
           <div className="rounded-2xl border border-indigo-200 bg-white/80 px-4 py-3 shadow-sm">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-500">Resumen</p>
-            <p className="mt-2 text-sm text-slate-700">{activePromotions.length} promociones activas</p>
+            <p className="mt-2 text-sm text-slate-700">{activePromotions.length} promociones aprobadas</p>
             <p className="text-sm text-slate-700">{eventReservations.length} reservas tipo evento</p>
           </div>
         </div>
@@ -366,7 +366,7 @@ export const Promotions = () => {
                 <h2 className="mt-2 font-display text-2xl font-semibold text-slate-900">Ofertas vigentes</h2>
               </div>
               <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-                {loading ? 'Cargando...' : `${activePromotions.length} activas`}
+                {loading ? 'Cargando...' : `${activePromotions.length} aprobadas`}
               </span>
             </div>
 
@@ -390,13 +390,26 @@ export const Promotions = () => {
                 const restaurant = restaurantsById.get(promo.restaurantId?._id || promo.restaurantId)
                 const startDate = formatDate(promo.startDate)
                 const endDate = formatDate(promo.endDate)
+                const now = new Date()
+                const start = promo.startDate ? new Date(promo.startDate) : null
+                const end = promo.endDate ? new Date(promo.endDate) : null
+                const promoStatus = (!start || now >= start) && (!end || now <= end)
+                  ? { label: 'Vigente', cls: 'bg-emerald-100 text-emerald-700' }
+                  : start && now < start
+                  ? { label: 'Programada', cls: 'bg-sky-100 text-sky-700' }
+                  : { label: 'Vencida', cls: 'bg-slate-100 text-slate-500' }
                 return (
                   <article key={promo._id} className="rounded-2xl border border-indigo-100 bg-indigo-50/40 p-5">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
-                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-500">
-                          {restaurant?.restaurantName || 'Restaurante'}
-                        </p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-500">
+                            {restaurant?.restaurantName || 'Restaurante'}
+                          </p>
+                          <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${promoStatus.cls}`}>
+                            {promoStatus.label}
+                          </span>
+                        </div>
                         <h3 className="mt-2 text-xl font-semibold text-slate-900">{promo.title}</h3>
                         <p className="mt-2 text-sm text-slate-600">
                           {promo.description || 'Promocion activa aplicable a pedidos y reservas.'}

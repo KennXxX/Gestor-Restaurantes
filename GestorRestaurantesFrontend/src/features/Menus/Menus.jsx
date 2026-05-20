@@ -270,7 +270,7 @@ export const Menus = () => {
     try {
       const [restRes, menusRes, invRes, promoRes] = await Promise.all([
         getRestaurants({ limit: 100 }),
-        getMenus(currentUserId ? { createdBy: currentUserId } : {}).catch(() => ({ data: { menus: [] } })),
+        getMenus().catch(() => ({ data: { menus: [] } })),
         getInventories().catch(() => ({ data: { inventories: [] } })),
         getActivePromotions().catch(() => ({ data: { promotions: [] } }))
       ])
@@ -484,7 +484,7 @@ export const Menus = () => {
             {!loading && filteredMenus.length > 0 && (
               <div className="grid gap-4">
                 {filteredMenus.map(menu => {
-                  const menuStock = inventories.find(inv => inv.menuId === menu._id)?.quantity || 0
+                  const menuStock = inventories.find(inv => (inv.menuId?._id || inv.menuId) === menu._id)?.quantity ?? 0
                   
                   return (
                     <article key={menu._id} className="rounded-[26px] border border-slate-100 p-5 shadow-sm transition hover:shadow-md flex flex-col sm:flex-row gap-4 items-start">

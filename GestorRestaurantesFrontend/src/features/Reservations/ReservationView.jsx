@@ -194,9 +194,14 @@ export const ReservationView = () => {
   }, [form.tableId, form.startDate, form.endDate, form.restaurantId, myReservations, editingId])
 
   // ── derived ───────────────────────────────────────────────────────────────
-  const filteredTables = useMemo(
-    () => tables.filter((t) => Number(t.tableCapacity || 0) >= Number(form.numberPeople || 1)),
-    [tables, form.numberPeople]
+  const filteredTables = useMemo(() => tables, [tables])
+
+  const selectedCapacity = useMemo(
+    () => form.tableId.reduce((sum, id) => {
+      const t = tables.find((x) => x._id === id)
+      return sum + Number(t?.tableCapacity || 0)
+    }, 0),
+    [form.tableId, tables]
   )
 
   const selectedRestaurant = useMemo(
@@ -213,16 +218,10 @@ export const ReservationView = () => {
   const set = (key, val) => setForm((p) => ({ ...p, [key]: val }))
 
   const toggleTable = (id) => {
-    const t = tables.find((x) => x._id === id)
-    if (t && Number(t.tableCapacity || 0) < Number(form.numberPeople || 1)) {
-      showError(`La mesa "${t.tableName}" no soporta ${form.numberPeople} personas.`)
-      return
-    }
     setForm((p) => ({
       ...p,
       tableId: p.tableId.includes(id) ? p.tableId.filter((x) => x !== id) : [...p.tableId, id],
     }))
-
   }
 
   const resetForm = () => { setForm(emptyForm); setEditingId(null); setStep(1); setConflict(null) }
@@ -256,6 +255,11 @@ export const ReservationView = () => {
 
   const validateStep2 = () => {
     if (!form.tableId.length) { showError('Selecciona al menos una mesa.'); return false }
+    const needed = Number(form.numberPeople || 1)
+    if (selectedCapacity < needed) {
+      showError(`Capacidad insuficiente: ${selectedCapacity} de ${needed} personas cubiertas. Selecciona más mesas.`)
+      return false
+    }
     if (conflict) { showError('Hay un conflicto de horario. Cambia el horario o la mesa.'); return false }
     return true
   }
@@ -510,7 +514,7 @@ export const ReservationView = () => {
                   <div>
                     <h2 className="font-display text-xl font-bold text-slate-900">Elige tu mesa</h2>
                     <p className="mt-1 text-sm text-slate-600">
-                      Mesas con capacidad ≥ {form.numberPeople} personas en{' '}
+                      Selecciona mesas para cubrir <strong>{form.numberPeople} personas</strong> en{' '}
                       <strong>{selectedRestaurant?.restaurantName || 'el restaurante'}</strong>
                     </p>
                   </div>
@@ -532,9 +536,28 @@ export const ReservationView = () => {
                 )}
                 {!loadingTables && form.restaurantId && filteredTables.length === 0 && (
                   <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-amber-200 bg-amber-50 py-12">
-                    <span className="text-4xl"></span>
-                    <p className="text-sm font-semibold text-amber-700">Sin mesas para {form.numberPeople} personas</p>
-                    <p className="text-xs text-amber-600 text-center px-6">Intenta reducir el número de personas o elige otro restaurante.</p>
+                    <p className="text-sm font-semibold text-amber-700">Sin mesas registradas</p>
+                    <p className="text-xs text-amber-600 text-center px-6">Este restaurante aún no tiene mesas. Elige otro restaurante.</p>
+                  </div>
+                )}
+
+                {!loadingTables && filteredTables.length > 0 && form.tableId.length > 0 && (
+                  <div className="rounded-2xl border border-rose-100 bg-rose-50 px-4 py-3">
+                    <div className="flex items-center justify-between text-sm mb-1.5">
+                      <span className="font-semibold text-rose-800">Capacidad cubierta</span>
+                      <span className={`font-bold ${selectedCapacity >= Number(form.numberPeople || 1) ? 'text-emerald-700' : 'text-rose-700'}`}>
+                        {selectedCapacity} / {form.numberPeople} personas
+                      </span>
+                    </div>
+                    <div className="h-2 w-full rounded-full bg-rose-200 overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all duration-300 ${selectedCapacity >= Number(form.numberPeople || 1) ? 'bg-emerald-500' : 'bg-rose-500'}`}
+                        style={{ width: `${Math.min(100, (selectedCapacity / Number(form.numberPeople || 1)) * 100)}%` }}
+                      />
+                    </div>
+                    {selectedCapacity < Number(form.numberPeople || 1) && (
+                      <p className="mt-1.5 text-xs text-rose-600">Faltan {Number(form.numberPeople || 1) - selectedCapacity} personas por cubrir. Agrega más mesas.</p>
+                    )}
                   </div>
                 )}
 
@@ -544,6 +567,7 @@ export const ReservationView = () => {
                       const selected = form.tableId.includes(t._id)
                       const cap = Number(t.tableCapacity || 0)
                       const capacityLabel = cap === 1 ? '1 persona' : `${cap} personas`
+                      const needsCombining = cap < Number(form.numberPeople || 1)
                       return (
                         <button
                           key={t._id}
@@ -551,7 +575,7 @@ export const ReservationView = () => {
                           id={`rv-table-${t._id}`}
                           onClick={() => toggleTable(t._id)}
                           className={`flex flex-col gap-2 rounded-2xl border p-4 text-left transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md active:scale-95
-                          ${selected ? 'border-rose-500 bg-rose-50 shadow-sm' : 'border-slate-200 bg-white hover:border-rose-50'}`}
+                          ${selected ? 'border-rose-500 bg-rose-50 shadow-sm' : 'border-slate-200 bg-white hover:border-rose-200'}`}
                         >
                           <div className="flex items-center justify-between">
                             <p className="text-sm font-bold text-slate-900">{t.tableName || `Mesa ${t._id.slice(-4)}`}</p>
@@ -561,6 +585,9 @@ export const ReservationView = () => {
                             </span>
                           </div>
                           <p className="text-sm text-slate-600">Capacidad: {capacityLabel}</p>
+                          {needsCombining && !selected && (
+                            <p className="text-xs text-amber-600 font-medium">Combinar con otras mesas</p>
+                          )}
                           {selected && <p className="text-xs font-bold text-rose-700 transition-all">Seleccionada</p>}
                         </button>
                       )
@@ -644,13 +671,12 @@ export const ReservationView = () => {
 
               {loadingMy && (
                 <div className="flex flex-col items-center gap-3 py-10 text-slate-400">
-                  <span className="text-3xl animate-pulse">📋</span>
                   <p className="text-sm font-semibold">Cargando tus reservaciones…</p>
                 </div>
               )}
               {!loadingMy && myReservations.length === 0 && (
                 <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-rose-200 bg-rose-50/30 py-12">
-                  <span className="text-5xl">🍽️</span>
+
                   <p className="text-sm font-semibold text-slate-700">Aún no tienes planes</p>
                   <p className="text-xs text-slate-500 text-center px-4">Crea tu primera reserva y disfruta la experiencia.</p>
                 </div>

@@ -45,7 +45,7 @@ export const RestaurantOrders = () => {
       const { data } = await getOrders()
       setOrders(data?.orders || [])
     } catch (err) {
-      showError(getErrMsg(err, 'No se pudieron cargar las Ã³rdenes.'))
+      showError(getErrMsg(err, 'No se pudieron cargar las órdenes.'))
     } finally {
       setLoading(false)
     }
@@ -127,7 +127,7 @@ export const RestaurantOrders = () => {
         status: editStatus,
         items: editItems
       })
-      showSuccess('Orden y artÃ­culos actualizados exitosamente.')
+      showSuccess('Orden y artículos actualizados exitosamente.')
       setShowEditModal(false)
       setEditingOrder(null)
       loadOrders()
@@ -228,7 +228,7 @@ export const RestaurantOrders = () => {
     }
 
     if (createForm.items.length === 0) {
-      showError('Por favor agrega al menos un artÃ­culo a la orden.')
+      showError('Por favor agrega al menos un artículo a la orden.')
       return
     }
 
@@ -320,7 +320,7 @@ export const RestaurantOrders = () => {
         year: '2-digit'
       })
     } catch {
-      return 'Ã¢â‚¬â€'
+      return '—'
     }
   }
 

@@ -36,10 +36,12 @@ export const createOrder = async (req, res) => {
       const menuIds = normalizedItems.map(item => item.menuId)
       const menuItems = await Menu.find({ _id: { $in: menuIds } })
 
-      // Create a map for quick access to prices
+      // Create maps for quick access to prices and restaurant per menu
       const priceMap = {}
+      const menuRestaurantMap = {}
       menuItems.forEach(menu => {
         priceMap[menu._id.toString()] = menu.menuPrice
+        menuRestaurantMap[menu._id.toString()] = menu.restaurantId
       })
 
       itemsWithPrice = normalizedItems.map(item => {
@@ -49,7 +51,8 @@ export const createOrder = async (req, res) => {
         return {
           menuId: item.menuId,
           quantity: item.quantity,
-          price
+          price,
+          menuRestaurantId: menuRestaurantMap[item.menuId] || restaurantId
         }
       })
     }
@@ -74,7 +77,7 @@ export const createOrder = async (req, res) => {
     // decrement inventory before persisting the order
     try {
       for (const item of itemsWithPrice) {
-        await changeStock(item.menuId, restaurantId, -item.quantity);
+        await changeStock(item.menuId, item.menuRestaurantId, -item.quantity);
       }
     } catch (stockErr) {
       if (stockErr.message === 'Stock insuficiente') {

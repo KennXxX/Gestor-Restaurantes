@@ -336,7 +336,10 @@ export const Orders = () => {
           users={users}
           restaurants={restaurants}
           tables={tables}
-          menus={menus}
+          menus={form.restaurantId
+            ? menus.filter(m => (m.restaurantId?._id || m.restaurantId)?.toString() === form.restaurantId)
+            : []
+          }
           handleItemChange={handleItemChange}
           addItem={addItem}
           removeItem={removeItem}

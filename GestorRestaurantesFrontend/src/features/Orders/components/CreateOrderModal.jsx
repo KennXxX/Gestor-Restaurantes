@@ -53,7 +53,7 @@ export const CreateOrderModal = ({
               <select
                 name="restaurantId"
                 value={form.restaurantId}
-                onChange={(e) => setForm((prev) => ({ ...prev, restaurantId: e.target.value, tableId: '' }))}
+                onChange={(e) => setForm((prev) => ({ ...prev, restaurantId: e.target.value, tableId: '', items: [{ menuId: '', quantity: 1 }] }))}
                 className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100"
               >
                 <option value="">Selecciona uno</option>
@@ -119,12 +119,18 @@ export const CreateOrderModal = ({
 
           <div className="space-y-3 mt-2 border-t border-slate-100 pt-4">
             <p className="text-sm font-semibold text-slate-700">Items de la orden</p>
+            {!form.restaurantId && (
+              <p className="rounded-xl bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-700">
+                Selecciona un restaurante para ver los menús disponibles.
+              </p>
+            )}
             {form.items.map((item, index) => (
               <div key={`${index}-${item.menuId}`} className="grid grid-cols-[1fr_88px_40px] items-center gap-2">
                 <select
                   value={item.menuId}
                   onChange={(e) => handleItemChange(index, 'menuId', e.target.value)}
-                  className="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-emerald-400"
+                  disabled={!form.restaurantId}
+                  className="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <option value="">Selecciona menú</option>
                   {menus.map((menu) => (

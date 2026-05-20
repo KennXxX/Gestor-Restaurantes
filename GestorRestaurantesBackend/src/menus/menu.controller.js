@@ -40,6 +40,17 @@ export const getMenus = async (req, res) => {
     if (req.query.restaurantId) filter.restaurantId = req.query.restaurantId
     if (req.query.menuActive !== undefined) filter.menuActive = req.query.menuActive === 'true'
     if (req.query.createdBy) filter.createdBy = req.query.createdBy
+
+    // Restaurant admins can only see menus from their own restaurant
+    if (req.userRole === 'ADMIN_RESTAURANT' || req.userRole === 'ADMIN_RESTAURANTE') {
+      const { default: Restaurant } = await import('../restaurants/restaurant.model.js');
+      const myRestaurant = await Restaurant.findOne({ adminId: req.userId }).select('_id').lean();
+      if (!myRestaurant) {
+        return res.status(403).json({ success: false, message: 'No tienes un restaurante asignado' });
+      }
+      filter.restaurantId = myRestaurant._id;
+    }
+
     const menus = await Menu.find(filter);
 
     return res.json({

@@ -155,23 +155,6 @@ export const Reservations = () => {
     setSearchParams(nextParams, { replace: true })
   }, [searchParams, setSearchParams])
 
-  useEffect(() => {
-    const peopleCount = Number(form.numberPeople) || 1
-    setForm((prev) => {
-      const filteredTables = prev.tableId.filter((tableId) => {
-        const table = tables.find((entry) => entry._id === tableId)
-        if (!table) return true
-        return Number(table.tableCapacity || 0) >= peopleCount
-      })
-
-      if (filteredTables.length === prev.tableId.length) {
-        return prev
-      }
-
-      return { ...prev, tableId: filteredTables }
-    })
-  }, [form.numberPeople, tables])
-
   const resetForm = () => {
     setForm(emptyForm)
     setEditingReservation(null)
@@ -179,14 +162,6 @@ export const Reservations = () => {
   }
 
   const toggleTableSelection = (tableId) => {
-    const table = tables.find((entry) => entry._id === tableId)
-    const peopleCount = Number(form.numberPeople) || 1
-
-    if (table && Number(table.tableCapacity || 0) < peopleCount) {
-      showError(`La mesa ${table.tableNumber || table.tableName || tableId} no soporta ${peopleCount} personas.`)
-      return
-    }
-
     setForm((prev) => {
       const selected = prev.tableId.includes(tableId)
         ? prev.tableId.filter((id) => id !== tableId)

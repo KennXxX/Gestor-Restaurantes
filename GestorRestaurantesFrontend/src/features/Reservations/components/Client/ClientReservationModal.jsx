@@ -31,7 +31,7 @@ export const ClientReservationModal = ({
       <div className="w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-[24px] bg-white p-6 shadow-2xl">
         <div className="flex items-center justify-between mb-4 border-b border-slate-100 pb-4">
           <h2 className="font-display text-2xl font-semibold text-slate-900">
-            {editingId ? '✏️ Editar reserva' : '📝 Nueva reserva'}
+            {editingId ? 'Editar reserva' : 'Nueva reserva'}
           </h2>
           <button
             onClick={onClose}
@@ -44,7 +44,7 @@ export const ClientReservationModal = ({
         {/* Steps indicator */}
         <div className="mb-6 rounded-2xl bg-slate-50 p-4">
           <div className="flex items-center">
-            {[['🗓️', 'Detalles'], ['🪑', 'Mesa'], ['✅', 'Confirmar']].map(([icon, label], i) => (
+            {[['1', 'Detalles'], ['2', 'Mesa'], ['3', 'Confirmar']].map(([icon, label], i) => (
               <div key={label} className="flex flex-1 items-center last:flex-none">
                 <div className="flex flex-col items-center gap-1">
                   <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 text-lg transition-all
@@ -147,7 +147,7 @@ export const ClientReservationModal = ({
               <div>
                 <h2 className="font-display text-xl font-semibold text-slate-900">Elige tu mesa</h2>
                 <p className="mt-1 text-sm text-slate-500">
-                  Mesas con capacidad ≥ {form.numberPeople} personas en{' '}
+                  Selecciona mesas para cubrir <strong>{form.numberPeople} personas</strong> en{' '}
                   <strong>{selectedRestaurant?.restaurantName || 'el restaurante'}</strong>
                 </p>
               </div>
@@ -156,24 +156,49 @@ export const ClientReservationModal = ({
 
             {loadingTables && (
               <div className="flex flex-col items-center gap-3 py-10 text-slate-400">
-                <span className="text-4xl animate-pulse">🪑</span>
                 <p className="text-sm">Cargando mesas disponibles…</p>
               </div>
             )}
             {!loadingTables && !form.restaurantId && (
               <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-slate-200 bg-slate-50 py-10 text-slate-400">
-                <span className="text-4xl">🏠</span>
                 <p className="text-sm font-medium">Vuelve al paso anterior</p>
                 <p className="text-xs">Debes seleccionar un restaurante primero</p>
               </div>
             )}
             {!loadingTables && form.restaurantId && filteredTables.length === 0 && (
               <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-amber-200 bg-amber-50 py-10">
-                <span className="text-4xl">😕</span>
-                <p className="text-sm font-semibold text-amber-700">Sin mesas disponibles</p>
-                <p className="text-xs text-amber-600">No hay mesas para {form.numberPeople} personas. Reduce el número de personas e intenta de nuevo.</p>
+                <p className="text-sm font-semibold text-amber-700">Sin mesas registradas</p>
+                <p className="text-xs text-amber-600">Este restaurante aún no tiene mesas. Elige otro restaurante.</p>
               </div>
             )}
+
+            {!loadingTables && filteredTables.length > 0 && form.tableId.length > 0 && (() => {
+              const selectedCap = form.tableId.reduce((sum, id) => {
+                const t = tables.find(x => x._id === id)
+                return sum + Number(t?.tableCapacity || 0)
+              }, 0)
+              const needed = Number(form.numberPeople || 1)
+              const covered = selectedCap >= needed
+              return (
+                <div className="rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3">
+                  <div className="flex items-center justify-between text-sm mb-1.5">
+                    <span className="font-semibold text-sky-800">Capacidad cubierta</span>
+                    <span className={`font-bold ${covered ? 'text-emerald-700' : 'text-sky-700'}`}>
+                      {selectedCap} / {needed} personas
+                    </span>
+                  </div>
+                  <div className="h-2 w-full rounded-full bg-sky-200 overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-300 ${covered ? 'bg-emerald-500' : 'bg-sky-500'}`}
+                      style={{ width: `${Math.min(100, (selectedCap / needed) * 100)}%` }}
+                    />
+                  </div>
+                  {!covered && (
+                    <p className="mt-1.5 text-xs text-sky-600">Faltan {needed - selectedCap} personas por cubrir. Agrega más mesas.</p>
+                  )}
+                </div>
+              )
+            })()}
 
             {!loadingTables && filteredTables.length > 0 && (
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -181,6 +206,7 @@ export const ClientReservationModal = ({
                   const selected = form.tableId.includes(t._id)
                   const cap = Number(t.tableCapacity || 0)
                   const peopleIcons = '👤'.repeat(Math.min(cap, 6)) + (cap > 6 ? `+${cap - 6}` : '')
+                  const needsCombining = cap < Number(form.numberPeople || 1)
                   return (
                     <button
                       key={t._id}
@@ -191,15 +217,18 @@ export const ClientReservationModal = ({
                         ${selected ? 'border-sky-500 bg-sky-50 shadow-sm shadow-sky-100' : 'border-slate-200 bg-white hover:border-sky-300'}`}
                     >
                       <div className="flex items-center justify-between">
-                        <p className="text-sm font-bold text-slate-900">🪑 {t.tableName || `Mesa ${t._id.slice(-4)}`}</p>
+                        <p className="text-sm font-bold text-slate-900">{t.tableName || `Mesa ${t._id.slice(-4)}`}</p>
                         <span className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold
                           ${selected ? 'bg-sky-600 text-white' : 'bg-slate-100 text-slate-400'}`}>
-                          {selected ? '✓' : ''}
+                          {selected ? 'OK' : ''}
                         </span>
                       </div>
                       <p className="text-base leading-tight">{peopleIcons}</p>
                       <p className="text-xs font-medium text-slate-500">Capacidad: {cap} {cap === 1 ? 'persona' : 'personas'}</p>
-                      {selected && <p className="text-xs font-semibold text-sky-600">✔ Seleccionada</p>}
+                      {needsCombining && !selected && (
+                        <p className="text-xs text-amber-600 font-medium">Combinar con otras mesas</p>
+                      )}
+                      {selected && <p className="text-xs font-semibold text-sky-600">Seleccionada</p>}
                     </button>
                   )
                 })}
@@ -221,7 +250,6 @@ export const ClientReservationModal = ({
         {step === 3 && (
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <span className="text-3xl">✅</span>
               <div>
                 <h2 className="font-display text-xl font-semibold text-slate-900">¡Casi listo!</h2>
                 <p className="text-sm text-slate-500">Revisa los detalles y confirma tu reservación</p>
@@ -230,17 +258,17 @@ export const ClientReservationModal = ({
 
             <div className="rounded-2xl border border-sky-100 bg-gradient-to-br from-sky-50 to-white p-4 shadow-sm">
               {[
-                ['🏠', 'Restaurante', selectedRestaurant?.restaurantName || '—'],
-                ['📅', 'Entrada', new Date(form.startDate).toLocaleString('es-GT', { dateStyle: 'medium', timeStyle: 'short' })],
-                ['🕐', 'Salida', new Date(form.endDate).toLocaleString('es-GT', { dateStyle: 'medium', timeStyle: 'short' })],
-                ['👥', 'Personas', `${form.numberPeople} ${Number(form.numberPeople) === 1 ? 'persona' : 'personas'}`],
-                ['🎉', 'Tipo', form.typeReservation === 'PERSONAL' ? 'Personal' : 'Evento especial'],
-                ['🪑', 'Mesas', form.tableId.map((id) => { const t = tables.find((x) => x._id === id); return t ? t.tableName || `Mesa ${id.slice(-4)}` : id }).join(', ')],
-                ...(form.description ? [['📝', 'Nota', form.description]] : []),
-                ...(form.coupon ? [['🏷️', 'Cupón', form.coupon]] : []),
-              ].map(([icon, label, value]) => (
+                ['Restaurante', selectedRestaurant?.restaurantName || '—'],
+                ['Entrada', new Date(form.startDate).toLocaleString('es-GT', { dateStyle: 'medium', timeStyle: 'short' })],
+                ['Salida', new Date(form.endDate).toLocaleString('es-GT', { dateStyle: 'medium', timeStyle: 'short' })],
+                ['Personas', `${form.numberPeople} ${Number(form.numberPeople) === 1 ? 'persona' : 'personas'}`],
+                ['Tipo', form.typeReservation === 'PERSONAL' ? 'Personal' : 'Evento especial'],
+                ['Mesas', form.tableId.map((id) => { const t = tables.find((x) => x._id === id); return t ? t.tableName || `Mesa ${id.slice(-4)}` : id }).join(', ')],
+                ...(form.description ? [['Nota', form.description]] : []),
+                ...(form.coupon ? [['Cupón', form.coupon]] : []),
+              ].map(([label, value]) => (
                 <div key={label} className="flex items-start justify-between gap-4 border-b border-slate-100 py-2.5 last:border-0 text-sm">
-                  <span className="flex items-center gap-2 text-slate-500 shrink-0"><span>{icon}</span>{label}</span>
+                  <span className="text-slate-500 shrink-0">{label}</span>
                   <span className="text-right font-semibold text-slate-900">{value}</span>
                 </div>
               ))}
@@ -250,7 +278,7 @@ export const ClientReservationModal = ({
 
             {!conflict && !checking && (
               <div className="rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-2.5 text-sm text-emerald-700">
-                🟢 Todo listo. Al confirmar, recibirás tu reservación con estado <strong>Pendiente</strong>.
+                Todo listo. Al confirmar, recibirás tu reservación con estado <strong>Pendiente</strong>.
               </div>
             )}
 
@@ -264,7 +292,7 @@ export const ClientReservationModal = ({
                 onClick={handleSubmit}
                 className="rounded-xl bg-sky-600 px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-sky-200 hover:bg-sky-500 disabled:opacity-50 transition-all"
               >
-                {saving ? '⏳ Guardando…' : editingId ? '💾 Actualizar reserva' : '🎉 ¡Confirmar reserva!'}
+                {saving ? 'Guardando…' : editingId ? 'Actualizar reserva' : '¡Confirmar reserva!'}
               </button>
             </div>
           </div>
