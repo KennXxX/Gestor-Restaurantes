@@ -46,6 +46,11 @@ const menuSchema = new mongoose.Schema(
             required: [true, "restaurant Id is required"]
         },
 
+        createdBy: {
+            type: String,
+            default: null
+        },
+
     },
     {
         timestamps: true,
@@ -57,6 +62,7 @@ menuSchema.index({menuActive: 1});
 menuSchema.index({menuCategory: 1});
 menuSchema.index({menuActive: 1, menuCategory: 1});
 menuSchema.index({restaurantId: 1});
+menuSchema.index({createdBy: 1});
 menuSchema.index({menuActive: 1, restaurantId: 1});
 menuSchema.index({menuCategory: 1, restaurantId: 1});
 menuSchema.index({menuActive: 1, menuCategory: 1, restaurantId: 1});

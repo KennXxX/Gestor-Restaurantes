@@ -5,6 +5,29 @@ import { getInventories, createInventory, updateInventory } from '../../shared/a
 import { getActivePromotions } from '../../shared/api/promotions'
 import { showError, showSuccess } from '../../shared/utils/toast'
 import { FilterBar } from '../../shared/components/ui/FilterBar'
+import { useAuthStore } from '../auth/store/authStore'
+
+const CATEGORIES = [
+  { value: '', label: 'Todas' },
+  { value: 'ENTRADA', label: 'Entrada' },
+  { value: 'PLATO_FUERTE', label: 'Plato Fuerte' },
+  { value: 'POSTRE', label: 'Postre' },
+  { value: 'BEBIDA', label: 'Bebida' }
+]
+
+const CATEGORY_COLORS = {
+  ENTRADA: 'bg-amber-100 text-amber-700',
+  PLATO_FUERTE: 'bg-orange-100 text-orange-700',
+  POSTRE: 'bg-pink-100 text-pink-700',
+  BEBIDA: 'bg-sky-100 text-sky-700'
+}
+
+const CATEGORY_LABELS = {
+  ENTRADA: 'Entrada',
+  PLATO_FUERTE: 'Plato Fuerte',
+  POSTRE: 'Postre',
+  BEBIDA: 'Bebida'
+}
 
 const emptyForm = {
   menuName: '',
@@ -17,13 +40,6 @@ const emptyForm = {
   menuPhoto: null,
   stockQuantity: '0'
 }
-
-const CATEGORIES = [
-  { value: 'ENTRADA', label: 'Entrada' },
-  { value: 'PLATO_FUERTE', label: 'Plato Fuerte' },
-  { value: 'POSTRE', label: 'Postre' },
-  { value: 'BEBIDA', label: 'Bebida' }
-]
 
 const getErrorMessage = (error, fallback) => {
   const data = error?.response?.data
@@ -209,6 +225,8 @@ function MenuFormModal({ form, setForm, editing, saving, photoPreview, setPhotoP
 }
 
 export const Menus = () => {
+  const user = useAuthStore((state) => state.user)
+  const currentUserId = String(user?.Id || user?.id || user?._id || '')
   const [menus, setMenus] = useState([])
   const [inventories, setInventories] = useState([])
   const [restaurants, setRestaurants] = useState([])
@@ -252,7 +270,7 @@ export const Menus = () => {
     try {
       const [restRes, menusRes, invRes, promoRes] = await Promise.all([
         getRestaurants({ limit: 100 }),
-        getMenus().catch(() => ({ data: { menus: [] } })),
+        getMenus(currentUserId ? { createdBy: currentUserId } : {}).catch(() => ({ data: { menus: [] } })),
         getInventories().catch(() => ({ data: { inventories: [] } })),
         getActivePromotions().catch(() => ({ data: { promotions: [] } }))
       ])
@@ -267,7 +285,7 @@ export const Menus = () => {
     }
   }
 
-  useEffect(() => { loadData() }, [])
+  useEffect(() => { loadData() }, [currentUserId])
 
   useEffect(() => {
     return () => {

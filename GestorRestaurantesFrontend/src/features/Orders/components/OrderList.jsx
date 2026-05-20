@@ -12,7 +12,7 @@ export const OrderList = ({
     <div className="mt-6 space-y-3">
       {loading && <p className="py-6 text-center text-sm text-slate-500">Cargando...</p>}
       {!loading && error && <p className="py-6 text-center text-sm text-rose-500">{error}</p>}
-      {!loading && !error && orders.length === 0 && <p className="py-6 text-center text-sm text-slate-500">No hay órdenes para este restaurante.</p>}
+      {!loading && !error && orders.length === 0 && <p className="py-6 text-center text-sm text-slate-500">No hay órdenes registradas.</p>}
 
       {!loading && orders.map((order) => (
         <article

@@ -11,6 +11,7 @@ const getErrMsg = (err, fallback) =>
 
 export const RestaurantMenus = () => {
   const user = useAuthStore((state) => state.user)
+  const currentUserId = String(user?.Id || user?.id || user?._id || '')
   const [menus, setMenus] = useState([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
@@ -30,8 +31,15 @@ export const RestaurantMenus = () => {
     if (!user?.restaurantId) return
     try {
       setLoading(true)
-      const { data } = await getMenus({ restaurantId: user.restaurantId })
-      setMenus(data?.menus || [])
+      const { data } = await getMenus({
+        restaurantId: user.restaurantId,
+        ...(currentUserId && { createdBy: currentUserId })
+      })
+      const onlyOwnMenus = (data?.menus || []).filter((menu) => {
+        const menuRestaurantId = menu?.restaurantId?._id || menu?.restaurantId
+        return String(menuRestaurantId || '') === String(user.restaurantId)
+      })
+      setMenus(onlyOwnMenus)
     } catch (err) {
       showError(getErrMsg(err, 'No se pudieron cargar los platos del menú.'))
     } finally {
@@ -45,7 +53,7 @@ export const RestaurantMenus = () => {
     } else {
       setLoading(false)
     }
-  }, [user?.restaurantId])
+  }, [user?.restaurantId, currentUserId])
 
   const handleSubmitMenu = async (e) => {
     e.preventDefault()

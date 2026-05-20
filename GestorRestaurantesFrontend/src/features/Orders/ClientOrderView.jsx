@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom'
 import { getRestaurants } from '../../shared/api/restaurants'
 import { getMenus } from '../../shared/api/menus'
 import { getTables } from '../../shared/api/tables'
+import { getInventories } from '../../shared/api/inventory'
 import { createMyOrder, getMyOrders } from '../../shared/api/orders'
 import { showError, showSuccess } from '../../shared/utils/toast'
 
@@ -55,6 +56,13 @@ const getErrMsg = (err, fallback) =>
   err?.message ||
   fallback
 
+const resolveStock = (menu) => {
+  const candidates = [menu?.stock, menu?.stockQuantity, menu?.quantity, menu?.inventoryQuantity]
+  const found = candidates.find((value) => Number.isFinite(Number(value)))
+  if (found === undefined) return null
+  return Math.max(0, Number(found))
+}
+
 // ─── sub-components ───────────────────────────────────────────────────────────
 const MenuCard = ({ menu, qty, onAdd, onRemove }) => (
   <article className="flex flex-col rounded-2xl border border-slate-100 bg-white shadow-sm overflow-hidden hover:shadow-md transition-shadow">
@@ -72,6 +80,9 @@ const MenuCard = ({ menu, qty, onAdd, onRemove }) => (
       {menu.menuDescription && (
         <p className="mt-1 text-xs text-slate-500 leading-relaxed line-clamp-2">{menu.menuDescription}</p>
       )}
+      <p className="mt-1 text-xs font-semibold text-slate-700">
+        Stock: {resolveStock(menu) ?? '—'}
+      </p>
       <div className="mt-auto pt-3 flex items-center justify-between gap-2">
         <span className="text-base font-bold text-orange-700">Q{Number(menu.menuPrice || 0).toFixed(2)}</span>
         {qty === 0 ? (
@@ -79,8 +90,10 @@ const MenuCard = ({ menu, qty, onAdd, onRemove }) => (
             type="button"
             onClick={() => onAdd(menu)}
             className="rounded-xl bg-orange-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-orange-500 transition-colors"
+            disabled={resolveStock(menu) === 0}
+            title={resolveStock(menu) === 0 ? 'Sin stock disponible' : 'Agregar'}
           >
-            + Agregar
+            {resolveStock(menu) === 0 ? 'Sin stock' : '+ Agregar'}
           </button>
         ) : (
           <div className="flex items-center gap-1.5">
@@ -96,6 +109,8 @@ const MenuCard = ({ menu, qty, onAdd, onRemove }) => (
               type="button"
               onClick={() => onAdd(menu)}
               className="flex h-7 w-7 items-center justify-center rounded-lg bg-orange-600 text-white hover:bg-orange-500 transition-colors font-bold"
+              disabled={resolveStock(menu) !== null && qty >= resolveStock(menu)}
+              title={resolveStock(menu) !== null && qty >= resolveStock(menu) ? 'Stock máximo alcanzado' : 'Agregar más'}
             >
               +
             </button>
@@ -140,11 +155,13 @@ export const ClientOrderView = () => {
   const location = useLocation()
   const [restaurants, setRestaurants] = useState([])
   const [menus, setMenus] = useState([])
+  const [inventories, setInventories] = useState([])
   const [tables, setTables] = useState([])
   const [myOrders, setMyOrders] = useState([])
   const [loadingMenus, setLoadingMenus] = useState(false)
   const [loadingOrders, setLoadingOrders] = useState(true)
   const [saving, setSaving] = useState(false)
+  // Siempre mostrar el formulario de nuevo pedido por defecto
   const [activeTab, setActiveTab] = useState('NEW') // 'NEW' | 'HISTORY'
   const [activeCategory, setActiveCategory] = useState('ALL')
   const [restaurantId, setRestaurantId] = useState('')
@@ -182,8 +199,34 @@ export const ClientOrderView = () => {
     setLoadingMenus(true)
     setCart({})
     setActiveCategory('ALL')
-    getMenus({ restaurantId, menuActive: true })
-      .then(({ data }) => setMenus(data?.menus || []))
+    Promise.all([
+      getMenus({ restaurantId, menuActive: true }).catch(() => ({ data: { menus: [] } })),
+      getInventories({ restaurantId }).catch(() => ({ data: { inventories: [] } })),
+    ])
+      .then(([menusResp, inventoriesResp]) => {
+        const menusData = (menusResp?.data?.menus || []).filter((menu) => {
+          const menuRestaurantId = menu?.restaurantId?._id || menu?.restaurantId
+          const belongsToSelectedRestaurant = String(menuRestaurantId || '') === String(restaurantId)
+          const wasExplicitlyCreated = Boolean(menu?.createdBy)
+          return belongsToSelectedRestaurant && wasExplicitlyCreated
+        })
+        const inventoriesData = inventoriesResp?.data?.inventories || []
+        setInventories(inventoriesData)
+
+        const stockByMenuId = inventoriesData.reduce((acc, item) => {
+          const menuId = item?.menuId?._id || item?.menuId
+          if (!menuId) return acc
+          acc[String(menuId)] = Number(item?.quantity || 0)
+          return acc
+        }, {})
+
+        const menusWithStock = menusData.map((menu) => ({
+          ...menu,
+          stock: stockByMenuId[String(menu._id)] ?? resolveStock(menu),
+        }))
+
+        setMenus(menusWithStock)
+      })
       .catch(() => setMenus([]))
       .finally(() => setLoadingMenus(false))
   }, [restaurantId])
@@ -244,12 +287,17 @@ export const ClientOrderView = () => {
 
   // ── cart handlers ─────────────────────────────────────────────────────────
   const addToCart = (menu) => {
+    const stock = resolveStock(menu)
+    const currentQty = cart[menu._id]?.qty || 0
+    if (stock !== null && currentQty >= stock) return
+
     setCart(prev => ({
       ...prev,
       [menu._id]: {
         _id: menu._id,
         menuName: menu.menuName,
         menuPrice: menu.menuPrice,
+        stock,
         qty: (prev[menu._id]?.qty || 0) + 1,
       }
     }))

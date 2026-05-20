@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom'
+﻿import { Routes, Route } from 'react-router-dom'
 import { AuthPage } from '../../features/auth/pages/AuthPage'
 import { VerifyEmailPage } from '../../features/auth/pages/VerifyEmailPage'
 import { ResetPasswordPage } from '../../features/auth/pages/ResetPasswordPage'
@@ -111,6 +111,8 @@ export const AppRoutes = () => {
         <Route path="historial" element={<ClientHistory />} />
         <Route path="menu" element={<ClientMenu />} />
         <Route path="orders" element={<ClientOrders />} />
+        <Route path="menu" element={<ClientMenu />} />
+        <Route path="history" element={<ClientHistory />} />
         <Route path="invoices" element={<ClientInvoices />} />
         <Route path="reviews" element={<ClientReviews />} />
         <Route path="profile" element={<UserProfile user={user} />} />
