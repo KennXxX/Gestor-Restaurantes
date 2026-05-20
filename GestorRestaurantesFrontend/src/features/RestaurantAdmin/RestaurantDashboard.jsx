@@ -128,7 +128,7 @@ export const RestaurantDashboard = () => {
             {restaurantName}
           </h1>
           <p className="text-sm text-slate-500 max-w-[580px] leading-relaxed">
-            Resumen y métricas de desempeño de tu establecimiento en tiempo real.
+            Resumen y métricas de desempeño de tu establecimiento, actualizados periódicamente.
           </p>
         </div>
       </div>

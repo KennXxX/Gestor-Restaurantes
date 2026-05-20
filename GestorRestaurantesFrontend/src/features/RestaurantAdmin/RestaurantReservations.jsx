@@ -183,7 +183,7 @@ export const RestaurantReservations = () => {
             Control de Reservaciones
           </h1>
           <p className="text-sm text-slate-500 max-w-[580px] leading-relaxed">
-            Supervisa las mesas asignadas, horarios de llegada y solicitudes de tus clientes en tiempo real.
+            Supervisa las mesas asignadas, horarios de llegada y solicitudes de tus clientes.
           </p>
         </div>
 

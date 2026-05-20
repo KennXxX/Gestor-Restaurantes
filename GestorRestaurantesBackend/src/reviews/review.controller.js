@@ -28,7 +28,8 @@ export const createReview = async (req, res, next) => {
       menuId: menuId || null,
       rating: Number(rating),
       comment: comment || null,
-      userName: userName || 'Anónimo'
+      userName: userName || 'Anónimo',
+      userId: req.userId || null
     })
 
     await review.save()
@@ -93,11 +94,18 @@ export const deleteReview = async (req, res) => {
       return res.status(400).json({ success: false, message: 'ID de review inválido' })
     }
 
-    const deleted = await Review.findByIdAndDelete(id)
+    const deleted = await Review.findById(id)
     if (!deleted) {
       return res.status(404).json({ success: false, message: 'Review no encontrada' })
     }
 
+    const isOwner = deleted.userId && String(deleted.userId) === String(req.userId)
+    const isSuperAdmin = req.userRole === 'ADMIN_ROLE'
+    if (!isOwner && !isSuperAdmin) {
+      return res.status(403).json({ success: false, message: 'No tienes permiso para eliminar esta reseña' })
+    }
+
+    await deleted.deleteOne()
     return res.status(200).json({ success: true, message: 'Reseña eliminada exitosamente' })
   } catch (err) {
     console.error(err)

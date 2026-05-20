@@ -143,7 +143,7 @@ export const RestaurantInventory = () => {
             Gestión de Inventario
           </h1>
           <p className="text-sm text-slate-500 leading-relaxed">
-            Monitorea y ajusta la disponibilidad de stock para cada plato del menú en tiempo real.
+            Monitorea y ajusta la disponibilidad de stock para cada plato del menú.
           </p>
         </div>
 

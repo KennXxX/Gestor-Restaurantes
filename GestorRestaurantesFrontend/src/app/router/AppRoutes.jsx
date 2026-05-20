@@ -62,7 +62,6 @@ export const AppRoutes = () => {
         }
       >
         <Route index element={<AdminDashboardHome />} />
-        <Route index element={<DashboardHome />} />
         <Route path="restaurantes" element={<Restaurantes />} />
         <Route path="mesas" element={<Mesas />} />
         <Route path="inventory" element={<Inventory />} />
@@ -109,7 +108,7 @@ export const AppRoutes = () => {
       >
         <Route index element={<ClientHome />} />
         <Route path="reservations" element={<ClientReservations />} />
-        <Route path="orders" element={<ClientHistory />} />
+        <Route path="historial" element={<ClientHistory />} />
         <Route path="menu" element={<ClientMenu />} />
         <Route path="orders" element={<ClientOrders />} />
         <Route path="invoices" element={<ClientInvoices />} />

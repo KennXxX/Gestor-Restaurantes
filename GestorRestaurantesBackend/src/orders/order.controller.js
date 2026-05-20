@@ -173,6 +173,16 @@ export const getOrders = async (req, res) => {
     if (orderType) filter.orderType = orderType
     if (userId) filter.userId = userId
 
+    // Restaurant admins can only see orders from their own restaurant
+    if (req.userRole === 'ADMIN_RESTAURANT' || req.userRole === 'ADMIN_RESTAURANTE') {
+      const { default: Restaurant } = await import('../restaurants/restaurant.model.js')
+      const myRestaurant = await Restaurant.findOne({ adminId: req.userId }).select('_id').lean()
+      if (!myRestaurant) {
+        return res.status(403).json({ success: false, message: 'No tienes un restaurante asignado' })
+      }
+      filter.restaurantId = myRestaurant._id
+    }
+
     const orders = await Order.find(filter)
       .populate('items.menuId')
       .populate('tableId')

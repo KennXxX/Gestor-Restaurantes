@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { getRestaurants } from '../../shared/api/restaurants'
 import { getMenus } from '../../shared/api/menus'
 import { getTables } from '../../shared/api/tables'
@@ -136,6 +137,7 @@ const CartItem = ({ item, onAdd, onRemove }) => (
 
 // ─── main component ───────────────────────────────────────────────────────────
 export const ClientOrderView = () => {
+  const location = useLocation()
   const [restaurants, setRestaurants] = useState([])
   const [menus, setMenus] = useState([])
   const [tables, setTables] = useState([])
@@ -150,6 +152,18 @@ export const ClientOrderView = () => {
   const [tableId, setTableId] = useState('')
   const [deliveryAddress, setDeliveryAddress] = useState('')
   const [cart, setCart] = useState({}) // { menuId: { qty, menuName, menuPrice, _id } }
+
+  // ── consume reorder state from history ────────────────────────────────────
+  useEffect(() => {
+    const { reorderCart, reorderRestaurantId } = location.state || {}
+    if (reorderCart && Object.keys(reorderCart).length > 0) {
+      setCart(reorderCart)
+      setActiveTab('NEW')
+      if (reorderRestaurantId) setRestaurantId(reorderRestaurantId)
+      window.history.replaceState({}, '') // clear state to avoid re-applying on refresh
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // ── load restaurants ──────────────────────────────────────────────────────
   useEffect(() => {
@@ -193,7 +207,11 @@ export const ClientOrderView = () => {
     finally { setLoadingOrders(false) }
   }, [])
 
-  useEffect(() => { loadMyOrders() }, [loadMyOrders])
+  useEffect(() => {
+    loadMyOrders()
+    const interval = setInterval(loadMyOrders, 5000)
+    return () => clearInterval(interval)
+  }, [loadMyOrders])
 
   // ── derived ───────────────────────────────────────────────────────────────
   const categories = useMemo(() => {

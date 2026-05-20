@@ -144,7 +144,7 @@ export const Facturas = () => {
   const invoiceHighlights = useMemo(() => {
     return [
       `Facturas reales cargadas: ${invoiceRows.length}`,
-      'Vista enlazada al endpoint /invoices para reflejar cambios en tiempo real.',
+      'Vista enlazada al endpoint /invoices para reflejar los últimos datos cargados.',,
     ]
   }, [invoiceRows.length])
 
@@ -178,7 +178,7 @@ export const Facturas = () => {
           <div className="flex flex-col gap-3 border-b border-slate-100 pb-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-xl font-bold text-slate-900">Listado reciente</h2>
-              <p className="text-sm text-slate-500">Datos en tiempo real desde el backend de facturacion.</p>
+              <p className="text-sm text-slate-500">Datos actualizados desde el backend de facturacion.</p>
             </div>
             <div className="flex flex-wrap gap-2 text-sm">
               <span className="rounded-full bg-slate-100 px-3 py-1 font-medium text-slate-700">Hoy</span>

@@ -12,7 +12,7 @@ import { uploadFieldImage } from '../../middlewares/file-uploader.js'; // needed
 const router = Router();
 
 router.post('/', validateJWT, isAdmin, uploadFieldImage.none(), validateCreateInventory, createInventory);
-router.get('/', getInventories);
+router.get('/', validateJWT, getInventories);
 router.get('/:id', validateInventoryId, getInventoryById);
 router.put('/:id', validateJWT, isAdmin, validateInventoryId, validateUpdateInventory, updateInventory);
 router.delete('/:id', validateJWT, isAdmin, validateInventoryId, deleteInventory);

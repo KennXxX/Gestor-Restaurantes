@@ -27,6 +27,10 @@ const reviewSchema = new mongoose.Schema(
     userName: {
       type: String,
       default: 'Anónimo'
+    },
+    userId: {
+      type: String,
+      default: null
     }
   },
   {

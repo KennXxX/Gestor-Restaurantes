@@ -5,6 +5,7 @@ import { getMenus } from '../../shared/api/menus'
 import { getMyOrders } from '../../shared/api/orders'
 import {
   createReview,
+  deleteReview,
   getReviewsByRestaurant,
   getReviewsByMenu,
 } from '../../shared/api/reviews'
@@ -51,7 +52,8 @@ const StarRating = ({ value, onChange, readonly = false, size = 'md' }) => {
 }
 
 // â”€â”€â”€ ReviewCard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-const ReviewCard = ({ review }) => {
+const ReviewCard = ({ review, currentUserId, onDelete }) => {
+  const isOwner = currentUserId && review.userId && String(review.userId) === String(currentUserId)
   const date = review.createdAt
     ? new Date(review.createdAt).toLocaleDateString('es-GT', {
         year: 'numeric', month: 'short', day: 'numeric',
@@ -68,11 +70,23 @@ const ReviewCard = ({ review }) => {
           {initials}
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center justify-between gap-2">
             <p className="text-sm font-semibold text-slate-900 truncate">
               {review.userName ?? 'Anónimo'}
             </p>
-            <span className="shrink-0 text-xs text-slate-400">{date}</span>
+            <div className="flex items-center gap-2">
+              <span className="shrink-0 text-xs text-slate-400">{date}</span>
+              {isOwner && (
+                <button
+                  type="button"
+                  onClick={() => onDelete(review._id)}
+                  className="shrink-0 text-xs text-rose-500 hover:text-rose-700 font-semibold transition-colors"
+                  title="Eliminar mi reseña"
+                >
+                  ×
+                </button>
+              )}
+            </div>
           </div>
           <div className="mt-0.5">
             <StarRating value={review.rating} readonly size="sm" />
@@ -183,6 +197,22 @@ export const ClientReviews = () => {
       showError(getErrMsg(err, 'No se pudo enviar la reseña.'))
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  const handleDeleteReview = async (reviewId) => {
+    try {
+      await deleteReview(reviewId)
+      showSuccess('Reseña eliminada.')
+      setReviewsMap((prev) => {
+        const next = { ...prev }
+        if (next[selectedId]) {
+          next[selectedId] = next[selectedId].filter((r) => r._id !== reviewId)
+        }
+        return next
+      })
+    } catch (err) {
+      showError(getErrMsg(err, 'No se pudo eliminar la reseña.'))
     }
   }
 
@@ -450,7 +480,7 @@ export const ClientReviews = () => {
                         </div>
                       ) : filteredReviews.length > 0 ? (
                         <div className="flex flex-col gap-2 max-h-56 overflow-y-auto pr-1">
-                          {filteredReviews.map((r) => <ReviewCard key={r._id} review={r} />)}
+                          {filteredReviews.map((r) => <ReviewCard key={r._id} review={r} currentUserId={user?.uid} onDelete={handleDeleteReview} />)}
                         </div>
                       ) : (
                         <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-amber-100 py-6 text-center">

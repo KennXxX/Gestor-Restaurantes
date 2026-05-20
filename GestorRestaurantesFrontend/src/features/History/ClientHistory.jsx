@@ -32,17 +32,22 @@ export const ClientHistory = () => {
   }, [])
 
   const handleRebook = (restaurantId) => {
-    // Si quisieras que el click en "Volver a reservar" abra el modal directamente
-    // tendrías que pasar una prop de callback desde ReservationView.
-    // Por ahora redirigimos forzando a recargar la página para que el modal se abra.
     navigate('/client/reservations', { state: { prefillRestaurantId: restaurantId } })
-    window.location.reload(); 
   }
 
   const handleReorder = (order) => {
-    // Navigate to menu and maybe cart (mock reorder)
-    navigate('/client/menu')
-    // In a real app, we would add the order items to the cart here
+    const reorderItems = (order.items || []).reduce((acc, item) => {
+      const id = item.menuId?._id || item.menuId
+      if (!id) return acc
+      acc[id] = {
+        _id: id,
+        menuName: item.menuId?.menuName || item.menuName || 'Plato',
+        menuPrice: item.price || item.menuId?.menuPrice || 0,
+        qty: item.quantity || 1,
+      }
+      return acc
+    }, {})
+    navigate('/client/orders', { state: { reorderCart: reorderItems, reorderRestaurantId: order.restaurantId?._id || order.restaurantId } })
   }
 
   const filteredReservations = activeTab === 'ORDERS' ? [] : reservations

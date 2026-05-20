@@ -134,7 +134,7 @@ export const Estadisticas = () => {
             </p>
             <h1 className="mt-4 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">Resumen visual del rendimiento</h1>
             <p className="mt-3 text-sm text-slate-600 sm:text-base">
-              Datos en vivo del endpoint de estadisticas administrativas: demanda, ingresos, platos lideres y horas pico.
+              Datos del endpoint de estadisticas administrativas: demanda, ingresos, platos lideres y horas pico.
             </p>
           </div>
 

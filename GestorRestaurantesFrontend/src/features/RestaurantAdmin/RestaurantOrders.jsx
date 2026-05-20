@@ -51,6 +51,8 @@ export const RestaurantOrders = () => {
     if (user?.restaurantId) {
       loadOrders()
       loadAvailableMenus()
+      const interval = setInterval(loadOrders, 5000)
+      return () => clearInterval(interval)
     } else {
       setLoading(false)
     }
@@ -210,7 +212,7 @@ export const RestaurantOrders = () => {
             Gestión de Órdenes
           </h1>
           <p className="text-sm text-slate-500 leading-relaxed">
-            Monitorea los platos solicitados, controla el progreso de preparación y confirma entregas en tiempo real.
+            Monitorea los platos solicitados, controla el progreso de preparación y confirma entregas. Se actualiza automáticamente cada 5 segundos.
           </p>
         </div>
 

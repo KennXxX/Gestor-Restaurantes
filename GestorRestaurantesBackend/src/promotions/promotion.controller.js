@@ -19,7 +19,7 @@ export const createPromotion = async (req, res) => {
       discountPercentage: discountPercentage ? Number(discountPercentage) : 0,
       startDate: startDate ? new Date(startDate) : null,
       endDate: endDate ? new Date(endDate) : null,
-      isApproved: true // Auto-approved to allow immediate local testing of coupons
+      isApproved: false
     })
 
     await promo.save()
