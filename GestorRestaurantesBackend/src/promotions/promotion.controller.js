@@ -91,3 +91,45 @@ export const approvePromotion = async (req, res) => {
     return res.status(500).json({ success: false, message: 'Error aprobando promoción', error: err.message })
   }
 }
+
+export const updatePromotion = async (req, res) => {
+  try {
+    const { id } = req.params
+    const updateData = req.body
+
+    if (!mongoose.Types.ObjectId.isValid(String(id))) {
+      return res.status(400).json({ success: false, message: 'ID de promoción inválido' })
+    }
+
+    const promotion = await Promotion.findByIdAndUpdate(id, updateData, { new: true })
+
+    if (!promotion) {
+      return res.status(404).json({ success: false, message: 'Promoción no encontrada' })
+    }
+
+    return res.status(200).json({ success: true, message: 'Promoción actualizada con éxito', promotion })
+  } catch (err) {
+    console.error(err)
+    return res.status(500).json({ success: false, message: 'Error actualizando promoción', error: err.message })
+  }
+}
+
+export const deletePromotion = async (req, res) => {
+  try {
+    const { id } = req.params
+    if (!mongoose.Types.ObjectId.isValid(String(id))) {
+      return res.status(400).json({ success: false, message: 'ID de promoción inválido' })
+    }
+
+    const promotion = await Promotion.findByIdAndDelete(id)
+
+    if (!promotion) {
+      return res.status(404).json({ success: false, message: 'Promoción no encontrada' })
+    }
+
+    return res.status(200).json({ success: true, message: 'Promoción eliminada con éxito' })
+  } catch (err) {
+    console.error(err)
+    return res.status(500).json({ success: false, message: 'Error eliminando promoción', error: err.message })
+  }
+}

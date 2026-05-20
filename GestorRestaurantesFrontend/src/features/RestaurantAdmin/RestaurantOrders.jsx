@@ -1,8 +1,11 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { useAuthStore } from '../auth/store/authStore'
-import { getOrdersByRestaurant, updateOrderStatus, updateOrderDetails } from '../../shared/api/orders'
+import { getOrdersByRestaurant, updateOrderStatus, updateOrderDetails, createOrder } from '../../shared/api/orders'
 import { getMenus } from '../../shared/api/menus'
+import { getUsersByRole } from '../../shared/api/users'
+import { getTables } from '../../shared/api/tables'
 import { showError, showSuccess } from '../../shared/utils/toast'
+import { CreateOrderModal } from './components/CreateOrderModal'
 
 const getErrMsg = (err, fallback) =>
   err?.response?.data?.errors?.[0]?.message ||
@@ -23,6 +26,17 @@ export const RestaurantOrders = () => {
   const [editStatus, setEditStatus] = useState('EN_PREPARACION')
   const [availableMenus, setAvailableMenus] = useState([])
   const [editItems, setEditItems] = useState([])
+  const [showCreateModal, setShowCreateModal] = useState(false)
+  const [createForm, setCreateForm] = useState({
+    clienteId: '',
+    tableId: '',
+    orderType: 'EN_RESTAURANTE',
+    deliveryAddress: '',
+    items: []
+  })
+  const [creatingOrder, setCreatingOrder] = useState(false)
+  const [availableClients, setAvailableClients] = useState([])
+  const [availableTables, setAvailableTables] = useState([])
 
   const loadOrders = async () => {
     if (!user?.restaurantId) return
@@ -31,7 +45,7 @@ export const RestaurantOrders = () => {
       const { data } = await getOrdersByRestaurant(user.restaurantId)
       setOrders(data?.orders || [])
     } catch (err) {
-      showError(getErrMsg(err, 'No se pudieron cargar las órdenes.'))
+      showError(getErrMsg(err, 'No se pudieron cargar las Ã³rdenes.'))
     } finally {
       setLoading(false)
     }
@@ -47,11 +61,32 @@ export const RestaurantOrders = () => {
     }
   }
 
+  const loadAvailableClients = async () => {
+    try {
+      const { data } = await getUsersByRole('USER_ROLE')
+      setAvailableClients(Array.isArray(data) ? data : [])
+    } catch (err) {
+      console.error('Error fetching clients:', err)
+    }
+  }
+
+  const loadAvailableTables = async () => {
+    if (!user?.restaurantId) return
+    try {
+      const { data } = await getTables({ restaurantId: user.restaurantId, tableActive: true })
+      setAvailableTables(data?.data || [])
+    } catch (err) {
+      console.error('Error fetching tables:', err)
+    }
+  }
+
   useEffect(() => {
     if (user?.restaurantId) {
       loadOrders()
       loadAvailableMenus()
       const interval = setInterval(loadOrders, 5000)
+      loadAvailableClients()
+      loadAvailableTables()
       return () => clearInterval(interval)
     } else {
       setLoading(false)
@@ -92,7 +127,7 @@ export const RestaurantOrders = () => {
         status: editStatus,
         items: editItems
       })
-      showSuccess('Orden y artículos actualizados exitosamente.')
+      showSuccess('Orden y artÃ­culos actualizados exitosamente.')
       setShowEditModal(false)
       setEditingOrder(null)
       loadOrders()
@@ -132,6 +167,103 @@ export const RestaurantOrders = () => {
       menuName: foundMenu.menuName,
       price: foundMenu.menuPrice
     }])
+  }
+
+  const handleAddCreateItem = (menuId) => {
+    if (!menuId) return
+    const exists = createForm.items.find(item => item.menuId === menuId)
+    if (exists) {
+      setCreateForm(prev => ({
+        ...prev,
+        items: prev.items.map(item => 
+          item.menuId === menuId 
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        )
+      }))
+      return
+    }
+    const foundMenu = availableMenus.find(m => m._id === menuId)
+    if (!foundMenu) return
+    setCreateForm(prev => ({
+      ...prev,
+      items: [...prev.items, {
+        menuId: foundMenu._id,
+        quantity: 1,
+        menuName: foundMenu.menuName,
+        price: foundMenu.menuPrice
+      }]
+    }))
+  }
+
+  const handleRemoveCreateItem = (menuId) => {
+    setCreateForm(prev => ({
+      ...prev,
+      items: prev.items.filter(item => item.menuId !== menuId)
+    }))
+  }
+
+  const handleCreateQuantityChange = (menuId, amount) => {
+    setCreateForm(prev => ({
+      ...prev,
+      items: prev.items.map(item => {
+        if (item.menuId === menuId) {
+          const newQty = Math.max(1, item.quantity + amount)
+          return { ...item, quantity: newQty }
+        }
+        return item
+      })
+    }))
+  }
+
+  const handleCreateNewOrder = async () => {
+    if (!user?.restaurantId) {
+      showError('No se pudo identificar el restaurante.')
+      return
+    }
+
+    if (!createForm.clienteId) {
+      showError('Por favor selecciona un cliente.')
+      return
+    }
+
+    if (createForm.items.length === 0) {
+      showError('Por favor agrega al menos un artÃ­culo a la orden.')
+      return
+    }
+
+    setCreatingOrder(true)
+    try {
+      const payload = {
+        restaurantId: user.restaurantId,
+        userId: createForm.clienteId,
+        items: createForm.items.map(item => ({
+          menuId: item.menuId,
+          quantity: item.quantity,
+          price: item.price
+        })),
+        tableId: createForm.orderType === 'EN_RESTAURANTE' ? (createForm.tableId || null) : null,
+        orderType: createForm.orderType,
+        deliveryAddress: createForm.orderType === 'A_DOMICILIO' ? createForm.deliveryAddress : null,
+        status: 'EN_PREPARACION'
+      }
+
+      await createOrder(payload)
+      showSuccess('Orden creada exitosamente.')
+      setShowCreateModal(false)
+      setCreateForm({
+        clienteId: '',
+        tableId: '',
+        orderType: 'EN_RESTAURANTE',
+        deliveryAddress: '',
+        items: []
+      })
+      loadOrders()
+    } catch (err) {
+      showError(getErrMsg(err, 'No se pudo crear la orden.'))
+    } finally {
+      setCreatingOrder(false)
+    }
   }
 
   const filteredOrders = orders.filter((o) => {
@@ -183,7 +315,7 @@ export const RestaurantOrders = () => {
         year: '2-digit'
       })
     } catch {
-      return '—'
+      return 'â€”'
     }
   }
 
@@ -196,7 +328,7 @@ export const RestaurantOrders = () => {
         hour12: true
       })
     } catch {
-      return '—'
+      return 'â€”'
     }
   }
 
@@ -206,19 +338,19 @@ export const RestaurantOrders = () => {
       <div className="rounded-[24px] border border-emerald-100 bg-gradient-to-r from-emerald-50 via-emerald-50/60 to-emerald-100/30 p-6 sm:p-8 flex flex-col xl:flex-row justify-between gap-6 overflow-hidden relative shadow-sm">
         <div className="space-y-3 z-10 max-w-[450px]">
           <span className="inline-flex rounded-full bg-emerald-100 border border-emerald-200/50 px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider text-emerald-800">
-            Órdenes
+            Ã“rdenes
           </span>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-            Gestión de Órdenes
+            GestiÃ³n de Ã“rdenes
           </h1>
           <p className="text-sm text-slate-500 leading-relaxed">
-            Monitorea los platos solicitados, controla el progreso de preparación y confirma entregas. Se actualiza automáticamente cada 5 segundos.
+            Monitorea los platos solicitados, controla el progreso de preparaciÃ³n y confirma entregas. Se actualiza automÃ¡ticamente cada 5 segundos.
           </p>
         </div>
 
         {/* Stats Cards Row inside banner */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 z-10 xl:self-center w-full xl:w-auto">
-          {/* Card 1: Total órdenes */}
+          {/* Card 1: Total Ã³rdenes */}
           <div className="bg-white/85 border border-white rounded-2xl p-3.5 flex items-center gap-3 shadow-sm min-w-[125px]">
             <div className="rounded-xl bg-emerald-50 p-2.5 text-emerald-600 shrink-0">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -230,7 +362,7 @@ export const RestaurantOrders = () => {
             </div>
             <div>
               <span className="text-lg font-black text-slate-800 block leading-none">{totalOrdersCount}</span>
-              <span className="text-[10px] font-extrabold text-slate-700 block mt-0.5">Total órdenes</span>
+              <span className="text-[10px] font-extrabold text-slate-700 block mt-0.5">Total Ã³rdenes</span>
               <span className="text-[8px] font-extrabold text-slate-400 block uppercase leading-none">hoy</span>
             </div>
           </div>
@@ -246,7 +378,7 @@ export const RestaurantOrders = () => {
             <div>
               <span className="text-lg font-black text-slate-800 block leading-none">{pendingOrdersCount}</span>
               <span className="text-[10px] font-extrabold text-slate-700 block mt-0.5">Pendientes</span>
-              <span className="text-[8px] font-extrabold text-slate-400 block uppercase leading-none">en preparación</span>
+              <span className="text-[8px] font-extrabold text-slate-400 block uppercase leading-none">en preparaciÃ³n</span>
             </div>
           </div>
 
@@ -381,8 +513,8 @@ export const RestaurantOrders = () => {
               onChange={(e) => setSortBy(e.target.value)}
               className="appearance-none w-full rounded-2xl border border-slate-200 bg-white py-2.5 pl-4 pr-10 text-xs font-bold text-slate-600 hover:border-slate-300 focus:outline-none shadow-sm transition"
             >
-              <option value="recent">Más recientes</option>
-              <option value="oldest">Más antiguas</option>
+              <option value="recent">MÃ¡s recientes</option>
+              <option value="oldest">MÃ¡s antiguas</option>
             </select>
             <span className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -390,19 +522,31 @@ export const RestaurantOrders = () => {
               </svg>
             </span>
           </div>
+
+          {/* Create Order Button */}
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="w-full sm:w-auto rounded-2xl bg-emerald-600 hover:bg-emerald-700 px-4 py-2.5 text-xs font-bold text-white transition shadow-sm hover:shadow-md active:scale-[0.98] flex items-center justify-center gap-2 border border-emerald-600"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            <span>Nueva Orden</span>
+          </button>
         </div>
       </div>
 
       {/* Orders List */}
       {loading ? (
-        <div className="text-center text-slate-500 py-16 font-medium">Cargando catálogo de órdenes...</div>
+        <div className="text-center text-slate-500 py-16 font-medium">Cargando catÃ¡logo de Ã³rdenes...</div>
       ) : filteredOrders.length === 0 ? (
         <div className="rounded-[24px] border border-dashed border-slate-200 bg-slate-50/50 p-16 text-center shadow-inner">
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="text-slate-300 mx-auto mb-4">
             <polyline points="22 12 16 12 14 15 10 15 8 12 2 12" />
             <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
           </svg>
-          <p className="text-slate-500 font-medium">No hay órdenes registradas en este estado</p>
+          <p className="text-slate-500 font-medium">No hay Ã³rdenes registradas en este estado</p>
         </div>
       ) : (
         <div className="space-y-6">
@@ -416,7 +560,7 @@ export const RestaurantOrders = () => {
                 <div className="flex items-center gap-3">
                   {/* Table/Order square grey box */}
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 font-black text-slate-800 text-sm border border-slate-200 shadow-sm">
-                    {order.tableNumber || 'O'}
+                    {order.tableId?.tableName || 'O'}
                   </div>
                   <div>
                     <div className="flex items-center gap-2.5 flex-wrap">
@@ -573,7 +717,7 @@ export const RestaurantOrders = () => {
         </div>
       )}
 
-      {/* Modal de Edición de Orden */}
+      {/* Modal de EdiciÃ³n de Orden */}
       {showEditModal && editingOrder && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/20 backdrop-blur-sm">
           <div className="rounded-2xl border border-slate-100 bg-white shadow-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
@@ -590,20 +734,20 @@ export const RestaurantOrders = () => {
                   onChange={(e) => setEditStatus(e.target.value)}
                   className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition"
                 >
-                  <option value="EN_PREPARACION">Pendiente (En Preparación)</option>
+                  <option value="EN_PREPARACION">Pendiente (En PreparaciÃ³n)</option>
                   <option value="LISTO">Listo (Preparado)</option>
                   <option value="ENTREGADO">Completado (Entregado)</option>
                   <option value="CANCELADO">Cancelado</option>
                 </select>
               </div>
 
-              {/* Artículos de la Orden */}
+              {/* ArtÃ­culos de la Orden */}
               <div className="pt-2">
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Artículos en la Orden</label>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">ArtÃ­culos en la Orden</label>
                 
                 {editItems.length === 0 ? (
                   <div className="text-center py-6 border border-dashed border-slate-200 rounded-xl bg-slate-50/50 text-xs font-semibold text-slate-400">
-                    No hay artículos en la orden. Agrega uno abajo.
+                    No hay artÃ­culos en la orden. Agrega uno abajo.
                   </div>
                 ) : (
                   <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
@@ -614,7 +758,7 @@ export const RestaurantOrders = () => {
                           <span className="block text-[10px] text-slate-400 font-bold">Q{Number(item.price).toFixed(2)} c/u</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          {/* Botón menos */}
+                          {/* BotÃ³n menos */}
                           <button
                             type="button"
                             onClick={() => handleQuantityChange(item.menuId, -1)}
@@ -623,7 +767,7 @@ export const RestaurantOrders = () => {
                             -
                           </button>
                           <span className="text-xs font-extrabold text-slate-700 min-w-[20px] text-center">{item.quantity}</span>
-                          {/* Botón más */}
+                          {/* BotÃ³n mÃ¡s */}
                           <button
                             type="button"
                             onClick={() => handleQuantityChange(item.menuId, 1)}
@@ -631,7 +775,7 @@ export const RestaurantOrders = () => {
                           >
                             +
                           </button>
-                          {/* Botón eliminar */}
+                          {/* BotÃ³n eliminar */}
                           <button
                             type="button"
                             onClick={() => handleRemoveItem(item.menuId)}
@@ -651,7 +795,7 @@ export const RestaurantOrders = () => {
 
               {/* Agregar nuevo plato */}
               <div className="pt-2 border-t border-slate-100">
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Agregar Artículo</label>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Agregar ArtÃ­culo</label>
                 <div className="flex gap-2">
                   <select
                     id="add-item-select"
@@ -713,6 +857,22 @@ export const RestaurantOrders = () => {
           </div>
         </div>
       )}
+
+      {/* Modal de CreaciÃ³n de Orden */}
+      <CreateOrderModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        createForm={createForm}
+        setCreateForm={setCreateForm}
+        availableMenus={availableMenus}
+        availableClients={availableClients}
+        availableTables={availableTables}
+        onAddItem={handleAddCreateItem}
+        onRemoveItem={handleRemoveCreateItem}
+        onQuantityChange={handleCreateQuantityChange}
+        onSubmit={handleCreateNewOrder}
+        isSubmitting={creatingOrder}
+      />
     </div>
   )
 }

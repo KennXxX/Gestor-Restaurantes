@@ -4,28 +4,7 @@ import { getMenus, createMenu, updateMenu, deleteMenu } from '../../shared/api/m
 import { getInventories, createInventory, updateInventory } from '../../shared/api/inventory'
 import { getActivePromotions } from '../../shared/api/promotions'
 import { showError, showSuccess } from '../../shared/utils/toast'
-
-const CATEGORIES = [
-  { value: '', label: 'Todas' },
-  { value: 'ENTRADA', label: 'Entrada' },
-  { value: 'PLATO_FUERTE', label: 'Plato Fuerte' },
-  { value: 'POSTRE', label: 'Postre' },
-  { value: 'BEBIDA', label: 'Bebida' }
-]
-
-const CATEGORY_COLORS = {
-  ENTRADA: 'bg-amber-100 text-amber-700',
-  PLATO_FUERTE: 'bg-orange-100 text-orange-700',
-  POSTRE: 'bg-pink-100 text-pink-700',
-  BEBIDA: 'bg-sky-100 text-sky-700'
-}
-
-const CATEGORY_LABELS = {
-  ENTRADA: 'Entrada',
-  PLATO_FUERTE: 'Plato Fuerte',
-  POSTRE: 'Postre',
-  BEBIDA: 'Bebida'
-}
+import { FilterBar } from '../../shared/components/ui/FilterBar'
 
 const emptyForm = {
   menuName: '',
@@ -38,6 +17,13 @@ const emptyForm = {
   menuPhoto: null,
   stockQuantity: '0'
 }
+
+const CATEGORIES = [
+  { value: 'ENTRADA', label: 'Entrada' },
+  { value: 'PLATO_FUERTE', label: 'Plato Fuerte' },
+  { value: 'POSTRE', label: 'Postre' },
+  { value: 'BEBIDA', label: 'Bebida' }
+]
 
 const getErrorMessage = (error, fallback) => {
   const data = error?.response?.data
@@ -234,43 +220,31 @@ export const Menus = () => {
   const [editing, setEditing] = useState(null)
   const [photoPreview, setPhotoPreview] = useState(null)
   const [showModal, setShowModal] = useState(false)
-
-  // Filters
-  const [search, setSearch] = useState('')
-  const [filterCategory, setFilterCategory] = useState('')
   const [filterRestaurant, setFilterRestaurant] = useState('')
-  const [filterAvailability, setFilterAvailability] = useState('all')
 
-  const stats = useMemo(() => ({
-    total: menus.length,
-    active: menus.filter(m => m.menuActive !== false && m.menuAvailable !== false).length,
-    agotados: menus.filter(m => m.menuAvailable === false).length,
-    inactive: menus.filter(m => m.menuActive === false).length
-  }), [menus])
+  const [searchTerm, setSearchTerm] = useState('')
 
   const filteredMenus = useMemo(() => {
-    return menus.filter(m => {
-      const restaurantId = m.restaurantId?._id || m.restaurantId
-      if (filterRestaurant && restaurantId !== filterRestaurant) return false
-      if (filterCategory && m.menuCategory !== filterCategory) return false
-      if (filterAvailability === 'available' && (m.menuAvailable === false || m.menuActive === false)) return false
-      if (filterAvailability === 'unavailable' && m.menuAvailable !== false) return false
-      if (filterAvailability === 'inactive' && m.menuActive !== false) return false
-      if (search) {
-        const q = search.toLowerCase()
-        if (!m.menuName?.toLowerCase().includes(q) && !m.menuDescription?.toLowerCase().includes(q)) return false
-      }
-      return true
-    })
-  }, [menus, filterRestaurant, filterCategory, filterAvailability, search])
+    return menus.filter(menu => {
+      const searchLower = searchTerm.toLowerCase()
+      const name = menu.menuName || ''
+      const category = menu.menuCategory || ''
+      const price = String(menu.menuPrice || '')
 
-  const restaurantPromotions = useMemo(() => {
-    if (!filterRestaurant) return promotions
-    return promotions.filter(p => {
-      const rid = p.restaurantId?._id || p.restaurantId
-      return rid === filterRestaurant
+      return !searchTerm || 
+        name.toLowerCase().includes(searchLower) ||
+        category.toLowerCase().includes(searchLower) ||
+        price.toLowerCase().includes(searchLower)
     })
-  }, [promotions, filterRestaurant])
+  }, [menus, searchTerm])
+
+  const stats = useMemo(() => {
+    return {
+      total: filteredMenus.length,
+      active: filteredMenus.filter(m => m.menuActive !== false).length,
+      inactive: filteredMenus.filter(m => m.menuActive === false).length
+    }
+  }, [filteredMenus])
 
   const loadData = async () => {
     setLoading(true)
@@ -300,6 +274,23 @@ export const Menus = () => {
       if (photoPreview && photoPreview.startsWith('blob:')) URL.revokeObjectURL(photoPreview)
     }
   }, [photoPreview])
+
+  const handleInputChange = (e) => {
+    const { name, value, type, files } = e.target
+    if (type === 'file') {
+      const file = files?.[0] || null
+      setForm(prev => ({ ...prev, menuPhoto: file }))
+      setPhotoPreview(file ? URL.createObjectURL(file) : null)
+      return
+    }
+    setForm(prev => ({ ...prev, [name]: value }))
+  }
+
+  const resetForm = () => {
+    setEditing(null)
+    setForm({ ...emptyForm, restaurantId: filterRestaurant || '' })
+    setPhotoPreview(null)
+  }
 
   const openCreate = () => {
     setEditing(null)
@@ -344,20 +335,45 @@ export const Menus = () => {
     }
     setSaving(true)
     try {
+      const menuPayload = {
+        menuName: form.menuName,
+        menuDescription: form.menuDescription,
+        menuPrice: form.menuPrice,
+        menuCategory: form.menuCategory,
+        restaurantId: form.restaurantId,
+        menuActive: form.menuActive,
+        menuPhoto: form.menuPhoto
+      }
+
+      const inventoryPayload = {
+        menuId: editing?._id,
+        restaurantId: form.restaurantId,
+        quantity: Number(form.stockQuantity) || 0
+      }
+
       if (editing) {
-        await updateMenu(editing._id, form)
-  const menuInventory = inventories.find(inv => (inv.menuId?._id || inv.menuId) === editing._id)
+        await updateMenu(editing._id, menuPayload)
+        
+        // Update Inventory Stock
+        const menuInventory = inventories.find(inv => (inv.menuId?._id || inv.menuId) === editing._id)
         if (menuInventory) {
-          await updateInventory(menuInventory._id, { quantity: Number(form.stockQuantity) || 0 })
+          await updateInventory(menuInventory._id, { quantity: inventoryPayload.quantity })
         } else {
-          await createInventory({ menuId: editing._id, restaurantId: form.restaurantId, quantity: Number(form.stockQuantity) || 0 })
+          // If no inventory exists for this menu, create one
+          await createInventory(inventoryPayload)
         }
         showSuccess('Platillo actualizado.')
       } else {
-        const created = await createMenu(form)
-        const createdId = created.data?.menu?._id
-        if (createdId) {
-          await createInventory({ menuId: createdId, restaurantId: form.restaurantId, quantity: Number(form.stockQuantity) || 0 })
+        const createdMenuRes = await createMenu(menuPayload)
+        const createdMenuId = createdMenuRes.data?.menu?._id
+        
+        // Create Initial Inventory
+        if (createdMenuId) {
+           await createInventory({
+             menuId: createdMenuId,
+             restaurantId: form.restaurantId,
+             quantity: Number(form.stockQuantity) || 0
+           })
         }
         showSuccess('Platillo creado.')
       }
@@ -418,246 +434,136 @@ export const Menus = () => {
         </div>
       </header>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        {[
-          { label: 'Total platillos', value: stats.total, color: 'text-slate-900' },
-          { label: 'Disponibles', value: stats.active, color: 'text-emerald-600' },
-          { label: 'Agotados', value: stats.agotados, color: 'text-rose-500' },
-          { label: 'Inactivos', value: stats.inactive, color: 'text-slate-400' }
-        ].map(s => (
-          <div key={s.label} className="rounded-2xl border border-slate-100 bg-white px-5 py-4 shadow-sm">
-            <p className="text-xs uppercase tracking-[0.2em] text-slate-400">{s.label}</p>
-            <p className={`mt-2 text-3xl font-semibold ${s.color}`}>{s.value}</p>
+      <div className="grid gap-6 xl:grid-cols-[1.4fr_1fr]">
+        <section className="rounded-[26px] border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 className="font-display text-xl font-semibold text-slate-900 border-b border-slate-100 pb-5">Listado de platillos</h2>
+          
+          <div className="mt-5 grid gap-4 sm:grid-cols-3">
+            <div className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Total</p>
+              <p className="mt-2 text-2xl font-semibold text-slate-900">{stats.total}</p>
+            </div>
+            <div className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Activos</p>
+              <p className="mt-2 text-2xl font-semibold text-slate-900">{stats.active}</p>
+            </div>
           </div>
-        ))}
-      </div>
 
-      {/* Filters */}
-      <div className="flex flex-wrap gap-3 rounded-2xl border border-slate-100 bg-white px-5 py-4 shadow-sm">
-        <div className="relative min-w-[200px] flex-1">
-          <svg className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <input
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Buscar platillo..."
-            className="w-full rounded-xl border border-slate-200 py-2 pl-9 pr-4 text-sm text-slate-700 outline-none focus:border-orange-400"
+          <FilterBar
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            searchPlaceholder="Buscar por nombre, categoría o precio..."
+            hideDateFilters={true}
           />
-        </div>
 
-        <select
-          value={filterRestaurant}
-          onChange={e => setFilterRestaurant(e.target.value)}
-          className="rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 outline-none focus:border-orange-400"
-        >
-          <option value="">Todos los restaurantes</option>
-          {restaurants.map(r => (
-            <option key={r._id} value={r._id}>{r.restaurantName}</option>
-          ))}
-        </select>
+          <div className="mt-6 space-y-4">
+            {loading && <p className="text-center text-sm text-slate-500 py-6">Cargando menús...</p>}
+            {!loading && error && <p className="text-center text-sm text-rose-500 py-6">{error}</p>}
+            {!loading && !error && filteredMenus.length === 0 && (
+              <p className="text-center text-sm text-slate-500 py-6">No hay platillos que coincidan con la búsqueda.</p>
+            )}
 
-        <select
-          value={filterAvailability}
-          onChange={e => setFilterAvailability(e.target.value)}
-          className="rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 outline-none focus:border-orange-400"
-        >
-          <option value="all">Todos los estados</option>
-          <option value="available">Disponibles</option>
-          <option value="unavailable">Agotados</option>
-          <option value="inactive">Inactivos</option>
-        </select>
+            {!loading && filteredMenus.length > 0 && (
+              <div className="grid gap-4">
+                {filteredMenus.map(menu => {
+                  const menuStock = inventories.find(inv => inv.menuId === menu._id)?.quantity || 0
+                  
+                  return (
+                    <article key={menu._id} className="rounded-[26px] border border-slate-100 p-5 shadow-sm transition hover:shadow-md flex flex-col sm:flex-row gap-4 items-start">
+                      {menu.menuPhoto ? (
+                        <img src={menu.menuPhoto} alt={menu.menuName} className="h-20 w-20 rounded-xl object-cover bg-slate-100" />
+                      ) : (
+                        <div className="h-20 w-20 rounded-xl bg-orange-100 text-orange-700 flex items-center justify-center font-bold text-xl">
+                          {menu.menuName.charAt(0)}
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <div className="flex justify-between items-start">
+                          <h3 className="font-semibold text-lg">{menu.menuName}</h3>
+                          <span className="font-bold text-emerald-600">Q{menu.menuPrice}</span>
+                        </div>
+                        <p className="text-sm text-slate-500 mt-1">{menu.menuCategory}</p>
+                        <p className="text-sm font-medium mt-1">
+                           Stock: <span className={menuStock > 0 ? "text-emerald-600" : "text-rose-500"}>{menuStock} {menuStock === 1 ? 'unidad' : 'unidades'}</span>
+                        </p>
+                        <p className="text-sm text-slate-600 mt-2">{menu.menuDescription}</p>
+                        
+                        <div className="mt-4 flex gap-2">
+                          <button onClick={() => handleEdit(menu)} className="px-4 py-1.5 text-xs font-semibold rounded-full border border-slate-200 text-slate-600 hover:bg-slate-50">Editar</button>
+                          <button onClick={() => handleDelete(menu)} className="px-4 py-1.5 text-xs font-semibold rounded-full border border-rose-200 text-rose-600 bg-rose-50 hover:bg-rose-100">Eliminar</button>
+                        </div>
+                      </div>
+                    </article>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        </section>
 
-        <div className="flex gap-1 flex-wrap">
-          {CATEGORIES.map(c => (
-            <button
-              key={c.value}
-              onClick={() => setFilterCategory(c.value)}
-              className={`rounded-xl px-3 py-2 text-xs font-semibold transition ${
-                filterCategory === c.value
-                  ? 'bg-orange-600 text-white'
-                  : 'border border-slate-200 text-slate-600 hover:bg-slate-50'
-              }`}
-            >
-              {c.label}
-            </button>
-          ))}
-        </div>
-      </div>
+        <aside className="space-y-6">
+          <section className="rounded-[26px] border border-slate-200 bg-white p-6 shadow-sm">
+            <h2 className="font-display text-xl font-semibold text-slate-900 mb-6">
+              {editing ? 'Editar platillo' : 'Nuevo platillo'}
+            </h2>
 
-      {/* Promotions panel */}
-      {filterRestaurant && restaurantPromotions.length > 0 && (
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
-            Promociones activas del restaurante
-          </p>
-          <div className="flex flex-wrap gap-3">
-            {restaurantPromotions.map(p => (
-              <div key={p._id} className="flex items-center gap-2 rounded-full bg-white border border-emerald-200 px-3 py-1.5">
-                <span className="inline-flex items-center justify-center rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-bold text-emerald-700">
-                  {p.discountPercentage > 0 ? `-${p.discountPercentage}%` : 'Promo'}
-                </span>
-                <span className="text-sm font-medium text-slate-700">{p.title}</span>
-                {p.couponCode && (
-                  <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs font-mono text-slate-500">{p.couponCode}</span>
+            <form onSubmit={handleSubmit} className="grid gap-4">
+              <label className="text-sm font-semibold text-slate-700">
+                Nombre del platillo
+                <input name="menuName" value={form.menuName} onChange={handleInputChange} className="mt-2 w-full rounded-2xl border px-4 py-3 text-sm" required />
+              </label>
+
+              <div className="grid grid-cols-2 gap-4">
+                <label className="text-sm font-semibold text-slate-700">
+                  Precio (Q)
+                  <input type="number" name="menuPrice" value={form.menuPrice} onChange={handleInputChange} className="mt-2 w-full rounded-2xl border px-4 py-3 text-sm" required />
+                </label>
+                <label className="text-sm font-semibold text-slate-700">
+                  Categoría
+                  <select name="menuCategory" value={form.menuCategory} onChange={handleInputChange} className="mt-2 w-full rounded-2xl border px-4 py-3 text-sm">
+                    <option value="ENTRADA">Entrada</option>
+                    <option value="PLATO_FUERTE">Plato Fuerte</option>
+                    <option value="POSTRE">Postre</option>
+                    <option value="BEBIDA">Bebida</option>
+                  </select>
+                </label>
+              </div>
+
+              <label className="text-sm font-semibold text-slate-700">
+                Restaurante
+                <select name="restaurantId" value={form.restaurantId} onChange={handleInputChange} className="mt-2 w-full rounded-2xl border px-4 py-3 text-sm" required>
+                  <option value="">Selecciona uno</option>
+                  {restaurants.map(r => (
+                    <option key={r._id} value={r._id}>{r.restaurantName}</option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="text-sm font-semibold text-slate-700">
+                Stock (Cantidad disponible)
+                <input type="number" min="0" name="stockQuantity" value={form.stockQuantity} onChange={handleInputChange} placeholder="0" className="mt-2 w-full rounded-2xl border px-4 py-3 text-sm" />
+                <span className="text-xs text-slate-400 font-normal mt-1 block">La cantidad se actualizará directamente en el inventario.</span>
+              </label>
+
+              <label className="text-sm font-semibold text-slate-700">
+                Foto del platillo
+                <input type="file" accept="image/*" onChange={handleInputChange} className="mt-2 w-full rounded-2xl border px-4 py-3 text-sm" />
+              </label>
+              
+              {photoPreview && <img src={photoPreview} alt="Preview" className="h-32 w-full object-cover rounded-2xl border" />}
+
+              <div className="mt-4 flex gap-2">
+                <button type="submit" disabled={saving} className="flex-1 rounded-2xl bg-orange-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-orange-500 disabled:opacity-50">
+                  {saving ? 'Guardando...' : 'Guardar'}
+                </button>
+                {editing && (
+                  <button type="button" onClick={resetForm} className="rounded-2xl border px-5 py-3 text-sm font-semibold hover:bg-slate-50">Cancelar</button>
                 )}
               </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {filterRestaurant && restaurantPromotions.length === 0 && (
-        <div className="rounded-2xl border border-slate-100 bg-slate-50 px-5 py-4 text-sm text-slate-500">
-          Sin promociones activas aprobadas para este restaurante.
-        </div>
-      )}
-
-      {/* Menu grid */}
-      {loading && (
-        <div className="flex items-center justify-center py-20 text-slate-400">
-          <svg className="mr-3 h-5 w-5 animate-spin text-orange-500" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-          </svg>
-          Cargando platillos...
-        </div>
-      )}
-
-      {!loading && error && (
-        <div className="rounded-2xl border border-rose-200 bg-rose-50 px-5 py-4 text-sm text-rose-600">{error}</div>
-      )}
-
-      {!loading && !error && filteredMenus.length === 0 && (
-        <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-slate-200 py-16 text-center">
-          <p className="text-slate-400 text-sm">No hay platillos que coincidan con los filtros.</p>
-          <button onClick={openCreate} className="mt-1 rounded-2xl bg-orange-600 px-4 py-2 text-xs font-semibold text-white hover:bg-orange-500">
-            Crear platillo
-          </button>
-        </div>
-      )}
-
-      {!loading && !error && filteredMenus.length > 0 && (
-        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-          {filteredMenus.map(menu => {
-              const stock = inventories.find(inv => (inv.menuId?._id || inv.menuId) === menu._id)?.quantity ?? 0
-            const isAvailable = menu.menuAvailable !== false
-            const isActive = menu.menuActive !== false
-            const categoryColor = CATEGORY_COLORS[menu.menuCategory] || 'bg-slate-100 text-slate-600'
-            const categoryLabel = CATEGORY_LABELS[menu.menuCategory] || menu.menuCategory
-            const restaurantName = restaurants.find(r => r._id === (menu.restaurantId?._id || menu.restaurantId))?.restaurantName || 'â€”'
-
-            return (
-              <article
-                key={menu._id}
-                className={`group relative flex flex-col overflow-hidden rounded-[24px] border bg-white shadow-sm transition hover:shadow-md ${
-                  !isActive ? 'border-slate-200 opacity-60' : !isAvailable ? 'border-rose-200' : 'border-slate-100'
-                }`}
-              >
-                <div className="relative h-40 w-full overflow-hidden bg-orange-50">
-                  {menu.menuPhoto ? (
-                    <img src={menu.menuPhoto} alt={menu.menuName} className="h-full w-full object-cover" />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center bg-orange-100 text-4xl font-bold text-orange-300">
-                      {menu.menuName?.charAt(0) ?? '?'}
-                    </div>
-                  )}
-                  <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
-                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${categoryColor}`}>
-                      {categoryLabel}
-                    </span>
-                    {!isActive && (
-                      <span className="rounded-full bg-slate-700/80 px-2.5 py-0.5 text-xs font-semibold text-white">
-                        Inactivo
-                      </span>
-                    )}
-                    {isActive && !isAvailable && (
-                      <span className="rounded-full bg-rose-500/90 px-2.5 py-0.5 text-xs font-semibold text-white">
-                        Agotado
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex flex-1 flex-col gap-2 p-4">
-                  <div className="flex items-start justify-between gap-2">
-                    <h3 className="font-semibold text-slate-900 leading-snug">{menu.menuName}</h3>
-                    <span className="shrink-0 text-sm font-bold text-emerald-600">Q{menu.menuPrice}</span>
-                  </div>
-                  <p className="text-xs text-slate-500 leading-relaxed line-clamp-2">{menu.menuDescription || 'Sin descripción.'}</p>
-                  <p className="text-xs text-slate-400">{restaurantName}</p>
-
-                  <div className="flex items-center gap-1.5">
-                    <svg className="h-3.5 w-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                    </svg>
-                    <span className={`text-xs font-medium ${stock > 0 ? 'text-emerald-600' : 'text-rose-500'}`}>
-                      {stock} {stock === 1 ? 'unidad' : 'unidades'} en stock
-                    </span>
-                  </div>
-
-                  <div className="mt-auto flex gap-2 pt-3 border-t border-slate-100">
-                    <button
-                      onClick={() => handleToggleAvailable(menu)}
-                      title={isAvailable ? 'Marcar como agotado' : 'Marcar como disponible'}
-                      className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
-                        isAvailable
-                          ? 'border-rose-200 text-rose-600 hover:bg-rose-50'
-                          : 'border-emerald-200 text-emerald-600 hover:bg-emerald-50'
-                      }`}
-                    >
-                      {isAvailable ? (
-                        <>
-                          <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                          </svg>
-                          Agotar
-                        </>
-                      ) : (
-                        <>
-                          <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                          </svg>
-                          Disponible
-                        </>
-                      )}
-                    </button>
-
-                    <button
-                      onClick={() => handleEdit(menu)}
-                      className="rounded-full border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition"
-                    >
-                      Editar
-                    </button>
-
-                    <button
-                      onClick={() => handleDelete(menu)}
-                      className="ml-auto rounded-full border border-rose-100 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-100 transition"
-                    >
-                      Eliminar
-                    </button>
-                  </div>
-                </div>
-              </article>
-            )
-          })}
-        </div>
-      )}
-
-      {showModal && (
-        <MenuFormModal
-          form={form}
-          setForm={setForm}
-          editing={editing}
-          saving={saving}
-          photoPreview={photoPreview}
-          setPhotoPreview={setPhotoPreview}
-          restaurants={restaurants}
-          onSubmit={handleSubmit}
-          onClose={handleCloseModal}
-        />
-      )}
+            </form>
+          </section>
+        </aside>
+      </div>
     </section>
   )
 }

@@ -3,6 +3,7 @@ import { getInventories } from '../../../shared/api/inventory'
 import { getMenus } from '../../../shared/api/menus'
 import { getRestaurants } from '../../../shared/api/restaurants'
 import { ModaInventory } from './ModaInventory'
+import { FilterBar } from '../../../shared/components/ui/FilterBar'
 
 const getStockColor = (qty) => {
   if (qty <= 10) return 'bg-rose-100 text-rose-700'
@@ -15,14 +16,28 @@ export const Inventory = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [selectedItem, setSelectedItem] = useState(null)
+  
+  const [searchTerm, setSearchTerm] = useState('')
+
+  const filteredItems = useMemo(() => {
+    return items.filter((item) => {
+      const searchLower = searchTerm.toLowerCase()
+      const name = item.menuName || ''
+      const restaurant = item.restaurantName || ''
+
+      return !searchTerm ||
+        name.toLowerCase().includes(searchLower) ||
+        restaurant.toLowerCase().includes(searchLower)
+    })
+  }, [items, searchTerm])
 
   const stats = useMemo(() => {
-    const total = items.length
-    const lowStock = items.filter((i) => i.quantity <= 10).length
-    const adequate = items.filter((i) => i.quantity > 10 && i.quantity <= 25).length
-    const high = items.filter((i) => i.quantity > 25).length
+    const total = filteredItems.length
+    const lowStock = filteredItems.filter((i) => i.quantity <= 10).length
+    const adequate = filteredItems.filter((i) => i.quantity > 10 && i.quantity <= 25).length
+    const high = filteredItems.filter((i) => i.quantity > 25).length
     return { total, lowStock, adequate, high }
-  }, [items])
+  }, [filteredItems])
 
   useEffect(() => {
     loadData()
@@ -119,6 +134,15 @@ export const Inventory = () => {
             </div>
           </div>
 
+          <div className="mt-4 mb-4">
+            <FilterBar
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              searchPlaceholder="Buscar por menú o restaurante..."
+              hideDateFilters={true}
+            />
+          </div>
+
           <div className="mt-6 space-y-4">
             {loading && (
               <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center text-sm text-slate-500">
@@ -126,15 +150,15 @@ export const Inventory = () => {
               </div>
             )}
 
-            {!loading && items.length === 0 && (
+            {!loading && filteredItems.length === 0 && (
               <div className="rounded-2xl border border-slate-200 bg-white px-4 py-6 text-center text-sm text-slate-500">
                 No hay productos en inventario.
               </div>
             )}
 
-            {!loading && items.length > 0 && (
+            {!loading && filteredItems.length > 0 && (
               <div className="grid gap-4">
-                {items.map((item) => (
+                {filteredItems.map((item) => (
                   <article
                     key={item._id}
                     onClick={() => setSelectedItem(item)}

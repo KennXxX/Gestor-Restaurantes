@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { exportInvoicePdf, getInvoices } from '../../shared/api/invoices'
 import { showError, showSuccess } from '../../shared/utils/toast'
+import { FilterBar } from '../../shared/components/ui/FilterBar'
 
 const getErrorMessage = (error, fallback) => {
   const data = error?.response?.data
@@ -54,6 +55,10 @@ export const Facturas = () => {
   const [error, setError] = useState(null)
   const [downloadingInvoiceId, setDownloadingInvoiceId] = useState(null)
 
+  const [searchTerm, setSearchTerm] = useState('')
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
+
   const loadInvoices = async () => {
     setLoading(true)
     setError(null)
@@ -103,8 +108,40 @@ export const Facturas = () => {
     }
   }
 
+  const filteredInvoices = useMemo(() => {
+    return invoices.filter((invoice) => {
+      const searchLower = searchTerm.toLowerCase()
+      const invoiceNumber = invoice.invoiceNumber || invoice._id || ''
+      const customerName = invoice.customer?.name || ''
+      const restaurantName = invoice.restaurantId?.restaurantName || ''
+      const status = invoiceStatusLabel(invoice.orderId?.status) || ''
+
+      const matchesSearch =
+        !searchTerm ||
+        invoiceNumber.toLowerCase().includes(searchLower) ||
+        customerName.toLowerCase().includes(searchLower) ||
+        restaurantName.toLowerCase().includes(searchLower) ||
+        status.toLowerCase().includes(searchLower)
+
+      let matchesDate = true
+      if (startDate || endDate) {
+        const itemDate = new Date(invoice.issuedAt || invoice.createdAt)
+        if (!Number.isNaN(itemDate.getTime())) {
+          if (startDate) {
+            matchesDate = matchesDate && itemDate >= new Date(startDate + 'T00:00:00')
+          }
+          if (endDate) {
+            matchesDate = matchesDate && itemDate <= new Date(endDate + 'T23:59:59')
+          }
+        }
+      }
+
+      return matchesSearch && matchesDate
+    })
+  }, [invoices, searchTerm, startDate, endDate])
+
   const invoiceRows = useMemo(() => {
-    return invoices.map((invoice) => ({
+    return filteredInvoices.map((invoice) => ({
       invoiceId: invoice._id,
       id: invoice.invoiceNumber || invoice._id,
       customer: invoice.customer?.name || 'Cliente no disponible',
@@ -118,26 +155,26 @@ export const Facturas = () => {
       subtotal: formatCurrency(invoice.subtotal),
       discountPercentage: Number(invoice.discountPercentage || 0),
     }))
-  }, [invoices])
+  }, [filteredInvoices])
 
   const invoiceSummary = useMemo(() => {
     const now = new Date()
-    const issuedToday = invoices.filter((invoice) => {
+    const issuedToday = filteredInvoices.filter((invoice) => {
       if (!invoice?.issuedAt) return false
       const issuedDate = new Date(invoice.issuedAt)
       if (Number.isNaN(issuedDate.getTime())) return false
       return isSameDay(issuedDate, now)
     }).length
 
-    const totalIncome = invoices.reduce((acc, invoice) => acc + Number(invoice?.total || 0), 0)
-    const averageTicket = invoices.length > 0 ? totalIncome / invoices.length : 0
+    const totalIncome = filteredInvoices.reduce((acc, invoice) => acc + Number(invoice?.total || 0), 0)
+    const averageTicket = filteredInvoices.length > 0 ? totalIncome / filteredInvoices.length : 0
 
     return [
       { label: 'Facturas emitidas hoy', value: String(issuedToday) },
       { label: 'Ingresos facturados', value: formatCurrency(totalIncome) },
       { label: 'Ticket promedio', value: formatCurrency(averageTicket) },
     ]
-  }, [invoices])
+  }, [filteredInvoices])
 
   const featuredInvoice = invoiceRows[0] || null
 
@@ -186,6 +223,16 @@ export const Facturas = () => {
               <span className="rounded-full bg-amber-50 px-3 py-1 font-medium text-amber-700">A domicilio</span>
             </div>
           </div>
+
+          <FilterBar
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            startDate={startDate}
+            onStartDateChange={setStartDate}
+            endDate={endDate}
+            onEndDateChange={setEndDate}
+            searchPlaceholder="Buscar por ID, cliente, restaurante o estado..."
+          />
 
           <div className="mt-5 overflow-x-auto">
             <table className="min-w-full divide-y divide-slate-200">

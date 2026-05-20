@@ -1,7 +1,7 @@
 'use strict'
 
 import { Router } from 'express'
-import { createPromotion, getActivePromotions, approvePromotion, getAllPromotions } from './promotion.controller.js'
+import { createPromotion, getActivePromotions, approvePromotion, getAllPromotions, updatePromotion, deletePromotion } from './promotion.controller.js'
 import { uploadFieldImage } from '../../middlewares/file-uploader.js'
 import { validateJWT, isAdmin } from '../../middlewares/validate-JWT.js'
 
@@ -18,5 +18,11 @@ router.get('/active', getActivePromotions)
 
 // Aprobar promoción (solo admin)
 router.put('/approve/:id', validateJWT, isAdmin, approvePromotion)
+
+// Actualizar promoción
+router.put('/:id', validateJWT, isAdmin, uploadFieldImage.none(), updatePromotion)
+
+// Eliminar promoción
+router.delete('/:id', validateJWT, isAdmin, deletePromotion)
 
 export default router
