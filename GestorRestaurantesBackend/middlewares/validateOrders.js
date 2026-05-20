@@ -38,11 +38,13 @@ export const createOrderValidator = [
         }),
     
     body('tableId')
-        .optional()
-        .isMongoId().withMessage('El ID de la mesa debe ser válido')
+        .optional({ nullable: true })
         .custom((value, { req }) => {
             if (req.body.orderType === 'EN_RESTAURANTE' && !value) {
                 throw new Error('tableId es obligatorio para pedidos en restaurante');
+            }
+            if (value && !/^[a-fA-F0-9]{24}$/.test(value)) {
+                throw new Error('El ID de la mesa debe ser válido');
             }
             return true;
         }),
