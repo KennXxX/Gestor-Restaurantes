@@ -29,6 +29,13 @@ export const seedData = async () => {
       roleName: ADMIN_ROLE,
     },
     {
+      name: 'Usuario Por Defecto',
+      email: 'user@gestor.local',
+      password: 'User1234!',
+      phone: '00000000',
+      roleName: USER_ROLE,
+    },
+    {
       name: 'Cliente Test',
       email: 'cliente@gestor.local',
       password: 'Cliente1234!',
