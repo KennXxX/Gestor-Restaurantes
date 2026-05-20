@@ -12,7 +12,7 @@ import {
   getUsersByRole as repoGetUsersByRole,
   setUserSingleRole,
 } from '../../helpers/role-db.js';
-import { ALLOWED_ROLES, ADMIN_ROLE } from '../../helpers/role-constants.js';
+import { ALLOWED_ROLES, ADMIN_ROLE, ADMIN_RESTAURANT_ROLE } from '../../helpers/role-constants.js';
 import { buildUserResponse } from '../../utils/user-helpers.js';
 import { sequelize } from '../../configs/db.js';
 import { validateCreateAdminRestaurant } from '../../middlewares/validation.js';
@@ -26,6 +26,15 @@ const ensureAdmin = async (req) => {
     req.user?.UserRoles?.map((ur) => ur.Role?.Name).filter(Boolean) ??
     (await getUserRoleNames(currentUserId));
   return roles.includes(ADMIN_ROLE);
+};
+
+const ensureAdminOrRestaurantAdmin = async (req) => {
+  const currentUserId = req.userId;
+  if (!currentUserId) return false;
+  const roles =
+    req.user?.UserRoles?.map((ur) => ur.Role?.Name).filter(Boolean) ??
+    (await getUserRoleNames(currentUserId));
+  return roles.includes(ADMIN_ROLE) || roles.includes(ADMIN_RESTAURANT_ROLE);
 };
 
 export const updateUserRole = [
@@ -76,7 +85,7 @@ export const getUserRoles = [
 export const getUsersByRole = [
   validateJWT,
   asyncHandler(async (req, res) => {
-    if (!(await ensureAdmin(req))) {
+    if (!(await ensureAdminOrRestaurantAdmin(req))) {
       return res.status(403).json({ success: false, message: 'Forbidden' });
     }
 

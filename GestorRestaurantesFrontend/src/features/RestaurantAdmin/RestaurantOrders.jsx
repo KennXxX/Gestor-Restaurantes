@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useAuthStore } from '../auth/store/authStore'
-import { getOrdersByRestaurant, updateOrderStatus, updateOrderDetails } from '../../shared/api/orders'
+import { getOrdersByRestaurant, updateOrderStatus, updateOrderDetails, createOrder } from '../../shared/api/orders'
 import { getMenus } from '../../shared/api/menus'
+import { getUsersByRole } from '../../shared/api/users'
+import { getTables } from '../../shared/api/tables'
 import { showError, showSuccess } from '../../shared/utils/toast'
+import { CreateOrderModal } from './components/CreateOrderModal'
 
 const getErrMsg = (err, fallback) =>
   err?.response?.data?.errors?.[0]?.message ||
@@ -23,6 +26,17 @@ export const RestaurantOrders = () => {
   const [editStatus, setEditStatus] = useState('EN_PREPARACION')
   const [availableMenus, setAvailableMenus] = useState([])
   const [editItems, setEditItems] = useState([])
+  const [showCreateModal, setShowCreateModal] = useState(false)
+  const [createForm, setCreateForm] = useState({
+    clienteId: '',
+    tableId: '',
+    orderType: 'EN_RESTAURANTE',
+    deliveryAddress: '',
+    items: []
+  })
+  const [creatingOrder, setCreatingOrder] = useState(false)
+  const [availableClients, setAvailableClients] = useState([])
+  const [availableTables, setAvailableTables] = useState([])
 
   const loadOrders = async () => {
     if (!user?.restaurantId) return
@@ -47,10 +61,31 @@ export const RestaurantOrders = () => {
     }
   }
 
+  const loadAvailableClients = async () => {
+    try {
+      const { data } = await getUsersByRole('USER_ROLE')
+      setAvailableClients(Array.isArray(data) ? data : [])
+    } catch (err) {
+      console.error('Error fetching clients:', err)
+    }
+  }
+
+  const loadAvailableTables = async () => {
+    if (!user?.restaurantId) return
+    try {
+      const { data } = await getTables({ restaurantId: user.restaurantId, tableActive: true })
+      setAvailableTables(data?.data || [])
+    } catch (err) {
+      console.error('Error fetching tables:', err)
+    }
+  }
+
   useEffect(() => {
     if (user?.restaurantId) {
       loadOrders()
       loadAvailableMenus()
+      loadAvailableClients()
+      loadAvailableTables()
     } else {
       setLoading(false)
     }
@@ -130,6 +165,103 @@ export const RestaurantOrders = () => {
       menuName: foundMenu.menuName,
       price: foundMenu.menuPrice
     }])
+  }
+
+  const handleAddCreateItem = (menuId) => {
+    if (!menuId) return
+    const exists = createForm.items.find(item => item.menuId === menuId)
+    if (exists) {
+      setCreateForm(prev => ({
+        ...prev,
+        items: prev.items.map(item => 
+          item.menuId === menuId 
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        )
+      }))
+      return
+    }
+    const foundMenu = availableMenus.find(m => m._id === menuId)
+    if (!foundMenu) return
+    setCreateForm(prev => ({
+      ...prev,
+      items: [...prev.items, {
+        menuId: foundMenu._id,
+        quantity: 1,
+        menuName: foundMenu.menuName,
+        price: foundMenu.menuPrice
+      }]
+    }))
+  }
+
+  const handleRemoveCreateItem = (menuId) => {
+    setCreateForm(prev => ({
+      ...prev,
+      items: prev.items.filter(item => item.menuId !== menuId)
+    }))
+  }
+
+  const handleCreateQuantityChange = (menuId, amount) => {
+    setCreateForm(prev => ({
+      ...prev,
+      items: prev.items.map(item => {
+        if (item.menuId === menuId) {
+          const newQty = Math.max(1, item.quantity + amount)
+          return { ...item, quantity: newQty }
+        }
+        return item
+      })
+    }))
+  }
+
+  const handleCreateNewOrder = async () => {
+    if (!user?.restaurantId) {
+      showError('No se pudo identificar el restaurante.')
+      return
+    }
+
+    if (!createForm.clienteId) {
+      showError('Por favor selecciona un cliente.')
+      return
+    }
+
+    if (createForm.items.length === 0) {
+      showError('Por favor agrega al menos un artículo a la orden.')
+      return
+    }
+
+    setCreatingOrder(true)
+    try {
+      const payload = {
+        restaurantId: user.restaurantId,
+        userId: createForm.clienteId,
+        items: createForm.items.map(item => ({
+          menuId: item.menuId,
+          quantity: item.quantity,
+          price: item.price
+        })),
+        tableId: createForm.orderType === 'EN_RESTAURANTE' ? (createForm.tableId || null) : null,
+        orderType: createForm.orderType,
+        deliveryAddress: createForm.orderType === 'A_DOMICILIO' ? createForm.deliveryAddress : null,
+        status: 'EN_PREPARACION'
+      }
+
+      await createOrder(payload)
+      showSuccess('Orden creada exitosamente.')
+      setShowCreateModal(false)
+      setCreateForm({
+        clienteId: '',
+        tableId: '',
+        orderType: 'EN_RESTAURANTE',
+        deliveryAddress: '',
+        items: []
+      })
+      loadOrders()
+    } catch (err) {
+      showError(getErrMsg(err, 'No se pudo crear la orden.'))
+    } finally {
+      setCreatingOrder(false)
+    }
   }
 
   const filteredOrders = orders.filter((o) => {
@@ -388,6 +520,18 @@ export const RestaurantOrders = () => {
               </svg>
             </span>
           </div>
+
+          {/* Create Order Button */}
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="w-full sm:w-auto rounded-2xl bg-emerald-600 hover:bg-emerald-700 px-4 py-2.5 text-xs font-bold text-white transition shadow-sm hover:shadow-md active:scale-[0.98] flex items-center justify-center gap-2 border border-emerald-600"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            <span>Nueva Orden</span>
+          </button>
         </div>
       </div>
 
@@ -414,7 +558,7 @@ export const RestaurantOrders = () => {
                 <div className="flex items-center gap-3">
                   {/* Table/Order square grey box */}
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 font-black text-slate-800 text-sm border border-slate-200 shadow-sm">
-                    {order.tableNumber || 'O'}
+                    {order.tableId?.tableName || 'O'}
                   </div>
                   <div>
                     <div className="flex items-center gap-2.5 flex-wrap">
@@ -711,6 +855,22 @@ export const RestaurantOrders = () => {
           </div>
         </div>
       )}
+
+      {/* Modal de Creación de Orden */}
+      <CreateOrderModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        createForm={createForm}
+        setCreateForm={setCreateForm}
+        availableMenus={availableMenus}
+        availableClients={availableClients}
+        availableTables={availableTables}
+        onAddItem={handleAddCreateItem}
+        onRemoveItem={handleRemoveCreateItem}
+        onQuantityChange={handleCreateQuantityChange}
+        onSubmit={handleCreateNewOrder}
+        isSubmitting={creatingOrder}
+      />
     </div>
   )
 }

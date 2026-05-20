@@ -15,3 +15,11 @@ export const createPromotion = async (payload) => {
 export const approvePromotion = async (id) => {
   return axiosApi.put(`/promotions/approve/${id}`)
 }
+
+export const updatePromotion = async (id, payload) => {
+  return axiosApi.put(`/promotions/${id}`, payload)
+}
+
+export const deletePromotion = async (id) => {
+  return axiosApi.delete(`/promotions/${id}`)
+}
