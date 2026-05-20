@@ -6,6 +6,7 @@ import { v2 as cloudinary } from 'cloudinary';
 export const createMenu = async (req, res) => {
   try {
     const menuData = { ...(req.body || {}) };
+    menuData.createdBy = req.userId || req.user?.sub || req.user?.uid || req.user?.id || req.user?.userId || menuData.createdBy || null;
     if (req.file) {
       menuData.menuPhoto = req.file.path;
     }
@@ -38,6 +39,7 @@ export const getMenus = async (req, res) => {
     const filter = {}
     if (req.query.restaurantId) filter.restaurantId = req.query.restaurantId
     if (req.query.menuActive !== undefined) filter.menuActive = req.query.menuActive === 'true'
+    if (req.query.createdBy) filter.createdBy = req.query.createdBy
     const menus = await Menu.find(filter);
 
     return res.json({

@@ -4,7 +4,7 @@ import { getRestaurants } from '../../shared/api/restaurants'
 import { getTables } from '../../shared/api/tables'
 import { getMenus } from '../../shared/api/menus'
 import { getAllUsers } from '../../shared/api/users'
-import { createOrder, getOrdersByRestaurant, updateOrderStatus } from '../../shared/api/orders'
+import { createOrder, getOrders, getOrdersByRestaurant, updateOrderStatus } from '../../shared/api/orders'
 import { showError, showSuccess } from '../../shared/utils/toast'
 import { getErrorMessage, isClientRole } from './utils/orderHelpers'
 import { OrderStats } from './components/OrderStats'
@@ -61,7 +61,6 @@ export const Orders = () => {
 
       if (restaurantList.length > 0) {
         const firstRestaurantId = restaurantList[0]._id
-        setRestaurantFilter(firstRestaurantId)
         setForm((prev) => ({ ...prev, restaurantId: firstRestaurantId }))
       }
     } catch (err) {
@@ -72,14 +71,10 @@ export const Orders = () => {
   }
 
   const loadOrders = async (restaurantId) => {
-    if (!restaurantId) {
-      setOrders([])
-      setSelectedOrder(null)
-      return
-    }
-
     try {
-      const { data } = await getOrdersByRestaurant(restaurantId)
+      const { data } = restaurantId
+        ? await getOrdersByRestaurant(restaurantId)
+        : await getOrders()
       setOrders(data?.orders || [])
     } catch (err) {
       showError(getErrorMessage(err, 'No se pudieron cargar las órdenes.'))
@@ -259,6 +254,7 @@ export const Orders = () => {
                 value={restaurantFilter}
                 onChange={(e) => setRestaurantFilter(e.target.value)}
               >
+                <option value="">Todos los restaurantes</option>
                 {restaurants.map((restaurant) => (
                   <option key={restaurant._id} value={restaurant._id}>{restaurant.restaurantName}</option>
                 ))}

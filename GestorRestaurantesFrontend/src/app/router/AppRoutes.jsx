@@ -109,9 +109,9 @@ export const AppRoutes = () => {
       >
         <Route index element={<ClientHome />} />
         <Route path="reservations" element={<ClientReservations />} />
-        <Route path="orders" element={<ClientHistory />} />
-        <Route path="menu" element={<ClientMenu />} />
         <Route path="orders" element={<ClientOrders />} />
+        <Route path="menu" element={<ClientMenu />} />
+        <Route path="history" element={<ClientHistory />} />
         <Route path="invoices" element={<ClientInvoices />} />
         <Route path="reviews" element={<ClientReviews />} />
         <Route path="profile" element={<UserProfile user={user} />} />

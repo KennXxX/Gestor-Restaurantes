@@ -16,13 +16,12 @@ export const formatDate = (value) => {
   return new Date(value).toLocaleString('es-GT', { dateStyle: 'medium', timeStyle: 'short' })
 }
 
-export const STATUS_LABEL = { PENDIENTE: 'Pendiente', COMPLETADO: 'Completada', CANCELADO: 'Cancelada' }
+export const STATUS_LABEL = { PENDIENTE: 'Pendiente', COMPLETADO: 'Completada' }
 export const STATUS_COLORS = {
   PENDIENTE: 'bg-amber-100 text-amber-700 border border-amber-200',
   COMPLETADO: 'bg-emerald-100 text-emerald-700 border border-emerald-200',
-  CANCELADO: 'bg-rose-100 text-rose-600 border border-rose-200',
 }
-export const STATUS_OPTIONS = ['PENDIENTE', 'COMPLETADO', 'CANCELADO']
+export const STATUS_OPTIONS = ['PENDIENTE', 'COMPLETADO']
 
 export const statusLabel = (status) => STATUS_LABEL[status] || status
 

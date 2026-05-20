@@ -4,6 +4,7 @@ import { getMenus, createMenu, updateMenu, deleteMenu } from '../../shared/api/m
 import { getInventories, createInventory, updateInventory } from '../../shared/api/inventory'
 import { getActivePromotions } from '../../shared/api/promotions'
 import { showError, showSuccess } from '../../shared/utils/toast'
+import { useAuthStore } from '../auth/store/authStore'
 
 const CATEGORIES = [
   { value: '', label: 'Todas' },
@@ -223,6 +224,8 @@ function MenuFormModal({ form, setForm, editing, saving, photoPreview, setPhotoP
 }
 
 export const Menus = () => {
+  const user = useAuthStore((state) => state.user)
+  const currentUserId = String(user?.Id || user?.id || user?._id || '')
   const [menus, setMenus] = useState([])
   const [inventories, setInventories] = useState([])
   const [restaurants, setRestaurants] = useState([])
@@ -278,7 +281,7 @@ export const Menus = () => {
     try {
       const [restRes, menusRes, invRes, promoRes] = await Promise.all([
         getRestaurants({ limit: 100 }),
-        getMenus().catch(() => ({ data: { menus: [] } })),
+        getMenus(currentUserId ? { createdBy: currentUserId } : {}).catch(() => ({ data: { menus: [] } })),
         getInventories().catch(() => ({ data: { inventories: [] } })),
         getActivePromotions().catch(() => ({ data: { promotions: [] } }))
       ])
@@ -293,7 +296,7 @@ export const Menus = () => {
     }
   }
 
-  useEffect(() => { loadData() }, [])
+  useEffect(() => { loadData() }, [currentUserId])
 
   useEffect(() => {
     return () => {

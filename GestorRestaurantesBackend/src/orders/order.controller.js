@@ -317,12 +317,19 @@ export const createMyOrder = async (req, res) => {
 
 export const getMyOrders = async (req, res) => {
   try {
-    const userId = req.user._id
+    const userId = req.userId || req.user?._id || req.user?.sub || req.user?.uid || req.user?.id
 
-    const orders = await Order.find({ userId })
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'No se pudo identificar al usuario autenticado'
+      })
+    }
+
+    const orders = await Order.find({ userId: String(userId) })
       .populate('restaurantId', 'restaurantName')
       .populate('tableId', 'tableName tableNumber')
-      .sort({ date: -1 }) // Sort by date descending
+      .sort({ createdAt: -1 })
 
     return res.status(200).json({
       success: true,

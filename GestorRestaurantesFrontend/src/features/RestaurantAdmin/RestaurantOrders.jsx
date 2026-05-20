@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useAuthStore } from '../auth/store/authStore'
-import { getOrdersByRestaurant, updateOrderStatus, updateOrderDetails } from '../../shared/api/orders'
+import { getOrders, getOrdersByRestaurant, updateOrderStatus, updateOrderDetails } from '../../shared/api/orders'
 import { getMenus } from '../../shared/api/menus'
 import { showError, showSuccess } from '../../shared/utils/toast'
 
@@ -25,10 +25,10 @@ export const RestaurantOrders = () => {
   const [editItems, setEditItems] = useState([])
 
   const loadOrders = async () => {
-    if (!user?.restaurantId) return
+    if (!user) return
     try {
       setLoading(true)
-      const { data } = await getOrdersByRestaurant(user.restaurantId)
+      const { data } = await getOrders()
       setOrders(data?.orders || [])
     } catch (err) {
       showError(getErrMsg(err, 'No se pudieron cargar las órdenes.'))
@@ -48,13 +48,13 @@ export const RestaurantOrders = () => {
   }
 
   useEffect(() => {
-    if (user?.restaurantId) {
+    if (user) {
       loadOrders()
       loadAvailableMenus()
     } else {
       setLoading(false)
     }
-  }, [user?.restaurantId])
+  }, [user])
 
   const handleUpdateStatus = async (orderId, newStatus) => {
     setUpdatingId(orderId)
