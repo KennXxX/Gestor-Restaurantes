@@ -315,7 +315,7 @@ export const ReservationView = () => {
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
-    <section className="relative overflow-hidden">
+    <section className="font-serif relative overflow-hidden">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 space-y-6">
 
         {/* HEADER */}
@@ -323,10 +323,10 @@ export const ReservationView = () => {
           <div className={`flex flex-col md:flex-row items-center gap-6`}>
             <div className="md:w-2/3">
               <p className="inline-flex items-center gap-2 rounded-full bg-orange-500/15 px-4 py-2 text-sm font-semibold uppercase tracking-[0.26em] text-orange-300">Reservaciones</p>
-              <h1 className={`mt-6 text-4xl font-semibold tracking-tight text-white sm:text-5xl transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'}`}>
+              <h1 className={`font-serif mt-6 text-4xl font-semibold tracking-tight text-white sm:text-5xl transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'}`}>
                 {editingId ? 'Editar reserva' : <><span className="text-orange-400">Reserva</span> tu mesa con facilidad</>}
               </h1>
-              <p className={`mt-4 max-w-2xl text-base leading-8 text-slate-300 transition-all duration-800 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
+              <p className={`font-serif mt-4 max-w-2xl text-base leading-8 text-slate-300 transition-all duration-800 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
                 Tres pasos sencillos: elige restaurante y horario, selecciona la mesa y confirma.
               </p>
               <div className="mt-5 flex flex-wrap gap-2">
@@ -344,8 +344,8 @@ export const ReservationView = () => {
         <section className="grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
           <article className="rounded-[32px] border border-white/10 bg-slate-900/80 p-6 shadow-[0_24px_80px_-40px_rgba(15,23,42,0.9)]">
             <p className="text-xs uppercase tracking-[0.28em] text-orange-300">Experiencias</p>
-            <h2 className="mt-3 text-2xl font-semibold text-white">Encuentra el plan perfecto</h2>
-            <p className="mt-3 text-sm leading-6 text-slate-300">Elige el restaurante, el horario y la mesa que mejor se ajuste a tu ocasión. Aquí tienes ideas para cenas románticas, reuniones con amigos o celebraciones familiares.</p>
+            <h2 className="font-serif mt-3 text-2xl font-semibold text-white">Encuentra el plan perfecto</h2>
+            <p className="font-serif mt-3 text-sm leading-6 text-slate-300">Elige el restaurante, el horario y la mesa que mejor se ajuste a tu ocasión. Aquí tienes ideas para cenas románticas, reuniones con amigos o celebraciones familiares.</p>
 
             <div className="mt-6 grid gap-3 sm:grid-cols-3">
               {[
@@ -361,8 +361,8 @@ export const ReservationView = () => {
                     <img src={item.image} alt={item.title} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
                   </div>
                   <div className="p-4">
-                    <h3 className="text-sm font-semibold text-white">{item.title}</h3>
-                    <p className="mt-2 text-xs leading-5 text-slate-400">{item.desc}</p>
+                    <h3 className="font-serif text-sm font-semibold text-white">{item.title}</h3>
+                    <p className="font-serif mt-2 text-xs leading-5 text-slate-400">{item.desc}</p>
                   </div>
                 </div>
               ))}
@@ -373,8 +373,8 @@ export const ReservationView = () => {
             <div className="flex h-full flex-col justify-between gap-5">
               <div>
                 <p className="text-xs uppercase tracking-[0.28em] text-slate-400">Inspírate</p>
-                <h3 className="mt-3 text-2xl font-bold text-white">Tu mesa ideal está a un paso</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-300">Te ayudamos a reservar rápido, con opciones pensadas para cada momento y recomendaciones basadas en tu número de personas.</p>
+                <h3 className="font-serif mt-3 text-2xl font-bold text-white">Tu mesa ideal está a un paso</h3>
+                <p className="font-serif mt-2 text-sm leading-6 text-slate-300">Te ayudamos a reservar rápido, con opciones pensadas para cada momento y recomendaciones basadas en tu número de personas.</p>
               </div>
 
               <div className="overflow-hidden rounded-[32px] border border-white/10">
@@ -383,12 +383,12 @@ export const ReservationView = () => {
 
               <div className="grid gap-3">
                 <div className="rounded-[28px] border border-white/10 bg-slate-950/70 p-4">
-                  <p className="text-sm font-semibold text-white">Reserva con confianza</p>
-                  <p className="mt-2 text-xs leading-5 text-slate-400">Tus planos se guardan aquí mismo y puedes cambiar la mesa o la hora antes de confirmar.</p>
+                  <p className="font-serif text-sm font-semibold text-white">Reserva con confianza</p>
+                  <p className="font-serif mt-2 text-xs leading-5 text-slate-400">Tus planos se guardan aquí mismo y puedes cambiar la mesa o la hora antes de confirmar.</p>
                 </div>
                 <div className="rounded-[28px] border border-white/10 bg-slate-950/70 p-4">
-                  <p className="text-sm font-semibold text-white">Consejos rápidos</p>
-                  <ul className="mt-3 space-y-2 text-xs leading-5 text-slate-400">
+                  <p className="font-serif text-sm font-semibold text-white">Consejos rápidos</p>
+                  <ul className="font-serif mt-3 space-y-2 text-xs leading-5 text-slate-400">
                     <li>• Elige un horario temprano si buscas un ambiente tranquilo.</li>
                     <li>• Añade una nota si celebras una ocasión especial.</li>
                     <li>• Selecciona mesas con capacidad suficiente para tu grupo.</li>
@@ -435,7 +435,7 @@ export const ReservationView = () => {
             {/* ── STEP 1 ── */}
             {step === 1 && (
               <div className="animate-fadeIn space-y-4">
-                <h2 className="text-xl font-bold text-white">Selecciona restaurante y horario</h2>
+                <h2 className="font-serif text-xl font-bold text-white">Selecciona restaurante y horario</h2>
 
                 <label className={labelCls}>
                   Restaurante
@@ -508,8 +508,8 @@ export const ReservationView = () => {
               <div className="animate-fadeIn space-y-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <h2 className="text-xl font-bold text-white">Elige tu mesa</h2>
-                    <p className="mt-1 text-sm text-slate-400">
+                    <h2 className="font-serif text-xl font-bold text-white">Elige tu mesa</h2>
+                    <p className="font-serif mt-1 text-sm text-slate-400">
                       Selecciona mesas para cubrir <strong className="text-white">{form.numberPeople} personas</strong> en{' '}
                       <strong className="text-white">{selectedRestaurant?.restaurantName || 'el restaurante'}</strong>
                     </p>
@@ -607,8 +607,8 @@ export const ReservationView = () => {
               <div className="animate-fadeIn space-y-4">
                 <div className="flex items-center gap-3">
                   <div>
-                    <h2 className="text-xl font-bold text-white">Casi listo</h2>
-                    <p className="text-sm text-slate-400">Revisa los detalles y confirma tu reservación</p>
+                    <h2 className="font-serif text-xl font-bold text-white">Casi listo</h2>
+                    <p className="font-serif text-sm text-slate-400">Revisa los detalles y confirma tu reservación</p>
                   </div>
                 </div>
 
@@ -659,8 +659,8 @@ export const ReservationView = () => {
             <section className="rounded-[32px] border border-white/10 bg-slate-900/80 p-6 shadow-[0_24px_80px_-40px_rgba(15,23,42,0.9)]">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h2 className="text-xl font-bold text-white">Tus planes</h2>
-                  <p className="text-xs text-slate-400 mt-0.5">{myReservations.length} reservación{myReservations.length === 1 ? '' : 'es'}</p>
+                  <h2 className="font-serif text-xl font-bold text-white">Tus planes</h2>
+                  <p className="font-serif text-xs text-slate-400 mt-0.5">{myReservations.length} reservación{myReservations.length === 1 ? '' : 'es'}</p>
                 </div>
                 <button type="button" onClick={loadMyReservations} className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300 transition hover:border-slate-500">Actualizar</button>
               </div>

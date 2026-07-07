@@ -3,6 +3,7 @@ import Menu from '../src/menus/menu.model.js';
 import Promotion from '../src/promotions/promotion.model.js';
 import Inventory from '../src/inventory/inventory.model.js';
 import Review from '../src/reviews/review.model.js';
+import Table from '../src/tables/table.model.js';
 
 export const seedData = async () => {
     try {
@@ -116,8 +117,44 @@ export const seedData = async () => {
             ];
             await Promotion.insertMany(promotions);
             console.log("🌱 Promociones por defecto creadas exitosamente.");
+
+            // Crear mesas por defecto
+            const tables = [
+                {
+                    tableName: "Mesa 1",
+                    tableCapacity: 2,
+                    restaurantId: restaurant._id,
+                    tableActive: true
+                },
+                {
+                    tableName: "Mesa 2",
+                    tableCapacity: 4,
+                    restaurantId: restaurant._id,
+                    tableActive: true
+                },
+                {
+                    tableName: "Mesa 3",
+                    tableCapacity: 4,
+                    restaurantId: restaurant._id,
+                    tableActive: true
+                },
+                {
+                    tableName: "Mesa 4",
+                    tableCapacity: 6,
+                    restaurantId: restaurant._id,
+                    tableActive: true
+                },
+                {
+                    tableName: "Mesa 5",
+                    tableCapacity: 8,
+                    restaurantId: restaurant._id,
+                    tableActive: true
+                }
+            ];
+            await Table.insertMany(tables);
+            console.log("🌱 Mesas por defecto creadas exitosamente.");
         } else {
-            console.log("ℹ️ Los datos por defecto ya se encuentran registrados. Actualizando imágenes si es necesario...");
+            console.log("Los datos por defecto ya se encuentran registrados. Actualizando imágenes si es necesario...");
             await Restaurant.updateOne(
                 { _id: restaurant._id },
                 { $set: { restaurantPhoto: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80" } }
@@ -194,6 +231,45 @@ export const seedData = async () => {
                 ];
                 await Review.insertMany(reviews);
                 console.log("🌱 Reseñas por defecto añadidas al restaurante existente.");
+            }
+
+            // Verificar si hay mesas, si no, agregarlas
+            const existingTables = await Table.countDocuments({ restaurantId: restaurant._id });
+            if (existingTables === 0) {
+                const tables = [
+                    {
+                        tableName: "Mesa 1",
+                        tableCapacity: 2,
+                        restaurantId: restaurant._id,
+                        tableActive: true
+                    },
+                    {
+                        tableName: "Mesa 2",
+                        tableCapacity: 4,
+                        restaurantId: restaurant._id,
+                        tableActive: true
+                    },
+                    {
+                        tableName: "Mesa 3",
+                        tableCapacity: 4,
+                        restaurantId: restaurant._id,
+                        tableActive: true
+                    },
+                    {
+                        tableName: "Mesa 4",
+                        tableCapacity: 6,
+                        restaurantId: restaurant._id,
+                        tableActive: true
+                    },
+                    {
+                        tableName: "Mesa 5",
+                        tableCapacity: 8,
+                        restaurantId: restaurant._id,
+                        tableActive: true
+                    }
+                ];
+                await Table.insertMany(tables);
+                console.log("🌱 Mesas por defecto añadidas al restaurante existente.");
             }
         }
 
@@ -287,6 +363,36 @@ export const seedData = async () => {
             ];
             await Review.insertMany(reviews2);
             console.log("🌱 Menús, promociones y reseñas del segundo restaurante creados exitosamente.");
+
+            // Crear mesas para la pizzería
+            const tables2 = [
+                {
+                    tableName: "Mesa A",
+                    tableCapacity: 2,
+                    restaurantId: restaurant2._id,
+                    tableActive: true
+                },
+                {
+                    tableName: "Mesa B",
+                    tableCapacity: 4,
+                    restaurantId: restaurant2._id,
+                    tableActive: true
+                },
+                {
+                    tableName: "Mesa C",
+                    tableCapacity: 6,
+                    restaurantId: restaurant2._id,
+                    tableActive: true
+                },
+                {
+                    tableName: "Mesa D",
+                    tableCapacity: 8,
+                    restaurantId: restaurant2._id,
+                    tableActive: true
+                }
+            ];
+            await Table.insertMany(tables2);
+            console.log("🌱 Mesas para la pizzería creadas exitosamente.");
         }
     } catch (error) {
         console.error("❌ Error al poblar datos por defecto:", error);

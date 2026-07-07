@@ -64,23 +64,23 @@ const ReviewCard = ({ review, currentUserId, onDelete }) => {
     : 'AN'
 
   return (
-    <div className="rounded-2xl border border-rose-100 bg-white p-4 shadow-sm">
+    <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-4 shadow-sm">
       <div className="flex items-start gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-rose-100 text-xs font-bold text-rose-700">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-orange-500/20 text-xs font-bold text-orange-300">
           {initials}
         </div>
         <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
-            <p className="text-sm font-semibold text-slate-900 truncate">
+            <p className="text-sm font-semibold text-white truncate">
               {review.userName ?? 'Anónimo'}
             </p>
             <div className="flex items-center gap-2">
-              <span className="shrink-0 text-xs text-slate-400">{date}</span>
+              <span className="shrink-0 text-xs text-slate-500">{date}</span>
               {isOwner && (
                 <button
                   type="button"
                   onClick={() => onDelete(review._id)}
-                  className="shrink-0 text-xs text-rose-500 hover:text-rose-700 font-semibold transition-colors"
+                  className="shrink-0 text-xs text-rose-400 hover:text-rose-300 font-semibold transition-colors"
                   title="Eliminar mi reseña"
                 >
                   ×
@@ -94,7 +94,7 @@ const ReviewCard = ({ review, currentUserId, onDelete }) => {
         </div>
       </div>
       {review.comment && (
-        <p className="mt-3 text-sm text-slate-600 leading-relaxed pl-12">{review.comment}</p>
+        <p className="mt-3 text-sm text-slate-400 leading-relaxed pl-12">{review.comment}</p>
       )}
     </div>
   )
@@ -115,6 +115,7 @@ export const ClientReviews = () => {
   const [submitting, setSubmitting] = useState(false)
   const [initLoading, setInitLoading] = useState(true)
   const [starFilter, setStarFilter] = useState(0)
+  const [mounted, setMounted] = useState(false)
 
   // â”€â”€ Init â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
@@ -141,6 +142,7 @@ export const ClientReviews = () => {
         }
       } finally {
         setInitLoading(false)
+        setTimeout(() => setMounted(true), 60)
       }
     }
     init()
@@ -235,38 +237,38 @@ export const ClientReviews = () => {
 
   // â”€â”€ Render â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   return (
-    <section className="bg-amber-50 -mt-9 -mx-6 px-6 pt-9 pb-16 min-h-screen">
+    <section className="font-serif -mt-9 -mx-6 px-6 pt-9 pb-16 min-h-screen">
       <div className="w-full space-y-5">
 
         {/* â”€â”€ HEADER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-        <header className="relative overflow-hidden rounded-2xl border border-rose-100 bg-white p-8 shadow-sm">
-          <div className="pointer-events-none absolute -right-8 -top-8 h-36 w-36 rounded-full bg-rose-50 blur-md" />
-          <div className="pointer-events-none absolute -bottom-6 left-8 h-24 w-24 rounded-full bg-rose-50/40 blur-sm" />
-          <div className="relative flex flex-col md:flex-row items-start gap-6 justify-between">
+        <header className={`rounded-[32px] border border-slate-800/80 bg-slate-900/70 p-8 shadow-[0_40px_120px_-40px_rgba(15,23,42,0.8)] backdrop-blur-sm transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+          <div className="flex flex-col md:flex-row items-start gap-6 justify-between">
             <div className="flex-1">
-              <p className="text-xs uppercase tracking-[0.28em] text-rose-600">Mi experiencia</p>
-              <h1 className="font-serif mt-2 text-3xl font-bold text-rose-900 sm:text-4xl">
-                Reseñas y calificaciones
+              <p className={`inline-flex items-center gap-2 rounded-full bg-orange-500/15 px-4 py-2 text-sm font-semibold uppercase tracking-[0.26em] text-orange-300 transition-all duration-500 ${mounted ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
+                Mi experiencia
+              </p>
+              <h1 className={`font-serif mt-6 text-4xl font-bold text-white sm:text-5xl transition-all duration-700 delay-100 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'}`}>
+                Reseñas y <span className="text-orange-400">calificaciones</span>
               </h1>
-              <p className="mt-2 text-sm text-slate-600 sm:text-base">
+              <p className={`mt-4 text-base text-slate-300 leading-8 transition-all duration-800 delay-200 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
                 Comparte tu opinión sobre los{' '}
-                <span className="font-medium text-rose-700">restaurantes y platillos</span>{' '}
+                <span className="font-medium text-orange-400">restaurantes y platillos</span>{' '}
                 que hayas visitado. Tu experiencia ayuda a otros clientes a elegir mejor.
               </p>
               {/* Tabs */}
-              <div className="mt-5 flex gap-2 flex-wrap">
+              <div className={`mt-6 flex gap-2 flex-wrap transition-all duration-700 delay-300 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}>
                 {[
-                  { key: 'restaurant', label: '🏠 Restaurantes' },
-                  { key: 'menu',       label: '🍽️ Platillos' },
+                  { key: 'restaurant', label: 'Restaurantes' },
+                  { key: 'menu',       label: 'Platillos' },
                 ].map(({ key, label }) => (
                   <button
                     key={key}
                     type="button"
                     onClick={() => handleTabChange(key)}
-                    className={`inline-flex items-center rounded-full border px-4 py-1.5 text-xs font-semibold transition-all ${
+                    className={`inline-flex items-center rounded-full border px-4 py-1.5 text-xs font-semibold transition-all duration-200 ${
                       tab === key
-                        ? 'border-rose-600 bg-rose-600 text-white shadow-sm'
-                        : 'border-rose-100 bg-white text-rose-700 hover:border-rose-300'
+                        ? 'border-orange-500 bg-orange-500 text-slate-950 shadow-sm scale-105'
+                        : 'border-slate-700 bg-slate-950/70 text-slate-300 hover:border-slate-600 hover:bg-slate-900 hover:scale-105'
                     }`}
                   >
                     {label}
@@ -279,11 +281,10 @@ export const ClientReviews = () => {
 
         {/* â”€â”€ Activity warning â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         {!initLoading && !hasActivity && (
-          <div className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-white px-5 py-4 shadow-sm">
-            <span className="text-lg">⚠️</span>
+          <div className="flex items-start gap-3 rounded-[32px] border border-orange-500/30 bg-orange-500/10 px-5 py-4 shadow-sm">
             <div>
-              <p className="text-sm font-semibold text-amber-800">Sin actividad registrada</p>
-              <p className="text-xs text-amber-700 mt-0.5">
+              <p className="text-sm font-semibold text-orange-300">Sin actividad registrada</p>
+              <p className="text-xs text-orange-400/80 mt-0.5">
                 Necesitas al menos un pedido para dejar una reseña. Puedes leer opiniones de otros clientes.
               </p>
             </div>
@@ -293,25 +294,24 @@ export const ClientReviews = () => {
         {/* â”€â”€ MAIN GRID â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         {initLoading ? (
           <div className="flex justify-center py-20">
-            <div className="h-9 w-9 animate-spin rounded-full border-4 border-rose-500 border-t-transparent" />
+            <div className="h-9 w-9 animate-spin rounded-full border-4 border-orange-500 border-t-transparent" />
           </div>
         ) : (
           <section className="grid gap-5 xl:grid-cols-[1.3fr_0.9fr]">
 
             {/* â”€â”€ Left: restaurant/menu cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-            <article className="rounded-3xl border border-rose-100 bg-rose-50/90 p-6 shadow-sm">
-              <p className="text-xs uppercase tracking-[0.28em] text-rose-700">Descubre</p>
-              <h2 className="mt-2 text-xl font-semibold text-rose-900">
+            <article className="rounded-[32px] border border-slate-800/80 bg-slate-900/70 p-6 shadow-[0_40px_120px_-40px_rgba(15,23,42,0.8)] backdrop-blur-sm">
+              <p className="inline-flex items-center gap-2 rounded-full bg-orange-500/15 px-4 py-2 text-sm font-semibold uppercase tracking-[0.26em] text-orange-300">Descubre</p>
+              <h2 className="mt-4 text-xl font-semibold text-white">
                 {tab === 'restaurant' ? 'Restaurantes disponibles' : 'Platillos del menú'}
               </h2>
-              <p className="mt-1 text-sm leading-6 text-slate-700">
+              <p className="mt-2 text-sm leading-6 text-slate-300">
                 Selecciona un {tab === 'restaurant' ? 'restaurante' : 'platillo'} para leer sus reseñas
                 {hasActivity ? ' y dejar la tuya.' : '.'}
               </p>
 
               {items.length === 0 ? (
-                <div className="mt-6 flex flex-col items-center justify-center rounded-2xl border border-dashed border-rose-200 py-14 text-center">
-                  <span className="text-3xl">🍽️</span>
+                <div className="mt-6 flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-700 py-14 text-center">
                   <p className="mt-3 text-sm text-slate-500">
                     No hay {tab === 'restaurant' ? 'restaurantes' : 'platillos'} disponibles.
                   </p>
@@ -330,13 +330,13 @@ export const ClientReviews = () => {
                         key={item._id}
                         type="button"
                         onClick={() => handleSelect(item._id)}
-                        className={`group overflow-hidden rounded-3xl border-2 text-left transition-all shadow-sm hover:shadow-md ${
+                        className={`group overflow-hidden rounded-[24px] border-2 text-left transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1 active:scale-95 ${
                           isSelected
-                            ? 'border-rose-500 ring-2 ring-rose-200'
-                            : 'border-rose-100 bg-white hover:border-rose-300'
+                            ? 'border-orange-500 ring-2 ring-orange-500/20 bg-slate-950'
+                            : 'border-white/10 bg-slate-950/70 hover:border-orange-400/30'
                         }`}
                       >
-                        <div className="h-36 w-full overflow-hidden bg-slate-100">
+                        <div className="h-36 w-full overflow-hidden bg-slate-900">
                           {item[photoKey] ? (
                             <img
                               src={item[photoKey]}
@@ -344,20 +344,19 @@ export const ClientReviews = () => {
                               className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                             />
                           ) : (
-                            <div className="flex h-full items-center justify-center bg-gradient-to-br from-rose-50 to-amber-50">
-                            <span className="text-3xl opacity-40">🍽️</span>
+                            <div className="flex h-full items-center justify-center bg-gradient-to-br from-slate-800 to-slate-950">
                             </div>
                           )}
                         </div>
-                        <div className={`p-3 ${isSelected ? 'bg-rose-50' : 'bg-white'}`}>
-                          <h3 className="text-sm font-semibold text-slate-900 truncate">{item[nameKey]}</h3>
+                        <div className={`p-3 ${isSelected ? 'bg-slate-900' : 'bg-slate-950/70'}`}>
+                          <h3 className="text-sm font-semibold text-white truncate">{item[nameKey]}</h3>
                           {avg ? (
                             <div className="mt-1.5 flex items-center gap-1.5">
                               <StarRating value={Math.round(Number(avg))} readonly size="sm" />
-                              <span className="text-xs text-slate-500 shrink-0">{avg} · {itemReviews.length} {itemReviews.length === 1 ? 'reseña' : 'reseñas'}</span>
+                              <span className="text-xs text-slate-400 shrink-0">{avg} · {itemReviews.length} {itemReviews.length === 1 ? 'reseña' : 'reseñas'}</span>
                             </div>
                           ) : (
-                            <p className="mt-1 text-xs italic text-slate-400">Sin reseñas aún</p>
+                            <p className="mt-1 text-xs italic text-slate-500">Sin reseñas aún</p>
                           )}
                         </div>
                       </button>
@@ -368,31 +367,29 @@ export const ClientReviews = () => {
             </article>
 
             {/* â”€â”€ Right: detail panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-            <article className="relative overflow-hidden rounded-3xl bg-white shadow-sm">
-              {/* Radial gradient decoration */}
-              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(251,207,232,0.5),transparent_30%),radial-gradient(circle_at_bottom_right,rgba(254,215,170,0.4),transparent_35%)]" />
+            <article className="relative overflow-hidden rounded-[32px] border border-white/10 bg-slate-900/80 shadow-[0_24px_80px_-40px_rgba(15,23,42,0.9)]">
 
               {!selectedId ? (
                 /* â”€â”€ Inspiration placeholder â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
                 <div className="relative flex h-full flex-col gap-5 p-6">
                   <div>
-                    <p className="text-xs uppercase tracking-[0.28em] text-rose-600">Tu opinión</p>
-                    <h3 className="mt-2 text-xl font-bold text-slate-900">Tu reseña vale mucho</h3>
-                    <p className="mt-2 text-sm leading-6 text-slate-700">
+                    <p className="text-xs uppercase tracking-[0.28em] text-orange-400">Tu opinión</p>
+                    <h3 className="mt-2 text-xl font-bold text-white">Tu reseña vale mucho</h3>
+                    <p className="mt-2 text-sm leading-6 text-slate-400">
                       Ayuda a otros comensales a descubrir los mejores lugares. Elige un restaurante de la lista para empezar.
                     </p>
                   </div>
 
                   <div className="grid gap-3 mt-auto">
-                    <div className="rounded-3xl bg-rose-700/10 p-4">
-                      <p className="text-sm font-semibold text-rose-800">Reseñas honestas</p>
-                      <p className="mt-2 text-xs leading-5 text-slate-700">
+                    <div className="rounded-3xl bg-orange-500/15 border border-orange-500/30 p-4">
+                      <p className="text-sm font-semibold text-orange-300">Reseñas honestas</p>
+                      <p className="mt-2 text-xs leading-5 text-slate-400">
                         Tu opinión ayuda a los restaurantes a mejorar y a otros clientes a elegir con confianza.
                       </p>
                     </div>
-                    <div className="rounded-3xl bg-white p-4 ring-1 ring-rose-100">
-                      <p className="text-sm font-semibold text-slate-900">Consejos al calificar</p>
-                      <ul className="mt-3 space-y-2 text-xs leading-5 text-slate-600">
+                    <div className="rounded-3xl bg-slate-950/70 border border-white/10 p-4">
+                      <p className="text-sm font-semibold text-white">Consejos al calificar</p>
+                      <ul className="mt-3 space-y-2 text-xs leading-5 text-slate-400">
                         <li>• Sé específico sobre lo que más te gustó.</li>
                         <li>• Menciona el servicio, la comida y el ambiente.</li>
                         <li>• Una calificación justa ayuda a todos.</li>
@@ -404,16 +401,16 @@ export const ClientReviews = () => {
                 /* â”€â”€ Selected restaurant detail â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
                 <div className="relative flex flex-col h-full">
                   {/* Detail header */}
-                  <div className="flex items-start justify-between gap-3 border-b border-rose-100 p-5">
+                  <div className="flex items-start justify-between gap-3 border-b border-slate-800 p-5">
                     <div>
-                      <p className="text-xs uppercase tracking-[0.28em] text-rose-600">
+                      <p className="text-xs uppercase tracking-[0.28em] text-orange-400">
                         {tab === 'restaurant' ? 'Restaurante' : 'Platillo'}
                       </p>
-                      <h3 className="mt-1 text-lg font-bold text-slate-900">{selectedItem?.[nameKey]}</h3>
+                      <h3 className="mt-1 text-lg font-bold text-white">{selectedItem?.[nameKey]}</h3>
                       {avgRating > 0 && (
                         <div className="mt-1 flex items-center gap-2">
                           <StarRating value={Math.round(avgRating)} readonly size="sm" />
-                          <span className="text-xs text-slate-500">
+                          <span className="text-xs text-slate-400">
                             {avgRating.toFixed(1)} · {selectedReviews.length} {selectedReviews.length === 1 ? 'reseña' : 'reseñas'}
                           </span>
                         </div>
@@ -422,7 +419,7 @@ export const ClientReviews = () => {
                     <button
                       type="button"
                       onClick={() => setSelectedId('')}
-                      className="rounded-xl border border-rose-100 px-2 py-1 text-xs text-rose-400 hover:bg-rose-50 transition"
+                      className="rounded-xl border border-slate-700 px-2 py-1 text-xs text-slate-400 hover:bg-slate-800 transition"
                     >
                       ✕
                     </button>
@@ -431,7 +428,7 @@ export const ClientReviews = () => {
                   <div className="flex flex-col gap-5 overflow-y-auto p-5 flex-1">
                     {/* Reviews list */}
                     <div>
-                      <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-3">
+                      <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">
                         Opiniones ({selectedReviews.length})
                       </p>
 
@@ -443,8 +440,8 @@ export const ClientReviews = () => {
                             onClick={() => setStarFilter(0)}
                             className={`rounded-full border px-3 py-1 text-xs font-semibold transition-all ${
                               starFilter === 0
-                                ? 'border-rose-500 bg-rose-500 text-white'
-                                : 'border-rose-100 bg-white text-rose-600 hover:border-rose-300'
+                                ? 'border-orange-500 bg-orange-500 text-slate-950'
+                                : 'border-slate-700 bg-slate-950/70 text-slate-400 hover:border-slate-600'
                             }`}
                           >
                             Todas ({selectedReviews.length})
@@ -457,8 +454,8 @@ export const ClientReviews = () => {
                                 onClick={() => setStarFilter(starFilter === s ? 0 : s)}
                                 className={`rounded-full border px-3 py-1 text-xs font-semibold transition-all ${
                                   starFilter === s
-                                    ? 'border-amber-400 bg-amber-400 text-white'
-                                    : 'border-rose-100 bg-white text-slate-600 hover:border-amber-300'
+                                    ? 'border-amber-400 bg-amber-400 text-slate-950'
+                                    : 'border-slate-700 bg-slate-950/70 text-slate-400 hover:border-amber-400/50'
                                 }`}
                               >
                                 {s}★ ({count})
@@ -470,48 +467,46 @@ export const ClientReviews = () => {
 
                       {reviewsLoading ? (
                         <div className="flex justify-center py-8">
-                          <div className="h-6 w-6 animate-spin rounded-full border-4 border-rose-400 border-t-transparent" />
+                          <div className="h-6 w-6 animate-spin rounded-full border-4 border-orange-400 border-t-transparent" />
                         </div>
                       ) : selectedReviews.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-rose-100 py-8 text-center">
-                          <span className="text-2xl">💬</span>
+                        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-white/10 py-8 text-center">
                           <p className="mt-2 text-xs text-slate-500">Aún no hay reseñas.</p>
-                          {hasActivity && <p className="text-xs text-rose-400 mt-0.5">¡Sé el primero en opinar!</p>}
+                          {hasActivity && <p className="text-xs text-orange-400 mt-0.5">¡Sé el primero en opinar!</p>}
                         </div>
                       ) : filteredReviews.length > 0 ? (
                         <div className="flex flex-col gap-2 max-h-56 overflow-y-auto pr-1">
                           {filteredReviews.map((r) => <ReviewCard key={r._id} review={r} currentUserId={user?.uid} onDelete={handleDeleteReview} />)}
                         </div>
                       ) : (
-                        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-amber-100 py-6 text-center">
-                          <span className="text-xl">🔍</span>
+                        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-amber-500/30 py-6 text-center">
                           <p className="mt-2 text-xs text-slate-500">No hay reseñas de {starFilter}★ para este elemento.</p>
-                          <button type="button" onClick={() => setStarFilter(0)} className="mt-1.5 text-xs text-rose-500 hover:underline">Ver todas</button>
+                          <button type="button" onClick={() => setStarFilter(0)} className="mt-1.5 text-xs text-orange-400 hover:underline">Ver todas</button>
                         </div>
                       )}
                     </div>
 
                     {/* Write review form */}
                     {hasActivity ? (
-                      <form onSubmit={handleSubmit} className="flex flex-col gap-4 rounded-2xl border border-rose-100 bg-rose-50/60 p-4">
-                        <p className="text-xs font-semibold uppercase tracking-widest text-rose-700">
+                      <form onSubmit={handleSubmit} className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-slate-950/70 p-4">
+                        <p className="text-xs font-semibold uppercase tracking-widest text-orange-400">
                           Deja tu reseña
                         </p>
 
                         <div className="flex flex-col gap-1.5">
-                          <label className="text-xs font-semibold text-slate-500">Puntuación *</label>
+                          <label className="text-xs font-semibold text-slate-400">Puntuación *</label>
                           <StarRating
                             value={form.rating}
                             onChange={(v) => setForm((p) => ({ ...p, rating: v }))}
                           />
                           {form.rating > 0 && (
-                            <p className="text-xs font-medium text-rose-600">{RATING_LABELS[form.rating]}</p>
+                            <p className="text-xs font-medium text-orange-400">{RATING_LABELS[form.rating]}</p>
                           )}
                         </div>
 
                         <div className="flex flex-col gap-1.5">
-                          <label className="text-xs font-semibold text-slate-500">
-                            Comentario <span className="font-normal text-slate-400">(opcional)</span>
+                          <label className="text-xs font-semibold text-slate-400">
+                            Comentario <span className="font-normal text-slate-500">(opcional)</span>
                           </label>
                           <textarea
                             value={form.comment}
@@ -519,15 +514,15 @@ export const ClientReviews = () => {
                             rows={3}
                             maxLength={500}
                             placeholder="Describe tu experiencia..."
-                            className="w-full rounded-xl border border-rose-200 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-100 resize-none transition"
+                            className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-white placeholder:text-slate-500 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 resize-none transition"
                           />
-                          <p className="text-right text-xs text-slate-400">{form.comment.length}/500</p>
+                          <p className="text-right text-xs text-slate-500">{form.comment.length}/500</p>
                         </div>
 
                         <button
                           type="submit"
                           disabled={submitting || !form.rating}
-                          className="rounded-xl bg-rose-600 py-2.5 text-sm font-semibold text-white shadow-sm shadow-rose-200 hover:bg-rose-700 transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="rounded-xl bg-orange-500 py-2.5 text-sm font-semibold text-slate-950 shadow-lg shadow-orange-500/20 hover:bg-orange-400 transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {submitting ? (
                             <span className="flex items-center justify-center gap-2">
@@ -538,10 +533,9 @@ export const ClientReviews = () => {
                         </button>
                       </form>
                     ) : (
-                      <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-rose-100 py-8 text-center px-4">
-                        <span className="text-2xl">🛒</span>
-                        <p className="mt-2 text-xs font-semibold text-slate-600">Realiza un pedido primero</p>
-                        <p className="mt-1 text-xs text-slate-400 leading-relaxed">
+                      <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-white/10 py-8 text-center px-4">
+                        <p className="mt-2 text-xs font-semibold text-slate-400">Realiza un pedido primero</p>
+                        <p className="mt-1 text-xs text-slate-500 leading-relaxed">
                           Necesitas tener al menos un pedido para dejar una reseña.
                         </p>
                       </div>

@@ -5,10 +5,11 @@ import { getRestaurants } from '../../../shared/api/restaurants'
 import { ModaInventory } from './ModaInventory'
 import { FilterBar } from '../../../shared/components/ui/FilterBar'
 
+// Función de color de stock optimizada para entornos oscuros
 const getStockColor = (qty) => {
-  if (qty <= 10) return 'bg-rose-100 text-rose-700'
-  if (qty <= 25) return 'bg-amber-100 text-amber-700'
-  return 'bg-emerald-100 text-emerald-700'
+  if (qty <= 10) return 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+  if (qty <= 25) return 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+  return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
 }
 
 export const Inventory = () => {
@@ -92,49 +93,66 @@ export const Inventory = () => {
   }
 
   return (
-    <section className="space-y-6 font-body">
-      <header className="relative overflow-hidden rounded-[30px] border border-slate-200 bg-[radial-gradient(circle_at_top_left,_rgba(12,74,110,0.22),_transparent_50%),linear-gradient(120deg,_#0f172a_0%,_#0b1f3b_40%,_#1e3a8a_100%)] p-8 text-white shadow-xl">
-        <div className="absolute right-6 top-6 h-24 w-24 rounded-full bg-white/10 blur-2xl" />
-        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-3xl">
-            <p className="inline-flex rounded-full bg-white/12 px-4 py-1 text-xs font-semibold uppercase tracking-[0.32em] text-blue-100">
-              Inventario
-            </p>
-            <h1 className="font-display mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
-              Gestión de inventario por restaurante
-            </h1>
-            <p className="mt-3 text-sm text-slate-200 sm:text-base">
-              Stock disponible por restaurante con indicadores de nivel de inventario.
-            </p>
+    <section className="space-y-6 font-sans text-slate-300 antialiased max-w-[1600px] mx-auto p-4 md:p-6">
+      
+      {/* Header Estilo Premium */}
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-800 pb-5">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-blue-400" />
+            <span className="text-xs font-bold uppercase tracking-wider text-blue-400">Control de Existencias</span>
           </div>
+          <h1 className="mt-1 text-2xl font-bold tracking-tight text-white md:text-3xl">
+            Gestión de Inventario
+          </h1>
+          <p className="mt-1 text-sm text-slate-400">
+            Supervisa los niveles de insumos y disponibilidad de porciones por sucursal en tiempo real.
+          </p>
+        </div>
 
-          <div className="flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={loadData}
-              className="rounded-full border border-white/20 bg-white/10 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
-            >
-              Recargar
-            </button>
-          </div>
+        <div>
+          <button
+            type="button"
+            onClick={loadData}
+            className="inline-flex items-center justify-center rounded-xl border border-slate-700 bg-slate-800/80 px-4 py-2.5 text-sm font-semibold text-slate-200 shadow-sm backdrop-blur-sm transition-all hover:bg-slate-700 hover:text-white"
+          >
+            Recargar datos
+          </button>
         </div>
       </header>
 
+      {error && (
+        <div className="rounded-xl bg-rose-500/10 border border-rose-500/20 p-4 text-center text-sm text-rose-400 font-medium">
+          {error}
+        </div>
+      )}
+
+      {/* Contenedor Principal */}
       <div className="grid gap-6">
-        <section className="rounded-[26px] border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex flex-col gap-4 border-b border-slate-100 pb-5 sm:flex-row sm:items-center sm:justify-between">
+        <section className="rounded-2xl border border-slate-800 bg-slate-900/40 backdrop-blur-md p-5 shadow-xl space-y-5">
+          
+          {/* Fila de Título y Filtros Rápidos / Badges */}
+          <div className="flex flex-col gap-4 border-b border-slate-800/60 pb-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h2 className="font-display text-xl font-semibold text-slate-900">Listado general</h2>
-              <p className="text-sm text-slate-500">Explora el inventario disponible por restaurante.</p>
+              <h2 className="text-base font-bold text-white">Listado general de insumos</h2>
+              <p className="text-xs text-slate-400">Explora el stock consolidado según el flujo operativo.</p>
             </div>
-            <div className="flex flex-wrap gap-2 text-xs font-semibold uppercase tracking-[0.2em]">
-              <div className="rounded-full px-4 py-2 bg-slate-100 text-slate-500">Total: {stats.total}</div>
-              <div className="rounded-full px-4 py-2 bg-amber-50 text-amber-700">Bajo: {stats.lowStock}</div>
-              <div className="rounded-full px-4 py-2 bg-emerald-50 text-emerald-700">Suficiente: {stats.high}</div>
+            
+            <div className="flex flex-wrap gap-2 text-[10px] font-bold uppercase tracking-wider">
+              <div className="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1.5 text-slate-300">
+                Total: {stats.total}
+              </div>
+              <div className="rounded-lg border border-rose-500/20 bg-rose-500/10 px-3 py-1.5 text-rose-400">
+                Crítico / Bajo: {stats.lowStock}
+              </div>
+              <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 text-emerald-400">
+                Suficiente: {stats.high}
+              </div>
             </div>
           </div>
 
-          <div className="mt-4 mb-4">
+          {/* Buscador Integrado */}
+          <div className="pt-1">
             <FilterBar
               searchTerm={searchTerm}
               onSearchChange={setSearchTerm}
@@ -143,61 +161,69 @@ export const Inventory = () => {
             />
           </div>
 
-          <div className="mt-6 space-y-4">
+          {/* Listado de Artículos */}
+          <div className="space-y-4 pt-2">
             {loading && (
-              <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center text-sm text-slate-500">
-                Cargando inventario...
+              <div className="p-12 text-center text-sm text-slate-400 animate-pulse font-medium">
+                Sincronizando el almacén general con cocina...
               </div>
             )}
 
             {!loading && filteredItems.length === 0 && (
-              <div className="rounded-2xl border border-slate-200 bg-white px-4 py-6 text-center text-sm text-slate-500">
-                No hay productos en inventario.
+              <div className="p-12 text-center text-sm text-slate-500 rounded-xl border border-dashed border-slate-800">
+                No se registran productos en inventario bajo esta búsqueda.
               </div>
             )}
 
             {!loading && filteredItems.length > 0 && (
-              <div className="grid gap-4">
+              <div className="grid gap-4 md:grid-cols-1 xl:grid-cols-2">
                 {filteredItems.map((item) => (
                   <article
                     key={item._id}
                     onClick={() => setSelectedItem(item)}
-                    className="cursor-pointer rounded-[26px] border border-slate-100 bg-white p-5 shadow-sm transition hover:shadow-md"
+                    className="cursor-pointer rounded-xl border border-slate-800/70 bg-slate-950/30 p-4 shadow-sm transition-all hover:border-slate-700 hover:bg-slate-800/20 flex flex-col sm:flex-row gap-4 items-start group"
                   >
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-                      <div className="h-20 w-20 overflow-hidden rounded-2xl bg-slate-900/10 flex items-center justify-center text-xl font-semibold text-slate-700">
-                        {item.menuPhoto ? (
-                          <img
-                            src={item.menuPhoto}
-                            alt={item.menuName || 'Imagen de menú'}
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          (item.menuName || 'P').charAt(0)
-                        )}
-                      </div>
+                    {/* Thumbnail / Imagen del menú */}
+                    <div className="h-16 w-16 overflow-hidden rounded-xl border border-slate-800 bg-slate-950 flex items-center justify-center text-sm font-black text-slate-500 shrink-0 shadow-inner">
+                      {item.menuPhoto ? (
+                        <img
+                          src={item.menuPhoto}
+                          alt={item.menuName || 'Imagen'}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        (item.menuName || 'P').charAt(0).toUpperCase()
+                      )}
+                    </div>
 
-                      <div className="flex-1">
-                        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                          <div>
-                            <h3 className="font-display text-lg font-semibold text-slate-900">{item.menuName}</h3>
-                            <p className="text-xs uppercase tracking-[0.2em] text-slate-400">{item.restaurantName}</p>
-                          </div>
-
-                          <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getStockColor(item.quantity)}`}>
-                            Stock: {item.quantity}
-                          </span>
+                    {/* Información Descriptiva */}
+                    <div className="flex-1 min-w-0 space-y-3 w-full">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <h3 className="text-base font-bold text-white group-hover:text-orange-400 transition-colors truncate">
+                            {item.menuName}
+                          </h3>
+                          <p className="text-xs font-semibold text-indigo-400 tracking-wide mt-0.5 truncate">
+                            {item.restaurantName}
+                          </p>
                         </div>
 
-                        <div className="mt-3 grid gap-3 text-sm text-slate-600 sm:grid-cols-2">
-                          <div>
-                            <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Última actualización</p>
-                            <p className="font-medium text-slate-700">{new Date().toLocaleDateString()}</p>
-                          </div>
-                          <div>
-                            <p className="text-xs uppercase tracking-[0.2em] text-slate-400">ID</p>
-                            <p className="font-medium text-slate-700">{item._id}</p>
-                          </div>
+                        <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-bold shrink-0 ${getStockColor(item.quantity)}`}>
+                          Stock: {item.quantity}
+                        </span>
+                      </div>
+
+                      {/* Parámetros Operativos Secundarios */}
+                      <div className="grid gap-3 grid-cols-2 pt-2.5 border-t border-slate-800/40 text-xs">
+                        <div>
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Último Balance</p>
+                          <p className="font-medium text-slate-300 pt-0.5">{new Date().toLocaleDateString()}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Código SKA / ID</p>
+                          <p className="font-medium text-slate-500 font-mono pt-0.5 truncate" title={item._id}>
+                            {item._id}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -207,9 +233,9 @@ export const Inventory = () => {
             )}
           </div>
         </section>
-
       </div>
 
+      {/* Modal CRUD Flotante del Subcomponente */}
       <ModaInventory item={selectedItem} onClose={() => setSelectedItem(null)} />
     </section>
   )

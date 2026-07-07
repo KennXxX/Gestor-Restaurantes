@@ -268,83 +268,127 @@ export const Orders = () => {
   }
 
   return (
-    <section className="space-y-6 font-body">
-      <header className="rounded-[28px] border border-emerald-200 bg-[radial-gradient(circle_at_top_right,_rgba(16,185,129,0.18),_transparent_60%),linear-gradient(120deg,_#ecfdf5_0%,_#d1fae5_60%,_#a7f3d0_100%)] p-8 shadow-sm flex flex-wrap justify-between items-center gap-4">
+    <section className="space-y-6 font-sans text-slate-300 antialiased max-w-[1600px] mx-auto p-4 md:p-6">
+      
+      {/* Header Estilo Premium Oscuro */}
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-800 pb-5">
         <div>
-          <p className="inline-flex rounded-full bg-emerald-700 px-4 py-1 text-xs font-semibold uppercase tracking-[0.32em] text-emerald-50">Orders</p>
-          <h1 className="font-display mt-4 text-3xl font-semibold text-slate-900 sm:text-4xl">Gestión de órdenes</h1>
-          <p className="mt-3 text-sm text-slate-700 sm:text-base">Listado de órdenes, creación de nuevas órdenes, actualización de estado y vista de detalle.</p>
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-emerald-400" />
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">Panel de Control</span>
+          </div>
+          <h1 className="mt-1 text-2xl font-bold tracking-tight text-white md:text-3xl">
+            Gestión de Órdenes
+          </h1>
+          <p className="mt-1 text-sm text-slate-400">
+            Monitorea comandas en tiempo real, despacha flujos y gestiona peticiones del salón.
+          </p>
         </div>
-        <button
-          onClick={() => { resetForm(); setIsModalOpen(true); }}
-          className="rounded-xl bg-emerald-600 px-6 py-3 text-sm font-bold text-white shadow-lg hover:bg-emerald-500 transition-all shrink-0"
-        >
-          + Nueva Orden
-        </button>
+
+        <div>
+          <button
+            onClick={() => { resetForm(); setIsModalOpen(true); }}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:bg-emerald-500 active:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-slate-900"
+          >
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Nueva Orden
+          </button>
+        </div>
       </header>
 
-      <div className="grid gap-6 xl:grid-cols-[1.4fr_1fr]">
-        <section className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <h2 className="font-display text-xl font-semibold text-slate-900">Listado de órdenes</h2>
-            <label className="text-sm font-medium text-slate-700">
-              Restaurante
-              <select
-                className="ml-3 rounded-xl border px-3 py-2 text-sm"
-                value={restaurantFilter}
-                onChange={(e) => setRestaurantFilter(e.target.value)}
-              >
-                <option value="">Todos los restaurantes</option>
-                {restaurants.map((restaurant) => (
-                  <option key={restaurant._id} value={restaurant._id}>{restaurant.restaurantName}</option>
-                ))}
-              </select>
-            </label>
+      {/* Grid de Contenido Principal */}
+      <div className="grid gap-6 xl:grid-cols-[1fr_420px]">
+        
+        {/* Bloque Izquierdo: Monitor de Órdenes y Filtro Global */}
+        <div className="space-y-6">
+          
+          {/* Card de Filtros Operativos */}
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-md p-5 shadow-xl space-y-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-base font-bold text-white">Listado de órdenes</h2>
+                <p className="text-xs text-slate-400">Filtra la carga transaccional por sucursal activa.</p>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-400 inline-flex items-center gap-3">
+                  Restaurante
+                  <select
+                    className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs font-medium text-slate-200 shadow-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                    value={restaurantFilter}
+                    onChange={(e) => setRestaurantFilter(e.target.value)}
+                  >
+                    <option value="" className="bg-slate-950">Todos los restaurantes</option>
+                    {restaurants.map((restaurant) => (
+                      <option key={restaurant._id} value={restaurant._id} className="bg-slate-950">
+                        {restaurant.restaurantName}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+            </div>
+
+            {/* Inyección de Estadísticas con Estética Corregida Internamente */}
+            <div className="pt-1">
+              <OrderStats total={stats.total} pending={stats.pending} completed={stats.completed} />
+            </div>
+
+            {/* Filtros de Fecha e IDs */}
+            <div className="pt-2 border-t border-slate-800/60">
+              <FilterBar
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                startDate={startDate}
+                onStartDateChange={setStartDate}
+                endDate={endDate}
+                onEndDateChange={setEndDate}
+                searchPlaceholder="Buscar por ID, cliente, tipo o estado..."
+              />
+            </div>
           </div>
 
-          <OrderStats total={stats.total} pending={stats.pending} completed={stats.completed} />
+          {/* Componente Lista de Comandas */}
+          <div className="rounded-2xl overflow-hidden shadow-xl border border-slate-800 bg-slate-900/40 backdrop-blur-md">
+            <OrderList 
+              orders={filteredOrders}
+              loading={loading}
+              error={error}
+              selectedOrder={selectedOrder}
+              setSelectedOrder={setSelectedOrder}
+              handleStatusUpdate={handleStatusUpdate}
+            />
+          </div>
+        </div>
 
-          <FilterBar
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-            startDate={startDate}
-            onStartDateChange={setStartDate}
-            endDate={endDate}
-            onEndDateChange={setEndDate}
-            searchPlaceholder="Buscar por ID, cliente, tipo o estado..."
-          />
+        {/* Bloque Derecho: Panel de Detalle de Comanda Seleccionada */}
+        <aside className="h-fit sticky top-6">
+          <OrderDetail selectedOrder={selectedOrder} handleStatusUpdate={handleStatusUpdate} />
+        </aside>
 
-          <OrderList 
-            orders={filteredOrders}
-            loading={loading}
-            error={error}
-            selectedOrder={selectedOrder}
-            setSelectedOrder={setSelectedOrder}
-            handleStatusUpdate={handleStatusUpdate}
-          />
-        </section>
-
-        <OrderDetail selectedOrder={selectedOrder} handleStatusUpdate={handleStatusUpdate} />
-
-        <CreateOrderModal 
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          form={form}
-          setForm={setForm}
-          handleCreate={handleCreate}
-          saving={saving}
-          users={users}
-          restaurants={restaurants}
-          tables={tables}
-          menus={form.restaurantId
-            ? menus.filter(m => (m.restaurantId?._id || m.restaurantId)?.toString() === form.restaurantId)
-            : []
-          }
-          handleItemChange={handleItemChange}
-          addItem={addItem}
-          removeItem={removeItem}
-        />
       </div>
+
+      {/* Modal Transaccional para Apertura de Órdenes */}
+      <CreateOrderModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        form={form}
+        setForm={setForm}
+        handleCreate={handleCreate}
+        saving={saving}
+        users={users}
+        restaurants={restaurants}
+        tables={tables}
+        menus={form.restaurantId
+          ? menus.filter(m => (m.restaurantId?._id || m.restaurantId)?.toString() === form.restaurantId)
+          : []
+        }
+        handleItemChange={handleItemChange}
+        addItem={addItem}
+        removeItem={removeItem}
+      />
     </section>
   )
 }

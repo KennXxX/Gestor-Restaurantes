@@ -70,19 +70,19 @@ export const Estadisticas = () => {
         label: 'Ingresos totales',
         value: formatCurrency(totalIncome),
         detail: 'Acumulado en ordenes no canceladas',
-        tone: 'bg-emerald-50 text-emerald-700',
+        tone: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
       },
       {
         label: 'Ordenes registradas',
         value: formatNumber(totalOrders),
         detail: 'Total consolidado del sistema',
-        tone: 'bg-blue-50 text-blue-700',
+        tone: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
       },
       {
         label: 'Restaurantes activos',
         value: formatNumber(activeRestaurants),
         detail: 'Con ventas en el periodo analizado',
-        tone: 'bg-amber-50 text-amber-700',
+        tone: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
       },
     ]
   }, [activeRestaurants, totalIncome, totalOrders])
@@ -125,115 +125,164 @@ export const Estadisticas = () => {
   }, [statistics.bestSellingDishes, statistics.demandByRestaurants, statistics.peakOrderHours])
 
   return (
-    <section className="space-y-6">
-      <div className="rounded-[30px] border border-sky-100 bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.18),_transparent_34%),linear-gradient(135deg,_#ffffff_0%,_#eff6ff_55%,_#e0f2fe_100%)] p-8 shadow-sm">
-        <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
-          <div className="max-w-3xl">
-            <p className="inline-flex rounded-full bg-slate-900 px-4 py-1 text-xs font-semibold uppercase tracking-[0.32em] text-sky-100">
-              Estadisticas
-            </p>
-            <h1 className="mt-4 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">Resumen visual del rendimiento</h1>
-            <p className="mt-3 text-sm text-slate-600 sm:text-base">
-              Datos del endpoint de estadisticas administrativas: demanda, ingresos, platos lideres y horas pico.
-            </p>
+    <section className="space-y-6 font-sans text-slate-300 antialiased max-w-[1600px] mx-auto p-4 md:p-6">
+      
+      {/* Header Estilo Premium */}
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-800 pb-5">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-sky-400" />
+            <span className="text-xs font-bold uppercase tracking-wider text-sky-400">Business Intelligence</span>
           </div>
-
-          <div className="grid gap-3 sm:grid-cols-3 xl:min-w-[540px]">
-            {kpiCards.map((card) => (
-              <article key={card.label} className="rounded-2xl border border-white/70 bg-white/80 p-4 backdrop-blur-sm">
-                <p className="text-xs uppercase tracking-[0.22em] text-slate-400">{card.label}</p>
-                <p className="mt-3 text-2xl font-semibold text-slate-950">{card.value}</p>
-                <p className={`mt-3 inline-flex rounded-full px-3 py-1 text-xs font-semibold ${card.tone}`}>
-                  {card.detail}
-                </p>
-              </article>
-            ))}
-          </div>
+          <h1 className="mt-1 text-2xl font-bold tracking-tight text-white md:text-3xl">
+            Rendimiento Comercial
+          </h1>
+          <p className="mt-1 text-sm text-slate-400">
+            Analiza la demanda consolidada, ingresos brutos, platos líderes y picos de tráfico operativo.
+          </p>
         </div>
-      </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1.5fr_1fr]">
-        <section className="rounded-[26px] border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <button
+            type="button"
+            onClick={loadStatistics}
+            className="inline-flex items-center justify-center rounded-xl border border-slate-700 bg-slate-800/80 px-4 py-2.5 text-sm font-semibold text-slate-200 shadow-sm backdrop-blur-sm transition-all hover:bg-slate-700 hover:text-white"
+          >
+            Actualizar Dashboard
+          </button>
+        </div>
+      </header>
+
+      {error && (
+        <div className="rounded-xl bg-rose-500/10 border border-rose-500/20 p-4 text-center text-sm text-rose-400 font-medium">
+          {error}
+        </div>
+      )}
+
+      {/* Grid de KPIs Superiores (Glassmorphism) */}
+      <section className="grid gap-4 grid-cols-1 md:grid-cols-3">
+        {kpiCards.map((card) => (
+          <article key={card.label} className="rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur-md p-5 shadow-xl flex flex-col justify-between">
             <div>
-              <h2 className="text-xl font-bold text-slate-900">Pedidos por hora</h2>
-              <p className="text-sm text-slate-500">Visualizacion de las primeras 7 franjas retornadas por el backend.</p>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{card.label}</p>
+              <p className="mt-2 text-2xl font-black text-white tracking-tight">{card.value}</p>
             </div>
-            <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700">Primeras 7 franjas horarias</span>
+            <div className={`mt-4 inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-semibold border ${card.tone}`}>
+              {card.detail}
+            </div>
+          </article>
+        ))}
+      </section>
+
+      {/* Distribución Gráfica y Panorama */}
+      <div className="grid gap-6 xl:grid-cols-[1.5fr_1fr]">
+        
+        {/* Gráfica de Pedidos por Hora */}
+        <section className="rounded-2xl border border-slate-800 bg-slate-900/40 backdrop-blur-md p-5 shadow-xl space-y-4">
+          <div className="flex flex-col gap-3 border-b border-slate-800/60 pb-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-base font-bold text-white">Pedidos por hora</h2>
+              <p className="text-xs text-slate-400">Distribución de carga transaccional en las franjas retornadas.</p>
+            </div>
+            <span className="rounded-lg bg-slate-950 border border-slate-800 px-2.5 py-1 text-xs font-semibold text-slate-400">
+              Muestreo de 7 franjas
+            </span>
           </div>
 
-          {loading && <p className="mt-8 py-6 text-center text-sm text-slate-500">Cargando estadisticas...</p>}
-          {!loading && error && <p className="mt-8 py-6 text-center text-sm text-rose-500">{error}</p>}
-
-          {!loading && !error && ordersPerDay.length === 0 && (
-            <p className="mt-8 py-6 text-center text-sm text-slate-500">No hay datos de horas pico disponibles.</p>
+          {loading && (
+            <div className="p-12 text-center text-sm text-slate-400 animate-pulse font-medium">
+              Calculando flujos de tráfico...
+            </div>
           )}
 
+          {!loading && !error && ordersPerDay.length === 0 && (
+            <div className="p-12 text-center text-sm text-slate-500 rounded-xl border border-dashed border-slate-800">
+              No hay datos de horas pico disponibles en el servidor.
+            </div>
+          )}
+
+          {/* Gráfica Estilizada */}
           {!loading && !error && ordersPerDay.length > 0 && (
-            <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-7">
-            {ordersPerDay.map((entry) => (
-              <div key={entry.day} className="flex flex-col items-center gap-3">
-                <div className="flex h-56 w-full items-end rounded-3xl bg-slate-100 p-2">
-                  <div
-                    className="w-full rounded-2xl bg-gradient-to-t from-sky-500 via-cyan-400 to-emerald-300"
-                    style={{ height: entry.height }}
-                  />
+            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-7 pt-4">
+              {ordersPerDay.map((entry) => (
+                <div key={entry.day} className="flex flex-col items-center gap-3">
+                  <div className="flex h-56 w-full items-end rounded-2xl bg-slate-950 border border-slate-800/50 p-1.5 shadow-inner">
+                    <div
+                      className="w-full rounded-xl bg-gradient-to-t from-sky-600 via-cyan-500 to-emerald-400 shadow-[0_0_12px_rgba(34,211,238,0.2)] transition-all duration-500"
+                      style={{ height: entry.height }}
+                    />
+                  </div>
+                  <div className="text-center space-y-0.5">
+                    <p className="text-xs font-bold text-white">{entry.day}</p>
+                    <p className="text-[10px] font-medium text-slate-500">{entry.count} uds.</p>
+                  </div>
                 </div>
-                <div className="text-center">
-                  <p className="text-sm font-semibold text-slate-700">{entry.day}</p>
-                  <p className="text-xs text-slate-400">{entry.count} pedidos</p>
-                </div>
-              </div>
-            ))}
+              ))}
             </div>
           )}
         </section>
 
+        {/* Panel de Panorama Operativo Lateral */}
         <aside className="space-y-6">
-          <section className="rounded-[26px] border border-slate-200 bg-slate-950 p-6 text-white shadow-sm">
-            <p className="text-xs uppercase tracking-[0.22em] text-sky-200">Lectura rapida</p>
-            <h2 className="mt-3 text-2xl font-bold">Panorama operativo</h2>
-            <div className="mt-6 space-y-4">
-              {operationalInsights.map((item) => (
-                <div key={item.label} className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                  <p className="text-xs uppercase tracking-[0.18em] text-slate-400">{item.label}</p>
-                  <p className="mt-2 text-lg font-semibold text-white">{item.value}</p>
+          <section className="rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-md p-5 shadow-xl space-y-4">
+            <div>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-sky-400">Lectura Rápida</h3>
+              <h2 className="text-base font-bold text-white mt-0.5">Panorama operativo</h2>
+            </div>
+            
+            <div className="space-y-3">
+              {operationalInsights.map((item, idx) => (
+                <div key={idx} className="rounded-xl border border-slate-800/80 bg-slate-950/50 p-4">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{item.label}</p>
+                  <p className="mt-1 text-sm font-bold text-white leading-snug">{item.value}</p>
                 </div>
               ))}
             </div>
           </section>
-
         </aside>
       </div>
 
-      <section className="rounded-[26px] border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      {/* Grid de Platos Más Vendidos */}
+      <section className="rounded-2xl border border-slate-800 bg-slate-900/40 backdrop-blur-md p-5 shadow-xl space-y-4">
+        <div className="flex flex-col gap-3 border-b border-slate-800/60 pb-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-xl font-bold text-slate-900">Platos más vendidos</h2>
-            <p className="text-sm text-slate-500">Los platillos con mayor volumen de venta por categoría.</p>
+            <h2 className="text-base font-bold text-white">Platos más vendidos</h2>
+            <p className="text-xs text-slate-400">Los artículos con mayor rotación comercial organizados por volumen.</p>
           </div>
-          <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700">Top 4</span>
+          <span className="rounded-lg bg-slate-950 border border-slate-800 px-2.5 py-1 text-xs font-semibold text-slate-400">
+            Métricas Top 4
+          </span>
         </div>
 
         {loading ? (
-          <p className="mt-8 text-sm text-slate-500">Cargando los platos más vendidos…</p>
-        ) : error ? (
-          <p className="mt-8 text-sm text-rose-500">No se pudieron cargar los platos más vendidos.</p>
+          <div className="p-8 text-center text-sm text-slate-400 animate-pulse font-medium">
+            Procesando métricas de cocina...
+          </div>
         ) : statistics.bestSellingDishes.length === 0 ? (
-          <p className="mt-8 text-sm text-slate-500">No hay datos de ventas de platillos disponibles.</p>
+          <div className="p-8 text-center text-sm text-slate-500 rounded-xl border border-dashed border-slate-800">
+            No hay datos de ventas de platillos disponibles.
+          </div>
         ) : (
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 pt-1">
             {statistics.bestSellingDishes.slice(0, 4).map((dish) => (
-              <article key={dish.menuId} className="rounded-3xl border border-slate-200 p-4 shadow-sm">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.18em] text-slate-400">{dish.menuCategory?.replace('_', ' ') || 'Sin categoría'}</p>
-                    <h3 className="mt-2 text-lg font-semibold text-slate-900">{dish.dishName}</h3>
+              <article key={dish.menuId} className="rounded-xl border border-slate-800/80 bg-slate-950/30 p-4 flex flex-col justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="rounded-md border border-slate-800 bg-slate-900 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-slate-400">
+                      {dish.menuCategory?.replace('_', ' ') || 'General'}
+                    </span>
+                    <span className="rounded-md bg-orange-500/10 border border-orange-500/20 px-2 py-0.5 text-[10px] font-bold text-orange-400 shrink-0">
+                      {dish.unitsSold} uds.
+                    </span>
                   </div>
-                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">{dish.unitsSold} uds.</span>
+                  <h3 className="text-sm font-bold text-white pt-1.5 line-clamp-1">{dish.dishName}</h3>
+                  <p className="text-[11px] font-medium text-slate-500 truncate">{dish.restaurantName}</p>
                 </div>
-                <p className="mt-4 text-sm text-slate-500">{dish.restaurantName}</p>
-                <p className="mt-3 text-sm font-semibold text-slate-900">{formatCurrency(dish.revenue)}</p>
+                
+                <div className="pt-2 border-t border-slate-900/60 flex justify-between items-center">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Recaudado</span>
+                  <span className="text-sm font-black text-emerald-400">{formatCurrency(dish.revenue)}</span>
+                </div>
               </article>
             ))}
           </div>

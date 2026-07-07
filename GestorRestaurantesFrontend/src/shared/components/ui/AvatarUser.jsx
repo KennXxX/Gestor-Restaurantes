@@ -43,7 +43,7 @@ export const AvatarUser = () => {
             {/* Avatar trigger button */}
             <button
                 onClick={toggleMenu}
-                className={`flex items-center gap-2 p-1 rounded-full border-2 transition-colors duration-200 bg-transparent cursor-pointer ${open ? "border-emerald-300" : "border-slate-200 hover:border-emerald-300"
+                className={`flex items-center gap-2 p-1 rounded-full border-2 transition-colors duration-200 bg-transparent cursor-pointer ${open ? "border-emerald-300" : "border-white/35 hover:border-emerald-300"
                     }`}
                 aria-label="Menú de usuario"
             >
@@ -61,9 +61,9 @@ export const AvatarUser = () => {
 
             {/* Dropdown */}
             {open && (
-                <div className="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-[18px] shadow-xl z-50 overflow-hidden animate-fadeIn">
+                <div className="absolute right-0 mt-2 w-56 bg-slate-900/88 border border-white/20 rounded-[18px] shadow-xl z-50 overflow-hidden animate-fadeIn backdrop-blur-md">
                     {/* User info header */}
-                    <div className="flex items-center gap-3 px-4 py-4 border-b border-slate-100 bg-gradient-to-br from-emerald-50 to-slate-50">
+                    <div className="flex items-center gap-3 px-4 py-4 border-b border-white/15 bg-gradient-to-br from-emerald-500/18 to-slate-700/35">
                         <img
                             src={avatarSrc}
                             alt={user?.username}
@@ -74,10 +74,10 @@ export const AvatarUser = () => {
                             }}
                         />
                         <div className="min-w-0">
-                            <p className="m-0 text-sm font-bold text-slate-900 truncate font-display">
+                            <p className="m-0 text-sm font-bold text-slate-100 truncate font-display">
                                 {user?.username || "Usuario"}
                             </p>
-                            <p className="m-0 mt-0.5 text-xs text-slate-500 truncate">
+                            <p className="m-0 mt-0.5 text-xs text-slate-300 truncate">
                                 {user?.email || ""}
                             </p>
                         </div>
@@ -90,9 +90,9 @@ export const AvatarUser = () => {
                                 <Link
                                     to="/dashboard/usuarios"
                                     onClick={() => setOpen(false)}
-                                    className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+                                    className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-100 hover:bg-white/10 transition-colors"
                                 >
-                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-300">
                                         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
                                         <circle cx="9" cy="7" r="4" />
                                         <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
@@ -103,10 +103,10 @@ export const AvatarUser = () => {
                             </li>
                         )}
 
-                        <li className="border-t border-slate-100 my-1.5 pt-1.5">
+                        <li className="border-t border-white/15 my-1.5 pt-1.5">
                             <button
                                 onClick={handleLogout}
-                                className="flex items-center gap-2.5 w-full px-3 py-2.5 rounded-xl text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors text-left"
+                                className="flex items-center gap-2.5 w-full px-3 py-2.5 rounded-xl text-sm font-semibold text-rose-300 hover:bg-rose-400/15 transition-colors text-left"
                             >
                                 Cerrar sesión
                             </button>

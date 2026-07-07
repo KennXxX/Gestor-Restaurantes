@@ -148,9 +148,9 @@ export const Sidebar = ({ items = navItems }) => {
   const location = useLocation();
 
   return (
-    <aside className="w-60 flex-shrink-0 sticky top-16 h-[calc(100vh-64px)] bg-white border-r border-slate-200 flex flex-col p-3 gap-1 overflow-y-auto">
+    <aside className="w-60 flex-shrink-0 sticky top-16 h-[calc(100vh-64px)] bg-slate-900/58 border-r border-white/25 flex flex-col p-3 gap-1 overflow-y-auto backdrop-blur-md">
       {/* Section label */}
-      <p className="text-[0.65rem] font-bold uppercase tracking-[0.18em] text-slate-400 font-display px-2 mb-1.5">
+      <p className="text-[0.65rem] font-bold uppercase tracking-[0.18em] text-white font-display px-2 mb-1.5">
         Módulos
       </p>
 
@@ -166,26 +166,26 @@ export const Sidebar = ({ items = navItems }) => {
                 to={item.to}
                 className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[0.85rem] border transition-all duration-150 no-underline
                   ${isActive
-                    ? "bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-200 text-emerald-800 font-bold"
-                    : "border-transparent text-slate-500 font-medium hover:bg-slate-50 hover:text-slate-800 hover:border-slate-200"
+                    ? "bg-gradient-to-r from-emerald-500/32 to-teal-400/24 border-emerald-300/65 text-emerald-50 font-bold"
+                    : "border-transparent text-white font-medium hover:bg-white/12 hover:text-white hover:border-white/25"
                   }`}
               >
                 {/* Icon pill */}
                 <span
                   className={`w-[30px] h-[30px] flex items-center justify-center rounded-lg flex-shrink-0 transition-all duration-150 ${
                     isActive
-                      ? "bg-emerald-800 text-white"
-                      : "bg-slate-100 text-slate-500"
+                      ? "bg-emerald-400 text-emerald-950"
+                      : "bg-white/14 text-white"
                   }`}
                 >
                   {item.icon}
                 </span>
 
-                <span className="flex-1 leading-snug">{item.label}</span>
+                <span className="flex-1 leading-snug drop-shadow-[0_1px_1px_rgba(0,0,0,0.55)]" style={{ color: '#fff' }}>{item.label}</span>
 
                 {/* Active dot */}
                 {isActive && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-700 flex-shrink-0" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-200 flex-shrink-0" />
                 )}
               </Link>
             </li>

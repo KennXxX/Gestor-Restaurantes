@@ -225,148 +225,173 @@ export const Promotions = () => {
   }
 
   return (
-    <section className="space-y-6 font-body">
-      <header className="rounded-[30px] border border-indigo-200 bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.18),_transparent_60%),linear-gradient(120deg,_#eef2ff_0%,_#e0e7ff_55%,_#c7d2fe_100%)] p-8 shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <h1 className="font-display mt-4 text-3xl font-semibold text-slate-900 sm:text-4xl">Promociones y eventos</h1>
-            <p className="mt-3 max-w-2xl text-sm text-slate-700 sm:text-base">
-              Consulta promociones activas, cupones disponibles y eventos especiales. Aplica cupones en pedidos o reservaciones con un solo clic.
-            </p>
+    <section className="space-y-6 font-sans text-slate-300 antialiased max-w-[1600px] mx-auto p-4 md:p-6">
+      
+      {/* Header Adaptado a Entornos Oscuros */}
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-800 pb-5">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-indigo-400" />
+            <span className="text-xs font-bold uppercase tracking-wider text-indigo-400">Marketing & Eventos</span>
           </div>
-          <div className="rounded-2xl border border-indigo-200 bg-white/80 px-4 py-3 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-500">Resumen</p>
-            <p className="mt-2 text-sm text-slate-700">{activePromotions.length} promociones aprobadas</p>
-            <p className="text-sm text-slate-700">{eventReservations.length} reservas tipo evento</p>
-          </div>
+          <h1 className="mt-1 text-2xl font-bold tracking-tight text-white md:text-3xl">
+            Promociones y Eventos
+          </h1>
+          <p className="mt-1 text-sm text-slate-400">
+            Consulta promociones activas, cupones disponibles y la agenda operativa de reservas destacadas.
+          </p>
         </div>
-        {error && (
-          <p className="mt-4 text-sm font-semibold text-rose-600">{error}</p>
-        )}
+        
+        <div className="rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-2.5 text-right shrink-0">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-400">Resumen del Servidor</p>
+          <p className="text-xs text-slate-300 mt-0.5 font-medium">{activePromotions.length} Promos activas • {eventReservations.length} Eventos</p>
+        </div>
       </header>
 
-      <div className="grid gap-6 xl:grid-cols-[1.3fr_1fr]">
-        <section className="space-y-4">
-          <div className="rounded-[24px] border border-indigo-200 bg-white p-6 shadow-sm">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Crear promocion</p>
-                <h2 className="mt-2 font-display text-2xl font-semibold text-slate-900">Nueva oferta</h2>
-                <p className="mt-2 text-sm text-slate-600">
-                  Las promociones requieren aprobacion para activarse en el listado publico.
-                </p>
-              </div>
+      {error && (
+        <div className="rounded-xl bg-rose-500/10 border border-rose-500/20 p-4 text-center text-sm text-rose-400 font-medium">
+          {error}
+        </div>
+      )}
+
+      {/* Grid de Distribución */}
+      <div className="grid gap-6 xl:grid-cols-[1fr_380px]">
+        
+        {/* Columna Izquierda: Formulario y Listado */}
+        <div className="space-y-6">
+          
+          {/* Bloque 1: Formulario de Creación (Glassmorphism) */}
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-md p-5 shadow-xl">
+            <div className="border-b border-slate-800/60 pb-3">
+              <h2 className="text-base font-bold text-white">Nueva oferta comercial</h2>
+              <p className="text-xs text-slate-400">Las campañas ingresadas requieren aprobación interna previa.</p>
             </div>
 
-            <form onSubmit={handleCreatePromotion} className="mt-6 grid gap-4">
+            <form onSubmit={handleCreatePromotion} className="mt-4 space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
-                <label className="text-sm font-semibold text-slate-700">
-                  Restaurante
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-1.5">
+                    Restaurante Sede
+                  </label>
                   <select
                     value={form.restaurantId}
                     onChange={(e) => setForm((prev) => ({ ...prev, restaurantId: e.target.value }))}
-                    className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                    className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none"
                   >
-                    <option value="">Selecciona uno</option>
+                    <option value="" className="bg-slate-950">Selecciona una sede...</option>
                     {restaurants.map((restaurant) => (
-                      <option key={restaurant._id} value={restaurant._id}>
+                      <option key={restaurant._id} value={restaurant._id} className="bg-slate-950">
                         {restaurant.restaurantName}
                       </option>
                     ))}
                   </select>
-                </label>
+                </div>
 
-                <label className="text-sm font-semibold text-slate-700">
-                  Descuento (%)
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-1.5">
+                    Porcentaje de Descuento
+                  </label>
                   <input
                     type="number"
                     min="0"
                     max="100"
                     value={form.discountPercentage}
                     onChange={(e) => setForm((prev) => ({ ...prev, discountPercentage: e.target.value }))}
-                    className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                    className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none"
+                    placeholder="0"
                   />
-                </label>
+                </div>
               </div>
 
-              <label className="text-sm font-semibold text-slate-700">
-                Titulo
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-1.5">
+                  Título de la promoción
+                </label>
                 <input
+                  type="text"
                   value={form.title}
                   onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
-                  className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
-                  placeholder="Ej: 2x1 en pastas"
+                  className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none placeholder-slate-600"
+                  placeholder="Ej: 2x1 en pastas selectas o Noche de Cócteles"
                 />
-              </label>
+              </div>
 
-              <label className="text-sm font-semibold text-slate-700">
-                Descripcion (opcional)
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-1.5">
+                  Términos y Condiciones (Opcional)
+                </label>
                 <textarea
                   value={form.description}
                   onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
-                  className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 resize-none"
+                  className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none placeholder-slate-600 resize-none"
                   rows={2}
-                  placeholder="Condiciones, dias validos, restricciones..."
+                  placeholder="Especifica días aplicables, restricciones de consumo o alérgenos..."
                 />
-              </label>
+              </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
-                <label className="text-sm font-semibold text-slate-700">
-                  Cupon (opcional)
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-1.5">
+                    Código de Cupón (Opcional)
+                  </label>
                   <input
+                    type="text"
                     value={form.couponCode}
                     onChange={(e) => setForm((prev) => ({ ...prev, couponCode: e.target.value.toUpperCase() }))}
-                    className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
-                    placeholder="Ej: FUEGO10"
+                    className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none placeholder-slate-600"
+                    placeholder="Ej: DESCUENTOPAX"
                   />
-                </label>
+                </div>
 
-                <label className="text-sm font-semibold text-slate-700">
-                  Vigencia
-                  <div className="mt-1.5 grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-1.5">
+                    Período de Vigencia
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
                     <input
                       type="date"
                       value={form.startDate}
                       onChange={(e) => setForm((prev) => ({ ...prev, startDate: e.target.value }))}
-                      className="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                      className="w-full rounded-xl border border-slate-800 bg-slate-950 px-2 py-2 text-xs text-white focus:border-indigo-500 focus:outline-none [color-scheme:dark]"
                     />
                     <input
                       type="date"
                       value={form.endDate}
                       onChange={(e) => setForm((prev) => ({ ...prev, endDate: e.target.value }))}
-                      className="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                      className="w-full rounded-xl border border-slate-800 bg-slate-950 px-2 py-2 text-xs text-white focus:border-indigo-500 focus:outline-none [color-scheme:dark]"
                     />
                   </div>
-                </label>
+                </div>
               </div>
 
-              <div className="flex flex-wrap justify-end gap-3 border-t border-slate-100 pt-4">
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-800/60">
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="rounded-xl border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+                  className="rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm font-semibold text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
                 >
                   Limpiar
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="rounded-xl bg-indigo-600 px-6 py-2.5 text-sm font-bold text-white shadow-md hover:bg-indigo-500 disabled:opacity-50"
+                  className="rounded-xl bg-indigo-600 px-5 py-2 text-sm font-bold text-white shadow-sm hover:bg-indigo-500 transition-all disabled:opacity-50"
                 >
-                  {saving ? 'Guardando...' : 'Crear promocion'}
+                  {saving ? 'Guardando...' : 'Crear promoción'}
                 </button>
               </div>
             </form>
           </div>
 
-          <div className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="flex flex-wrap items-center justify-between gap-3">
+          {/* Bloque 2: Listado Central de Ofertas Aprobadas */}
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-md p-5 shadow-xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800/60 pb-3">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Promociones activas</p>
-                <h2 className="mt-2 font-display text-2xl font-semibold text-slate-900">Ofertas vigentes</h2>
+                <h2 className="text-base font-bold text-white">Ofertas vigentes en catálogo</h2>
+                <p className="text-xs text-slate-400">Campañas comerciales distribuidas y visibles al público.</p>
               </div>
-              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-                {loading ? 'Cargando...' : `${activePromotions.length} aprobadas`}
+              <span className="rounded-xl border border-slate-800 bg-slate-950 px-2.5 py-1 text-xs font-semibold text-slate-300">
+                {loading ? 'Sincronizando...' : `${activePromotions.length} Habilitadas`}
               </span>
             </div>
 
@@ -380,74 +405,76 @@ export const Promotions = () => {
               searchPlaceholder="Buscar por título, descripción o cupón..."
             />
 
-            <div className="mt-5 grid gap-4">
+            <div className="grid gap-4 pt-2">
               {activePromotions.length === 0 && !loading && (
-                <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center text-sm text-slate-500">
-                  No hay promociones activas por el momento.
+                <div className="rounded-xl border border-dashed border-slate-800 p-8 text-center text-sm text-slate-500">
+                  No se registran promociones activas bajo este parámetro.
                 </div>
               )}
+              
               {activePromotions.map((promo) => {
                 const restaurant = restaurantsById.get(promo.restaurantId?._id || promo.restaurantId)
-                const startDate = formatDate(promo.startDate)
-                const endDate = formatDate(promo.endDate)
+                const sDate = formatDate(promo.startDate)
+                const eDate = formatDate(promo.endDate)
                 const now = new Date()
                 const start = promo.startDate ? new Date(promo.startDate) : null
                 const end = promo.endDate ? new Date(promo.endDate) : null
+                
                 const promoStatus = (!start || now >= start) && (!end || now <= end)
-                  ? { label: 'Vigente', cls: 'bg-emerald-100 text-emerald-700' }
+                  ? { label: 'Vigente', cls: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' }
                   : start && now < start
-                  ? { label: 'Programada', cls: 'bg-sky-100 text-sky-700' }
-                  : { label: 'Vencida', cls: 'bg-slate-100 text-slate-500' }
+                  ? { label: 'Programada', cls: 'bg-sky-500/10 text-sky-400 border-sky-500/20' }
+                  : { label: 'Vencida', cls: 'bg-slate-800 text-slate-400 border-slate-700' }
+
                 return (
-                  <article key={promo._id} className="rounded-2xl border border-indigo-100 bg-indigo-50/40 p-5">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div>
+                  <article key={promo._id} className="rounded-xl border border-slate-800 bg-slate-950/40 p-5 space-y-4">
+                    <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                      <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-500">
-                            {restaurant?.restaurantName || 'Restaurante'}
+                          <p className="text-xs font-bold uppercase tracking-wider text-indigo-400">
+                            {restaurant?.restaurantName || 'Sede General'}
                           </p>
-                          <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${promoStatus.cls}`}>
+                          <span className={`rounded-md border px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${promoStatus.cls}`}>
                             {promoStatus.label}
                           </span>
                         </div>
-                        <h3 className="mt-2 text-xl font-semibold text-slate-900">{promo.title}</h3>
-                        <p className="mt-2 text-sm text-slate-600">
-                          {promo.description || 'Promocion activa aplicable a pedidos y reservas.'}
+                        <h3 className="text-lg font-bold text-white pt-1">{promo.title}</h3>
+                        <p className="text-xs text-slate-400 leading-relaxed max-w-xl">
+                          {promo.description || 'Campaña de beneficio exclusivo activa para comandas presenciales o digitales.'}
                         </p>
                       </div>
-                      <div className="rounded-2xl border border-indigo-200 bg-white px-4 py-3 text-center">
-                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-500">Descuento</p>
-                        <p className="mt-2 text-2xl font-bold text-indigo-700">{promo.discountPercentage || 0}%</p>
+
+                      <div className="rounded-xl border border-indigo-500/20 bg-indigo-500/10 p-3 text-center min-w-[100px] shrink-0 self-stretch sm:self-auto flex sm:flex-col items-center justify-between sm:justify-center">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-400">Beneficio</p>
+                        <p className="text-xl font-black text-indigo-400 mt-0.5">-{promo.discountPercentage || 0}%</p>
                       </div>
                     </div>
 
-                    <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                      <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
-                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Cupon</p>
-                        <p className="mt-1 text-sm font-semibold text-slate-800">
-                          {promo.couponCode || 'Sin cupon'}
-                        </p>
+                    <div className="grid gap-3 grid-cols-1 sm:grid-cols-3 pt-2 border-t border-slate-800/40">
+                      <div className="rounded-lg bg-slate-950/60 p-2.5 border border-slate-800/50">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Cupón de Canje</p>
+                        <p className="mt-0.5 text-xs font-mono font-bold text-slate-200">{promo.couponCode || 'Uso automático'}</p>
                       </div>
-                      <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
-                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Vigencia</p>
-                        <p className="mt-1 text-sm text-slate-700">{startDate} - {endDate}</p>
+                      <div className="rounded-lg bg-slate-950/60 p-2.5 border border-slate-800/50">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Vigencia Oficial</p>
+                        <p className="mt-0.5 text-xs font-medium text-slate-300">{sDate} al {eDate}</p>
                       </div>
-                      <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
-                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Condiciones</p>
-                        <p className="mt-1 text-sm text-slate-700">Aplica en pedidos y reservas.</p>
+                      <div className="rounded-lg bg-slate-950/60 p-2.5 border border-slate-800/50">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Condiciones</p>
+                        <p className="mt-0.5 text-xs font-medium text-slate-300">Aplica en checkout</p>
                       </div>
                     </div>
 
-                    <div className="mt-4 flex flex-wrap gap-3">
+                    <div className="flex flex-wrap gap-2 pt-1">
                       <Link
                         to={buildCouponUrl('/dashboard/orders', promo.couponCode)}
-                        className={`rounded-xl px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] shadow-sm transition-all ${promo.couponCode ? 'bg-indigo-600 text-white hover:bg-indigo-500' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
+                        className={`rounded-lg px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition-all border ${promo.couponCode ? 'bg-indigo-600 border-indigo-500 text-white hover:bg-indigo-500' : 'bg-slate-800 border-slate-800 text-slate-500 cursor-not-allowed'}`}
                       >
                         Aplicar en orden
                       </Link>
                       <Link
                         to={buildCouponUrl('/dashboard/reservations', promo.couponCode)}
-                        className={`rounded-xl px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] shadow-sm transition-all ${promo.couponCode ? 'bg-slate-900 text-white hover:bg-slate-800' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
+                        className={`rounded-lg px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition-all border ${promo.couponCode ? 'bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700 hover:text-white' : 'bg-slate-800 border-slate-800 text-slate-500 cursor-not-allowed'}`}
                       >
                         Aplicar en reserva
                       </Link>
@@ -455,9 +482,9 @@ export const Promotions = () => {
                         <button
                           type="button"
                           onClick={() => handleCopyCoupon(promo.couponCode)}
-                          className="rounded-xl border border-indigo-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-indigo-600"
+                          className="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-indigo-400 hover:bg-indigo-500/10 transition-colors ml-auto"
                         >
-                          Copiar cupon
+                          Copiar código
                         </button>
                       )}
                     </div>
@@ -466,34 +493,45 @@ export const Promotions = () => {
               })}
             </div>
           </div>
-        </section>
+        </div>
 
+        {/* Columna Derecha: Sidebar Operativo */}
         <aside className="space-y-4">
-          <div className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Aprobaciones</p>
-            <h2 className="mt-2 font-display text-2xl font-semibold text-slate-900">Pendientes</h2>
-            <div className="mt-4 space-y-3">
+          
+          {/* Tarjeta 1: Aprobaciones Pendientes */}
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-md p-5 shadow-xl space-y-4">
+            <div>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-amber-500">Mesa de Aprobación</h3>
+              <h2 className="text-base font-bold text-white mt-0.5">Campañas en cola</h2>
+            </div>
+            
+            <div className="space-y-3">
               {pendingPromotions.length === 0 && !loading && (
-                <p className="text-sm text-slate-500">No hay promociones pendientes.</p>
+                <p className="text-xs text-slate-500 bg-slate-950/40 p-4 rounded-xl border border-slate-800 border-dashed text-center">
+                  No hay promociones pendientes de auditar.
+                </p>
               )}
               {pendingPromotions.map((promo) => {
                 const restaurant = restaurantsById.get(promo.restaurantId?._id || promo.restaurantId)
                 return (
-                  <div key={promo._id} className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3">
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-600">
-                      {restaurant?.restaurantName || 'Restaurante'}
-                    </p>
-                    <p className="mt-2 text-sm font-semibold text-slate-900">{promo.title}</p>
-                    <p className="mt-1 text-xs text-slate-500">{formatDate(promo.startDate)} - {formatDate(promo.endDate)}</p>
-                    <div className="mt-3 flex items-center justify-between">
-                      <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
-                        Pendiente
+                  <div key={promo._id} className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 space-y-3">
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-amber-500">
+                        {restaurant?.restaurantName || 'Sede Solicitante'}
+                      </p>
+                      <p className="mt-1 text-sm font-bold text-slate-200">{promo.title}</p>
+                      <p className="text-[11px] text-slate-500 mt-0.5">{formatDate(promo.startDate)} - {formatDate(promo.endDate)}</p>
+                    </div>
+                    
+                    <div className="flex items-center justify-between pt-1">
+                      <span className="inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-400">
+                        Auditoría
                       </span>
                       <button
                         type="button"
                         disabled={saving}
                         onClick={() => handleApprovePromotion(promo._id)}
-                        className="rounded-xl bg-amber-600 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white shadow-sm hover:bg-amber-500 disabled:opacity-50"
+                        className="rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-white shadow-sm hover:bg-amber-500 disabled:opacity-50 transition-colors"
                       >
                         Aprobar
                       </button>
@@ -503,51 +541,59 @@ export const Promotions = () => {
               })}
             </div>
           </div>
-          <div className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Cupones activos</p>
-            <h2 className="mt-2 font-display text-2xl font-semibold text-slate-900">Descuentos directos</h2>
-            <div className="mt-4 space-y-3">
+
+          {/* Tarjeta 2: Resumen Cupones Rápidos */}
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-md p-5 shadow-xl space-y-4">
+            <div>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-400">Cupones Activos</h3>
+              <h2 className="text-base font-bold text-white mt-0.5">Acceso exprés</h2>
+            </div>
+
+            <div className="space-y-2">
               {couponPromotions.length === 0 && !loading && (
-                <p className="text-sm text-slate-500">No hay cupones activos.</p>
+                <p className="text-xs text-slate-500 text-center py-2">No se computan llaves promocionales.</p>
               )}
               {couponPromotions.map((promo) => (
-                <div key={promo._id} className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Cupon</p>
-                      <p className="mt-1 text-sm font-semibold text-slate-800">{promo.couponCode}</p>
-                    </div>
-                    <span className="rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">
-                      -{promo.discountPercentage || 0}%
-                    </span>
+                <div key={promo._id} className="rounded-xl border border-slate-800 bg-slate-950/60 p-3 flex justify-between items-center gap-3">
+                  <div className="min-w-0">
+                    <p className="text-xs font-mono font-bold text-slate-200 truncate">{promo.couponCode}</p>
+                    <p className="text-[10px] text-slate-500 truncate mt-0.5">Corte: {formatDate(promo.endDate)}</p>
                   </div>
-                  <p className="mt-2 text-xs text-slate-500">Vigente: {formatDate(promo.startDate)} - {formatDate(promo.endDate)}</p>
+                  <span className="rounded-md border border-indigo-500/20 bg-indigo-500/10 px-2 py-1 text-xs font-bold text-indigo-400 shrink-0">
+                    -{promo.discountPercentage || 0}%
+                  </span>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Eventos especiales</p>
-            <h2 className="mt-2 font-display text-2xl font-semibold text-slate-900">Agenda destacada</h2>
-            <div className="mt-4 space-y-3">
+          {/* Tarjeta 3: Agenda de Eventos */}
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-md p-5 shadow-xl space-y-4">
+            <div>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-sky-400">Cronograma</h3>
+              <h2 className="text-base font-bold text-white mt-0.5">Agenda destacada</h2>
+            </div>
+
+            <div className="space-y-3">
               {events.length === 0 && !loading && (
-                <p className="text-sm text-slate-500">No hay eventos especiales registrados.</p>
+                <p className="text-xs text-slate-500 text-center py-2">Sin eventos especiales agendados.</p>
               )}
               {events.map((eventItem) => {
                 const reservation = eventItem.reservation
                 const restaurant = restaurantsById.get(reservation?.restaurantId?._id || reservation?.restaurantId)
                 return (
-                  <div key={eventItem._id} className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-                      {restaurant?.restaurantName || 'Restaurante'}
-                    </p>
-                    <p className="mt-2 text-sm font-semibold text-slate-900">{eventItem.description || 'Evento especial'}</p>
-                    <p className="mt-1 text-xs text-slate-500">
-                      {formatDateTime(reservation?.startDate)} - {formatDateTime(reservation?.endDate)}
-                    </p>
-                    <p className="mt-1 text-xs text-slate-500">
-                      Personas: {reservation?.numberPeople || 0}
+                  <div key={eventItem._id} className="rounded-xl border border-slate-800 bg-slate-950/60 p-3.5 space-y-1.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 truncate">
+                        {restaurant?.restaurantName || 'Sede Central'}
+                      </p>
+                      <span className="text-[10px] font-bold text-slate-500 shrink-0 bg-slate-900 px-1.5 py-0.5 rounded border border-slate-800">
+                        {reservation?.numberPeople || 0} pax
+                      </span>
+                    </div>
+                    <p className="text-xs font-semibold text-slate-200 leading-relaxed">{eventItem.description || 'Evento institucional'}</p>
+                    <p className="text-[10px] text-indigo-400 font-medium">
+                      {formatDateTime(reservation?.startDate)} h
                     </p>
                   </div>
                 )
@@ -555,6 +601,7 @@ export const Promotions = () => {
             </div>
           </div>
         </aside>
+
       </div>
     </section>
   )

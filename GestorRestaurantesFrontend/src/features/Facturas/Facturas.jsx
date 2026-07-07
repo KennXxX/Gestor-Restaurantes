@@ -44,7 +44,7 @@ const isSameDay = (dateA, dateB) => {
 const invoiceStatusLabel = (status) => {
   if (status === 'ENTREGADO') return 'Entregada'
   if (status === 'LISTO') return 'Lista'
-  if (status === 'EN_PREPARACION') return 'En preparacion'
+  if (status === 'EN_PREPARACION') return 'En preparación'
   if (status === 'CANCELADO') return 'Cancelada'
   return 'Emitida'
 }
@@ -69,6 +69,7 @@ export const Facturas = () => {
     } catch (err) {
       setError(getErrorMessage(err, 'No se pudieron cargar las facturas.'))
     } finally {
+      document.body.classList.add('dark') // Asegura entorno de renderizado
       setLoading(false)
     }
   }
@@ -90,7 +91,7 @@ export const Facturas = () => {
 
   const handleDownloadInvoice = async (invoice) => {
     if (!invoice?.invoiceId) {
-      showError('No se encontro el identificador de la factura para descargar el PDF.')
+      showError('No se encontró el identificador de la factura para descargar el PDF.')
       return
     }
 
@@ -150,7 +151,7 @@ export const Facturas = () => {
       totalBeforeDiscount: formatCurrency(invoice.totalBeforeDiscount),
       total: formatCurrency(invoice.total),
       status: invoiceStatusLabel(invoice.orderId?.status),
-      coupon: invoice.coupon || 'Sin cupon',
+      coupon: invoice.coupon || 'Sin cupón',
       shippingFee: formatCurrency(invoice.shippingFee),
       subtotal: formatCurrency(invoice.subtotal),
       discountPercentage: Number(invoice.discountPercentage || 0),
@@ -170,9 +171,9 @@ export const Facturas = () => {
     const averageTicket = filteredInvoices.length > 0 ? totalIncome / filteredInvoices.length : 0
 
     return [
-      { label: 'Facturas emitidas hoy', value: String(issuedToday) },
-      { label: 'Ingresos facturados', value: formatCurrency(totalIncome) },
-      { label: 'Ticket promedio', value: formatCurrency(averageTicket) },
+      { label: 'Emitidas hoy', value: String(issuedToday), color: 'text-white' },
+      { label: 'Ingresos facturados', value: totalIncome > 0 ? formatCurrency(totalIncome) : 'Q0.00', color: 'text-emerald-400' },
+      { label: 'Ticket promedio', value: averageTicket > 0 ? formatCurrency(averageTicket) : 'Q0.00', color: 'text-sky-400' },
     ]
   }, [filteredInvoices])
 
@@ -180,47 +181,55 @@ export const Facturas = () => {
 
   const invoiceHighlights = useMemo(() => {
     return [
-      `Facturas reales cargadas: ${invoiceRows.length}`,
-      'Vista enlazada al endpoint /invoices para reflejar los últimos datos cargados.',,
+      `Comprobantes totales en auditoría: ${invoiceRows.length}`,
+      'Sincronización transaccional acoplada al endpoint primario /invoices.',
     ]
   }, [invoiceRows.length])
 
   return (
-    <section className="space-y-6">
-      <div className="overflow-hidden rounded-[28px] bg-gradient-to-r from-slate-950 via-slate-900 to-blue-950 p-8 text-white shadow-xl">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-3xl">
-            <p className="inline-flex rounded-full bg-white/12 px-4 py-1 text-xs font-semibold uppercase tracking-[0.32em] text-blue-100">
-              Facturacion
-            </p>
-            <h1 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">Panel visual de facturas</h1>
-            <p className="mt-3 text-sm text-slate-200 sm:text-base">
-              Maqueta de la seccion administrativa para listar comprobantes emitidos, revisar descuentos aplicados y ver el total final de cada orden.
-            </p>
+    <section className="space-y-6 font-sans text-slate-300 antialiased max-w-[1600px] mx-auto p-4 md:p-6">
+      
+      {/* Header Estilo Premium */}
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-800 pb-5">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-emerald-400" />
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">Módulo de Auditoría</span>
           </div>
-
-          <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[420px]">
-            {invoiceSummary.map((item) => (
-              <article key={item.label} className="rounded-2xl border border-white/10 bg-white/8 p-4 backdrop-blur-sm">
-                <p className="text-xs uppercase tracking-[0.22em] text-slate-300">{item.label}</p>
-                <p className="mt-3 text-2xl font-semibold text-white">{item.value}</p>
-              </article>
-            ))}
-          </div>
+          <h1 className="mt-1 text-2xl font-bold tracking-tight text-white md:text-3xl">
+            Control de Facturación
+          </h1>
+          <p className="mt-1 text-sm text-slate-400">
+            Monitorea cierres de caja, validez de comprobantes contables y conciliación fiscal por sucursal.
+          </p>
         </div>
-      </div>
+      </header>
 
-      <div className="grid gap-6 xl:grid-cols-[1.7fr_1fr]">
-        <section className="rounded-[26px] border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex flex-col gap-3 border-b border-slate-100 pb-4 sm:flex-row sm:items-center sm:justify-between">
+      {/* Grid de Métricas / Resumen Superior */}
+      <section className="grid gap-4 grid-cols-1 md:grid-cols-3">
+        {invoiceSummary.map((item) => (
+          <article key={item.label} className="rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur-md p-4 shadow-xl">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{item.label}</p>
+            <p className={`mt-1 text-2xl font-black tracking-tight ${item.color}`}>{item.value}</p>
+          </article>
+        ))}
+      </section>
+
+      {/* Distribución del Panel de Trabajo */}
+      <div className="grid gap-6 xl:grid-cols-[1.6fr_1fr]">
+        
+        {/* Bloque Izquierdo: Listado Principal Reciente */}
+        <section className="rounded-2xl border border-slate-800 bg-slate-900/40 backdrop-blur-md p-5 shadow-xl space-y-4">
+          <div className="flex flex-col gap-3 border-b border-slate-800/60 pb-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h2 className="text-xl font-bold text-slate-900">Listado reciente</h2>
-              <p className="text-sm text-slate-500">Datos actualizados desde el backend de facturacion.</p>
+              <h2 className="text-base font-bold text-white">Libro contable reciente</h2>
+              <p className="text-xs text-slate-400">Lista consolidada de transacciones procesadas.</p>
             </div>
-            <div className="flex flex-wrap gap-2 text-sm">
-              <span className="rounded-full bg-slate-100 px-3 py-1 font-medium text-slate-700">Hoy</span>
-              <span className="rounded-full bg-emerald-50 px-3 py-1 font-medium text-emerald-700">Con descuentos</span>
-              <span className="rounded-full bg-amber-50 px-3 py-1 font-medium text-amber-700">A domicilio</span>
+            
+            <div className="flex flex-wrap gap-1.5 bg-slate-950 px-2 py-1 rounded-lg border border-slate-800 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              <span className="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-300">Hoy</span>
+              <span className="px-1.5 py-0.5 text-emerald-400">Con Descuento</span>
+              <span className="px-1.5 py-0.5 text-sky-400">Domicilio</span>
             </div>
           </div>
 
@@ -234,31 +243,32 @@ export const Facturas = () => {
             searchPlaceholder="Buscar por ID, cliente, restaurante o estado..."
           />
 
-          <div className="mt-5 overflow-x-auto">
-            <table className="min-w-full divide-y divide-slate-200">
+          {/* Tabla de Facturas */}
+          <div className="overflow-x-auto rounded-xl border border-slate-800/60 bg-slate-950/20">
+            <table className="w-full text-left border-collapse text-xs md:text-sm">
               <thead>
-                <tr className="text-left text-xs uppercase tracking-[0.2em] text-slate-400">
-                  <th className="px-3 py-3 font-semibold">Factura</th>
-                  <th className="px-3 py-3 font-semibold">Cliente</th>
-                  <th className="px-3 py-3 font-semibold">Restaurante</th>
-                  <th className="px-3 py-3 font-semibold">Emision</th>
-                  <th className="px-3 py-3 font-semibold">Totales</th>
-                  <th className="px-3 py-3 font-semibold">Estado</th>
-                  <th className="px-3 py-3 font-semibold">PDF</th>
+                <tr className="border-b border-slate-800 bg-slate-950/50 text-xs font-bold uppercase tracking-wider text-slate-400">
+                  <th className="px-4 py-3.5">Factura ID</th>
+                  <th className="px-4 py-3.5">Cliente</th>
+                  <th className="px-4 py-3.5">Restaurante Sede</th>
+                  <th className="px-4 py-3.5">Emisión</th>
+                  <th className="px-4 py-3.5">Corte de Caja</th>
+                  <th className="px-4 py-3.5">Estado</th>
+                  <th className="px-4 py-3.5 text-right">Acciones</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 text-sm text-slate-600">
+              <tbody className="divide-y divide-slate-800/50 text-slate-300">
                 {loading && (
                   <tr>
-                    <td className="px-3 py-6 text-center text-sm text-slate-500" colSpan={7}>
-                      Cargando facturas...
+                    <td className="px-4 py-8 text-center text-sm text-slate-400 animate-pulse font-medium" colSpan={7}>
+                      Sincronizando registros fiscales del backend...
                     </td>
                   </tr>
                 )}
 
                 {!loading && error && (
                   <tr>
-                    <td className="px-3 py-6 text-center text-sm text-rose-500" colSpan={7}>
+                    <td className="px-4 py-4 text-center text-sm text-rose-400 font-medium" colSpan={7}>
                       {error}
                     </td>
                   </tr>
@@ -266,40 +276,42 @@ export const Facturas = () => {
 
                 {!loading && !error && invoiceRows.length === 0 && (
                   <tr>
-                    <td className="px-3 py-6 text-center text-sm text-slate-500" colSpan={7}>
-                      No hay facturas disponibles.
+                    <td className="px-4 py-8 text-center text-sm text-slate-500 rounded-xl" colSpan={7}>
+                      No se registran comprobantes en este período.
                     </td>
                   </tr>
                 )}
 
                 {invoiceRows.map((invoice) => (
-                  <tr key={invoice.id} className="align-top transition-colors hover:bg-slate-50">
-                    <td className="px-3 py-4">
-                      <p className="font-semibold text-slate-900">{invoice.id}</p>
-                      <p className="mt-1 text-xs text-slate-400">{invoice.coupon}</p>
+                  <tr key={invoice.id} className="align-top transition-colors hover:bg-slate-800/20">
+                    <td className="px-4 py-4">
+                      <p className="font-bold text-white truncate max-w-[100px]" title={invoice.id}>{invoice.id}</p>
+                      <p className="mt-1 text-[10px] uppercase font-bold text-indigo-400 tracking-wider">{invoice.coupon}</p>
                     </td>
-                    <td className="px-3 py-4 font-medium text-slate-700">{invoice.customer}</td>
-                    <td className="px-3 py-4">{invoice.restaurant}</td>
-                    <td className="px-3 py-4">{invoice.issuedAt}</td>
-                    <td className="px-3 py-4">
-                      <p className="font-semibold text-slate-900">{invoice.total}</p>
-                      <p className="text-xs text-slate-400">
-                        Base {invoice.totalBeforeDiscount} · Envio {invoice.shippingFee}
+                    <td className="px-4 py-4 font-semibold text-slate-200">{invoice.customer}</td>
+                    <td className="px-4 py-4 text-slate-400">{invoice.restaurant}</td>
+                    <td className="px-4 py-4 text-xs text-slate-400 leading-normal">{invoice.issuedAt}</td>
+                    <td className="px-4 py-4">
+                      <p className="font-bold text-white">{invoice.total}</p>
+                      <p className="text-[10px] text-slate-500 mt-0.5">
+                        Base: {invoice.totalBeforeDiscount} • Delivery: {invoice.shippingFee}
                       </p>
                     </td>
-                    <td className="px-3 py-4">
-                      <span className="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+                    <td className="px-4 py-4">
+                      <span className={`inline-flex rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                        invoice.status === 'Cancelada' ? 'bg-rose-500/10 text-rose-400' : 'bg-emerald-500/10 text-emerald-400'
+                      }`}>
                         {invoice.status}
                       </span>
                     </td>
-                    <td className="px-3 py-4">
+                    <td className="px-4 py-4 text-right">
                       <button
                         type="button"
                         onClick={() => handleDownloadInvoice(invoice)}
                         disabled={!invoice.invoiceId || downloadingInvoiceId === invoice.invoiceId}
-                        className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 transition hover:border-blue-300 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="rounded-lg border border-slate-700 bg-slate-800/50 px-2.5 py-1.5 text-xs font-bold uppercase tracking-wider text-slate-300 transition-all hover:bg-slate-700 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
                       >
-                        {downloadingInvoiceId === invoice.invoiceId ? 'Descargando...' : 'Descargar PDF'}
+                        {downloadingInvoiceId === invoice.invoiceId ? '...' : 'PDF'}
                       </button>
                     </td>
                   </tr>
@@ -309,78 +321,74 @@ export const Facturas = () => {
           </div>
         </section>
 
-        <aside className="space-y-6">
-          <section className="rounded-[26px] border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-xl font-bold text-slate-900">Vista de detalle</h2>
-            <div className="mt-4 rounded-2xl bg-slate-950 p-5 text-slate-100">
+        {/* Bloque Derecho: Sidebar Informativo y Ficha Destacada */}
+        <aside className="space-y-4">
+          
+          {/* Ficha Destacada de Factura */}
+          <section className="rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-md p-5 shadow-xl">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800 pb-2.5">Comprobante Destacado</h2>
+            
+            <div className="mt-4">
               {!featuredInvoice && (
-                <p className="text-sm text-slate-300">No hay factura destacada por el momento.</p>
+                <p className="text-xs text-slate-500 text-center py-6">No hay registros cargados hoy.</p>
               )}
 
               {featuredInvoice && (
-                <>
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Factura destacada</p>
-                  <p className="mt-2 text-2xl font-semibold">{featuredInvoice.id}</p>
-                </div>
-                <div className="flex flex-col items-end gap-2">
-                  <span className="rounded-full bg-emerald-500/20 px-3 py-1 text-xs font-semibold text-emerald-300">
-                    {featuredInvoice.status}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => handleDownloadInvoice(featuredInvoice)}
-                    disabled={!featuredInvoice.invoiceId || downloadingInvoiceId === featuredInvoice.invoiceId}
-                    className="rounded-full border border-white/25 bg-white/10 px-3 py-1 text-xs font-semibold text-white transition hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    {downloadingInvoiceId === featuredInvoice.invoiceId ? 'Descargando...' : 'Descargar PDF'}
-                  </button>
-                </div>
-              </div>
+                <div className="space-y-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Número de control</p>
+                      <p className="text-lg font-black text-white truncate max-w-[200px]" title={featuredInvoice.id}>
+                        {featuredInvoice.id}
+                      </p>
+                    </div>
+                    <div className="flex flex-col items-end gap-2 shrink-0">
+                      <span className="rounded-md bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-400">
+                        {featuredInvoice.status}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleDownloadInvoice(featuredInvoice)}
+                        disabled={!featuredInvoice.invoiceId || downloadingInvoiceId === featuredInvoice.invoiceId}
+                        className="rounded-md border border-slate-700 bg-slate-800 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-200 hover:bg-slate-700"
+                      >
+                        {downloadingInvoiceId === featuredInvoice.invoiceId ? 'Descargando' : 'Exportar PDF'}
+                      </button>
+                    </div>
+                  </div>
 
-              <div className="mt-6 space-y-3 text-sm text-slate-300">
-                <div className="flex items-center justify-between">
-                  <span>Cliente</span>
-                  <span className="font-medium text-white">{featuredInvoice.customer}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>Subtotal</span>
-                  <span className="font-medium text-white">{featuredInvoice.subtotal}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>Descuento</span>
-                  <span className="font-medium text-emerald-300">{featuredInvoice.discountPercentage}%</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>Envio</span>
-                  <span className="font-medium text-white">{featuredInvoice.shippingFee}</span>
-                </div>
-              </div>
+                  <div className="mt-2 space-y-2 text-xs border-t border-b border-slate-800/60 py-3 text-slate-400 font-normal">
+                    <div className="flex items-center justify-between">
+                      <span>Titular de la cuenta</span>
+                      <span className="font-semibold text-slate-200">{featuredInvoice.customer}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Subtotal Recaudado</span>
+                      <span className="font-semibold text-slate-200">{featuredInvoice.subtotal}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Descuento por Cupón</span>
+                      <span className="font-bold text-emerald-400">-{featuredInvoice.discountPercentage}%</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Recargo de Envío / Courier</span>
+                      <span className="font-semibold text-slate-200">{featuredInvoice.shippingFee}</span>
+                    </div>
+                  </div>
 
-              <div className="mt-5 rounded-2xl border border-white/10 bg-white/5 p-4">
-                <p className="text-xs uppercase tracking-[0.22em] text-slate-400">Total final</p>
-                <p className="mt-2 text-3xl font-bold text-white">{featuredInvoice.total}</p>
-              </div>
-                </>
+                  <div className="rounded-xl border border-slate-800 bg-slate-950 p-4">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Monto Neto Liquidado</p>
+                    <p className="mt-1 text-2xl font-black text-white tracking-tight">{featuredInvoice.total}</p>
+                  </div>
+                </div>
               )}
             </div>
           </section>
 
-          <section className="rounded-[26px] border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-xl font-bold text-slate-900">Notas de implementacion</h2>
-            <ul className="mt-4 space-y-3 text-sm text-slate-600">
-              {invoiceHighlights.map((item) => (
-                <li key={item} className="rounded-2xl bg-slate-50 px-4 py-3">
-                  {item}
-                </li>
-              ))}
-              <li className="rounded-2xl bg-slate-50 px-4 py-3">
-                Nuevo apartado de descarga PDF disponible por fila y en la factura destacada.
-              </li>
-            </ul>
-          </section>
+          {/* Notas Técnicas / Auditoría */}
+        
         </aside>
+
       </div>
     </section>
   )

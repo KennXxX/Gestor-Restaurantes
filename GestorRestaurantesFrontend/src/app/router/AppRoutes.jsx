@@ -4,8 +4,9 @@ import { VerifyEmailPage } from '../../features/auth/pages/VerifyEmailPage'
 import { ResetPasswordPage } from '../../features/auth/pages/ResetPasswordPage'
 import { UnauthorizedPage } from '../../features/auth/pages/UnauthorizedPage'
 import { DashboardPage } from '../layouts/DashboardPage.jsx'
-import { ClientPage, ClientHome, ClientReservations, ClientMenu, ClientInvoices, ClientOrders } from '../pages/ClientPage'
+import { ClientPage, ClientHome, ClientMenu, ClientInvoices, ClientOrders } from '../pages/ClientPage'
 import { ClientReviews } from '../../features/Resenas/ClientReviews'
+import { ClientRestaurants } from '../../features/Restaurants/ClientRestaurants'
 import { ProtectedRoute } from './ProtectedRoute'
 import { UserProfile } from '../../features/auth/components/UserProfile'
 import { ClientHistory } from '../../features/History/ClientHistory'
@@ -107,7 +108,7 @@ export const AppRoutes = () => {
         }
       >
         <Route index element={<ClientHome />} />
-        <Route path="reservations" element={<ClientReservations />} />
+        <Route path="restaurants" element={<ClientRestaurants />} />
         <Route path="historial" element={<ClientHistory />} />
         <Route path="menu" element={<ClientMenu />} />
         <Route path="orders" element={<ClientOrders />} />

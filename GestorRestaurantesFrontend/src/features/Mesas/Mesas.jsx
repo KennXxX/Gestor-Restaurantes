@@ -233,285 +233,308 @@ export const Mesas = () => {
   }
 
   return (
-    <section className="space-y-6 font-body">
-      <header className="relative overflow-hidden rounded-[30px] border border-slate-200 bg-[radial-gradient(circle_at_top_right,_rgba(6,95,70,0.25),_transparent_55%),linear-gradient(120deg,_#ecfdf5_0%,_#dcfce7_40%,_#bbf7d0_100%)] p-8 shadow-sm">
-        <div className="absolute -bottom-10 right-10 h-32 w-32 rounded-full bg-emerald-200/60 blur-3xl" />
-        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-3xl">
-            <p className="inline-flex rounded-full bg-emerald-800 px-4 py-1 text-xs font-semibold uppercase tracking-[0.32em] text-emerald-100">
-              Mesas
-            </p>
-            <h1 className="font-display mt-4 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
-              Control de mesas y estado operativo
-            </h1>
-            <p className="mt-3 text-sm text-slate-600 sm:text-base">
-              Lista de mesas con capacidad, estado activo/inactivo y enlace directo al restaurante. Incluye formularios con integracion al endpoint y estados de UI.
-            </p>
+    <section className="space-y-6 font-sans text-slate-300 antialiased max-w-[1600px] mx-auto p-4 md:p-6">
+      {/* Header */}
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-800 pb-5">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-emerald-400" />
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">Gestión Operativa</span>
           </div>
+          <h1 className="mt-1 text-2xl font-bold tracking-tight text-white md:text-3xl">
+            Control de Mesas
+          </h1>
+          <p className="mt-1 text-sm text-slate-400">
+            Administra la distribución, capacidades y estados de servicio de tus restaurantes.
+          </p>
+        </div>
 
-          <div className="flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={() => loadTables()}
-              className="rounded-full border border-emerald-200 bg-white px-5 py-2 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-50"
-            >
-              Actualizar listado
-            </button>
-          </div>
+        <div>
+          <button
+            type="button"
+            onClick={() => loadTables()}
+            className="inline-flex items-center justify-center rounded-xl border border-slate-700 bg-slate-800/80 px-4 py-2.5 text-sm font-semibold text-slate-200 shadow-sm backdrop-blur-sm transition-all hover:bg-slate-700 hover:text-white active:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-slate-900"
+          >
+            Actualizar listado
+          </button>
         </div>
       </header>
 
-      <div className="grid gap-6 xl:grid-cols-[1.4fr_1fr]">
-        <section className="rounded-[26px] border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex flex-col gap-4 border-b border-slate-100 pb-5 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="font-display text-xl font-semibold text-slate-900">Listado de mesas</h2>
-              <p className="text-sm text-slate-500">Filtra por restaurante o estado para revisar el detalle operativo.</p>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <select
-                name="status"
-                value={filters.status}
-                onChange={handleFilterChange}
-                className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm"
-              >
-                <option value="active">Activas</option>
-                <option value="inactive">Inactivas</option>
-              </select>
-              <select
-                name="restaurantId"
-                value={filters.restaurantId}
-                onChange={handleFilterChange}
-                className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm"
-              >
-                <option value="">Todos los restaurantes</option>
-                {restaurants.map((restaurant) => (
-                  <option key={restaurant._id} value={restaurant._id}>
-                    {restaurant.restaurantName}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <FilterBar
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-            startDate={startDate}
-            onStartDateChange={setStartDate}
-            endDate={endDate}
-            onEndDateChange={setEndDate}
-            searchPlaceholder="Buscar por nombre, capacidad o restaurante..."
-          />
-
-          <div className="mt-5 grid gap-4 sm:grid-cols-2">
-            {[
-              { label: 'Mesas en vista', value: stats.total },
-              { label: 'Activas', value: stats.active },
-              { label: 'Inactivas', value: stats.inactive },
-            ].map((card) => (
-              <div key={card.label} className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-400">{card.label}</p>
-                <p className="mt-2 text-2xl font-semibold text-slate-900">{card.value}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-6 space-y-4">
-            {loading && (
-              <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center text-sm text-slate-500">
-                Cargando mesas...
-              </div>
-            )}
-
-            {!loading && error && (
-              <div className="rounded-2xl border border-rose-100 bg-rose-50 px-4 py-6 text-center text-sm text-rose-700">
-                {error}
-              </div>
-            )}
-
-            {!loading && !error && filteredTables.length === 0 && (
-              <div className="rounded-2xl border border-slate-200 bg-white px-4 py-6 text-center text-sm text-slate-500">
-                No hay mesas para este filtro / búsqueda. Crea una nueva desde el formulario.
-              </div>
-            )}
-
-            {!loading && !error && filteredTables.length > 0 && (
-              <div className="grid gap-4">
-                {filteredTables.map((table) => {
-                  const tableId = getTableId(table)
-                  const isActive = table.tableActive !== false
-                  const restaurantLabel =
-                    table.restaurantId?.restaurantName ||
-                    restaurants.find((rest) => rest._id === table.restaurantId)?.restaurantName ||
-                    'Restaurante no definido'
-
-                  return (
-                    <article
-                      key={tableId || table.tableName}
-                      className="rounded-[26px] border border-slate-100 bg-white p-5 shadow-sm transition hover:shadow-md"
-                    >
-                      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                        <div>
-                          <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Mesa</p>
-                          <h3 className="font-display mt-2 text-lg font-semibold text-slate-900">
-                            {table.tableName || 'Mesa sin nombre'}
-                          </h3>
-                          <p className="mt-2 text-sm text-slate-600">Capacidad: {table.tableCapacity ?? '--'} personas</p>
-                          <p className="mt-2 text-sm text-slate-600">Restaurante: {restaurantLabel}</p>
-                        </div>
-
-                        <span
-                          className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                            isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
-                          }`}
-                        >
-                          {isActive ? 'Activa' : 'Inactiva'}
-                        </span>
-                      </div>
-
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        <button
-                          type="button"
-                          onClick={() => handleEdit(table)}
-                          className="rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-600 transition hover:bg-slate-100"
-                          disabled={!tableId}
-                        >
-                          Editar
-                        </button>
-                        {isActive ? (
-                          <button
-                            type="button"
-                            onClick={() => handleDelete(table)}
-                            className="rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-rose-700 transition hover:bg-rose-100"
-                            disabled={!tableId}
-                          >
-                            Desactivar
-                          </button>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => handleReactivate(table)}
-                            className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700 transition hover:bg-emerald-100"
-                            disabled={!tableId}
-                          >
-                            Reactivar
-                          </button>
-                        )}
-                      </div>
-                    </article>
-                  )
-                })}
-              </div>
-            )}
-          </div>
-        </section>
-
-        <aside className="space-y-6">
-          <section className="rounded-[26px] border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="flex items-start justify-between gap-4">
+      {/* Grid Principal */}
+      <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
+        
+        {/* Sección Izquierda: Listado y Filtros */}
+        <div className="space-y-6">
+          
+          {/* Card de Filtros e Indicadores (Oscuro Translúcido) */}
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-md p-5 shadow-xl space-y-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Formulario</p>
-                <h2 className="font-display mt-2 text-xl font-semibold text-slate-900">
-                  {editing ? 'Editar mesa' : 'Crear mesa'}
-                </h2>
+                <h2 className="text-base font-bold text-white">Listado de mesas</h2>
+                <p className="text-xs text-slate-400">Visualización general según criterios de búsqueda.</p>
               </div>
-              {editing && (
-                <button
-                  type="button"
-                  onClick={resetForm}
-                  className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 transition hover:bg-slate-100"
+              
+              <div className="flex flex-wrap gap-2">
+                <select
+                  name="status"
+                  value={filters.status}
+                  onChange={handleFilterChange}
+                  className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs font-medium text-slate-300 shadow-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                 >
-                  Cancelar
-                </button>
-              )}
-            </div>
-
-            <form className="mt-6 grid gap-4" onSubmit={handleSubmit}>
-              <label className="text-sm font-semibold text-slate-700">
-                Nombre de mesa
-                <input
-                  className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm"
-                  name="tableName"
-                  value={form.tableName}
-                  onChange={handleInputChange}
-                  placeholder="Mesa 12"
-                  required
-                />
-              </label>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className="text-sm font-semibold text-slate-700">
-                  Capacidad
-                  <input
-                    type="number"
-                    min="1"
-                    max="8"
-                    className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm"
-                    name="tableCapacity"
-                    value={form.tableCapacity}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </label>
-                <label className="text-sm font-semibold text-slate-700">
-                  Estado de mesa
-                  <select
-                    name="tableActive"
-                    value={form.tableActive ? 'true' : 'false'}
-                    onChange={handleInputChange}
-                    className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm"
-                  >
-                    <option value="true">Activa</option>
-                    <option value="false">Inactiva</option>
-                  </select>
-                </label>
-              </div>
-
-              <label className="text-sm font-semibold text-slate-700">
-                Restaurante asociado
+                  <option value="active">Activas</option>
+                  <option value="inactive">Inactivas</option>
+                </select>
+                
                 <select
                   name="restaurantId"
-                  value={form.restaurantId}
-                  onChange={handleInputChange}
-                  className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm"
-                  required
+                  value={filters.restaurantId}
+                  onChange={handleFilterChange}
+                  className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs font-medium text-slate-300 shadow-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 max-w-[200px]"
                 >
-                  <option value="">Selecciona un restaurante</option>
+                  <option value="">Todos los restaurantes</option>
                   {restaurants.map((restaurant) => (
                     <option key={restaurant._id} value={restaurant._id}>
                       {restaurant.restaurantName}
                     </option>
                   ))}
                 </select>
-              </label>
+              </div>
+            </div>
+
+            <div className="pt-2 border-t border-slate-800/60 dark-filters">
+              <FilterBar
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                startDate={startDate}
+                onStartDateChange={setStartDate}
+                endDate={endDate}
+                onEndDateChange={setEndDate}
+                searchPlaceholder="Buscar por nombre, capacidad o restaurante..."
+              />
+            </div>
+
+            {/* Mini Stats Grid */}
+            <div className="grid grid-cols-3 gap-3 pt-2">
+              {[
+                { label: 'Mesas en vista', value: stats.total, bg: 'bg-slate-950/60 text-slate-300 border-slate-800' },
+                { label: 'Activas', value: stats.active, bg: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' },
+                { label: 'Inactivas', value: stats.inactive, bg: 'bg-amber-500/10 text-amber-400 border-amber-500/20' },
+              ].map((card) => (
+                <div key={card.label} className={`rounded-xl border p-3 ${card.bg}`}>
+                  <p className="text-[10px] font-bold uppercase tracking-wider opacity-80">{card.label}</p>
+                  <p className="mt-1 text-xl font-bold tracking-tight">{card.value}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Listado / Tabla (Oscuro con efecto Glass) */}
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 backdrop-blur-md shadow-xl overflow-hidden">
+            {loading && (
+              <div className="p-12 text-center text-sm text-slate-400">
+                <div className="inline-block animate-pulse font-medium">Cargando mesas del sistema...</div>
+              </div>
+            )}
+
+            {!loading && error && (
+              <div className="m-4 rounded-xl bg-rose-500/10 border border-rose-500/20 p-4 text-center text-sm text-rose-400 font-medium">
+                {error}
+              </div>
+            )}
+
+            {!loading && !error && filteredTables.length === 0 && (
+              <div className="p-12 text-center text-sm text-slate-500">
+                No se encontraron mesas que coincidan con los filtros. Crea una nueva en el panel lateral.
+              </div>
+            )}
+
+            {!loading && !error && filteredTables.length > 0 && (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-slate-800 bg-slate-950/50 text-xs font-bold uppercase tracking-wider text-slate-400">
+                      <th className="px-5 py-3.5">Nombre de Mesa</th>
+                      <th className="px-5 py-3.5">Restaurante</th>
+                      <th className="px-5 py-3.5 text-center">Capacidad</th>
+                      <th className="px-5 py-3.5">Estado</th>
+                      <th className="px-5 py-3.5 text-right">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/60 text-sm text-slate-300">
+                    {filteredTables.map((table) => {
+                      const tableId = getTableId(table)
+                      const isActive = table.tableActive !== false
+                      const restaurantLabel =
+                        table.restaurantId?.restaurantName ||
+                        restaurants.find((rest) => rest._id === table.restaurantId)?.restaurantName ||
+                        'Restaurante no definido'
+
+                      return (
+                        <tr key={tableId || table.tableName} className="hover:bg-slate-800/30 transition-colors group">
+                          <td className="px-5 py-4 font-semibold text-white">
+                            {table.tableName || 'Mesa sin nombre'}
+                          </td>
+                          <td className="px-5 py-4 text-slate-400">
+                            {restaurantLabel}
+                          </td>
+                          <td className="px-5 py-4 text-center font-medium text-slate-300">
+                            {table.tableCapacity ?? '--'} <span className="text-xs text-slate-500 font-normal">pax</span>
+                          </td>
+                          <td className="px-5 py-4">
+                            <span
+                              className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-semibold ${
+                                isActive ? 'bg-emerald-500/10 text-emerald-400' : 'bg-slate-800 text-slate-400'
+                              }`}
+                            >
+                              <span className={`h-1.5 w-1.5 rounded-full ${isActive ? 'bg-emerald-400' : 'bg-slate-500'}`} />
+                              {isActive ? 'Activa' : 'Inactiva'}
+                            </span>
+                          </td>
+                          <td className="px-5 py-4 text-right">
+                            <div className="flex items-center justify-end gap-1.5 opacity-90 group-hover:opacity-100 transition-opacity">
+                              <button
+                                type="button"
+                                onClick={() => handleEdit(table)}
+                                className="rounded-lg px-2.5 py-1.5 text-xs font-bold uppercase tracking-wider text-slate-300 hover:bg-slate-800 hover:text-white transition-colors disabled:opacity-40"
+                                disabled={!tableId}
+                              >
+                                Editar
+                              </button>
+                              {isActive ? (
+                                <button
+                                  type="button"
+                                  onClick={() => handleDelete(table)}
+                                  className="rounded-lg px-2.5 py-1.5 text-xs font-bold uppercase tracking-wider text-rose-400 hover:bg-rose-500/10 transition-colors disabled:opacity-40"
+                                  disabled={!tableId}
+                                >
+                                  Desactivar
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => handleReactivate(table)}
+                                  className="rounded-lg px-2.5 py-1.5 text-xs font-bold uppercase tracking-wider text-emerald-400 hover:bg-emerald-500/10 transition-colors disabled:opacity-40"
+                                  disabled={!tableId}
+                                >
+                                  Reactivar
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Sección Derecha: Formulario Ocurto de Registro */}
+        <aside className="space-y-6">
+          {/* Formulario */}
+          <section className="rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-md p-5 shadow-xl">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div>
+                <h2 className="text-base font-bold text-white">
+                  {editing ? 'Editar mesa' : 'Crear nueva mesa'}
+                </h2>
+                <p className="text-xs text-slate-400">Ingresa los parámetros de la infraestructura.</p>
+              </div>
+              {editing && (
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  className="rounded-lg bg-slate-800 px-2.5 py-1.5 text-xs font-bold uppercase tracking-wider text-slate-300 hover:bg-slate-700 transition-colors"
+                >
+                  Cancelar
+                </button>
+              )}
+            </div>
+
+            <form className="mt-4 space-y-4" onSubmit={handleSubmit}>
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-1.5">
+                  Nombre de la mesa
+                </label>
+                <input
+                  type="text"
+                  className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white shadow-sm placeholder-slate-600 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  name="tableName"
+                  value={form.tableName}
+                  onChange={handleInputChange}
+                  placeholder="Ej. Terraza 4 o Mesa 12"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-1.5">
+                    Capacidad (Pax)
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="8"
+                    className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    name="tableCapacity"
+                    value={form.tableCapacity}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-1.5">
+                    Estado inicial
+                  </label>
+                  <select
+                    name="tableActive"
+                    value={form.tableActive ? 'true' : 'false'}
+                    onChange={handleInputChange}
+                    className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  >
+                    <option value="true" className="bg-slate-950">Activa</option>
+                    <option value="false" className="bg-slate-950">Inactiva</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-1.5">
+                  Restaurante asignado
+                </label>
+                <select
+                  name="restaurantId"
+                  value={form.restaurantId}
+                  onChange={handleInputChange}
+                  className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  required
+                >
+                  <option value="" className="bg-slate-950">Selecciona un restaurante...</option>
+                  {restaurants.map((restaurant) => (
+                    <option key={restaurant._id} value={restaurant._id} className="bg-slate-950">
+                      {restaurant.restaurantName}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
               <button
                 type="submit"
                 disabled={saving}
-                className="mt-2 rounded-2xl bg-emerald-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-70"
+                className="w-full inline-flex items-center justify-center rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 active:bg-emerald-700 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {saving ? 'Guardando...' : editing ? 'Guardar cambios' : 'Crear mesa'}
+                {saving ? 'Procesando...' : editing ? 'Guardar Cambios' : 'Registrar Mesa'}
               </button>
             </form>
           </section>
 
-          <section className="rounded-[26px] border border-slate-200 bg-emerald-900 p-6 text-white shadow-sm">
-            <p className="text-xs uppercase tracking-[0.2em] text-emerald-200">Estado del modulo</p>
-            <h3 className="font-display mt-3 text-xl font-semibold">Notas de integracion</h3>
-            <ul className="mt-4 space-y-3 text-sm text-emerald-50">
-              <li className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-                CRUD de mesas conectado a endpoints con filtros por estado y restaurante.
-              </li>
-              <li className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-                Estado activa/inactiva mapeado a la propiedad tableActive.
-              </li>
-              <li className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-                Estados de carga, error y vacio listos para QA.
-              </li>
-            </ul>
-          </section>
+          {/* Notas de Integración */}
+          
         </aside>
+
       </div>
     </section>
   )

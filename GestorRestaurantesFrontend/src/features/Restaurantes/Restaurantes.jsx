@@ -87,12 +87,10 @@ export const Restaurantes = () => {
 
     try {
       let data
-      // Si el usuario es admin de restaurante, obtiene solo su restaurante
       if (user?.roles?.includes('ADMIN_RESTAURANT')) {
         const response = await getMyRestaurant()
         data = { data: response.data?.data ? [response.data.data] : [] }
       } else {
-        // Si es admin general, obtiene todos los restaurantes
         const response = await getRestaurants({ restaurantActive: !targetInactive })
         data = response.data
       }
@@ -158,76 +156,81 @@ export const Restaurantes = () => {
   }
 
   return (
-    <section className="space-y-6 font-body">
-      <header className="relative overflow-hidden rounded-[30px] border border-slate-200 bg-[radial-gradient(circle_at_top_left,_rgba(12,74,110,0.22),_transparent_50%),linear-gradient(120deg,_#0f172a_0%,_#0b1f3b_40%,_#1e3a8a_100%)] p-8 text-white shadow-xl">
-        <div className="absolute right-6 top-6 h-24 w-24 rounded-full bg-white/10 blur-2xl" />
-        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-3xl">
-            <p className="inline-flex rounded-full bg-white/12 px-4 py-1 text-xs font-semibold uppercase tracking-[0.32em] text-blue-100">
-              Restaurantes
-            </p>
-            <h1 className="font-display mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
-              Control operativo de restaurantes
-            </h1>
-            <p className="mt-3 text-sm text-slate-200 sm:text-base">
-              Administra altas, ediciones y estado de cada restaurante con formularios conectados al backend. Incluye filtros, estados basicos y vistas listas para crecer.
-            </p>
+    <section className="space-y-6 font-sans text-slate-300 antialiased max-w-[1600px] mx-auto p-4 md:p-6">
+      
+      {/* Header Estilo Premium para Entorno Oscuro */}
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-800 pb-5">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-blue-500" />
+            <span className="text-xs font-bold uppercase tracking-wider text-blue-400">Infraestructura Corporativa</span>
           </div>
+          <h1 className="mt-1 text-2xl font-bold tracking-tight text-white md:text-3xl">
+            Control Operativo de Restaurantes
+          </h1>
+          <p className="mt-1 text-sm text-slate-400">
+            Administra altas, ediciones, parámetros de localización y el estado comercial de tus sedes.
+          </p>
+        </div>
 
-          <div className="flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={handleCreate}
-              className="rounded-full bg-white px-5 py-2 text-sm font-semibold text-slate-900 transition hover:bg-slate-100"
-            >
-              Nuevo restaurante
-            </button>
-            <button
-              type="button"
-              onClick={() => loadRestaurants()}
-              className="rounded-full border border-white/20 bg-white/10 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
-            >
-              Actualizar
-            </button>
-          </div>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={handleCreate}
+            className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:bg-blue-500 active:bg-blue-700 focus:outline-none"
+          >
+            Nuevo Restaurante
+          </button>
+          <button
+            type="button"
+            onClick={() => loadRestaurants()}
+            className="inline-flex items-center justify-center rounded-xl border border-slate-700 bg-slate-800/80 px-4 py-2.5 text-sm font-semibold text-slate-200 shadow-sm backdrop-blur-sm transition-all hover:bg-slate-700 hover:text-white"
+          >
+            Actualizar
+          </button>
         </div>
       </header>
 
-      <div className="grid gap-6">
-        <section className="rounded-[26px] border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex flex-col gap-4 border-b border-slate-100 pb-5 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="font-display text-xl font-semibold text-slate-900">Listado general</h2>
-              <p className="text-sm text-slate-500">
-                {showInactive ? 'Mostrando restaurantes inactivos.' : 'Mostrando restaurantes activos.'}
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2 text-xs font-semibold uppercase tracking-[0.2em]">
-              <button
-                type="button"
-                onClick={() => setShowInactive(false)}
-                className={`rounded-full px-4 py-2 transition ${
-                  !showInactive
-                    ? 'bg-emerald-100 text-emerald-700'
-                    : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-                }`}
-              >
-                Activos
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowInactive(true)}
-                className={`rounded-full px-4 py-2 transition ${
-                  showInactive
-                    ? 'bg-rose-100 text-rose-700'
-                    : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-                }`}
-              >
-                Inactivos
-              </button>
-            </div>
+      {/* Contenedor Principal (Panel Completo Oscuro) */}
+      <section className="rounded-2xl border border-slate-800 bg-slate-900/40 backdrop-blur-md p-5 shadow-xl space-y-5">
+        
+        {/* Controles Superiores de Filtrado de Estado */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-800/60 pb-4">
+          <div>
+            <h2 className="text-base font-bold text-white">Listado general de sedes</h2>
+            <p className="text-xs text-slate-400">
+              {showInactive ? 'Visualizando únicamente registros inactivos/archivados.' : 'Visualizando únicamente registros operativos vigentes.'}
+            </p>
           </div>
+          
+          <div className="flex gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800 text-[11px] font-bold uppercase tracking-wider">
+            <button
+              type="button"
+              onClick={() => setShowInactive(false)}
+              className={`rounded-lg px-3 py-1.5 transition-all ${
+                !showInactive
+                  ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              Activos
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowInactive(true)}
+              className={`rounded-lg px-3 py-1.5 transition-all ${
+                showInactive
+                  ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              Inactivos
+            </button>
+          </div>
+        </div>
 
+        {/* Buscador Parametrizado */}
+        <div className="pt-1">
           <FilterBar
             searchTerm={searchTerm}
             onSearchChange={setSearchTerm}
@@ -237,150 +240,159 @@ export const Restaurantes = () => {
             onEndDateChange={setEndDate}
             searchPlaceholder="Buscar por nombre, dirección o correo..."
           />
+        </div>
 
-          <div className="mt-5 grid gap-4 sm:grid-cols-3">
-            {[
-              { label: 'Restaurantes en vista', value: stats.total },
-              { label: 'Activos', value: stats.active },
-              { label: 'Inactivos', value: stats.inactive },
-            ].map((card) => (
-              <div key={card.label} className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-400">{card.label}</p>
-                <p className="mt-2 text-2xl font-semibold text-slate-900">{card.value}</p>
-              </div>
-            ))}
-          </div>
+        {/* Módulo de Micro Estadísticas */}
+        <div className="grid grid-cols-3 gap-3 pt-1">
+          {[
+            { label: 'Sedes en vista', value: stats.total, bg: 'bg-slate-950/60 text-slate-300 border-slate-800/80' },
+            { label: 'Activos', value: stats.active, bg: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' },
+            { label: 'Inactivos', value: stats.inactive, bg: 'bg-rose-500/10 text-rose-400 border-rose-500/20' },
+          ].map((card) => (
+            <div key={card.label} className={`rounded-xl border p-3 ${card.bg}`}>
+              <p className="text-[10px] font-bold uppercase tracking-wider opacity-80">{card.label}</p>
+              <p className="mt-1 text-xl font-bold tracking-tight">{card.value}</p>
+            </div>
+          ))}
+        </div>
 
-          <div className="mt-6 space-y-4">
-            {loading && (
-              <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center text-sm text-slate-500">
-                Cargando restaurantes...
-              </div>
-            )}
+        {/* Visualización de Tarjetas de Restaurante */}
+        <div className="pt-2">
+          {loading && (
+            <div className="p-12 text-center text-sm text-slate-400 animate-pulse font-medium">
+              Sincronizando la infraestructura comercial con el servidor...
+            </div>
+          )}
 
-            {!loading && error && (
-              <div className="rounded-2xl border border-rose-100 bg-rose-50 px-4 py-6 text-center text-sm text-rose-700">
-                {error}
-              </div>
-            )}
+          {!loading && error && (
+            <div className="rounded-xl bg-rose-500/10 border border-rose-500/20 p-4 text-center text-sm text-rose-400 font-medium">
+              {error}
+            </div>
+          )}
 
-            {!loading && !error && filteredRestaurants.length === 0 && (
-              <div className="rounded-2xl border border-slate-200 bg-white px-4 py-6 text-center text-sm text-slate-500">
-                No hay restaurantes que coincidan con los filtros o en este estado. Utiliza el botón "Nuevo restaurante" para crear uno.
-              </div>
-            )}
+          {!loading && !error && filteredRestaurants.length === 0 && (
+            <div className="p-12 text-center text-sm text-slate-500 rounded-xl border border-dashed border-slate-800">
+              No se registran restaurantes vigentes bajo estos criterios de filtrado.
+            </div>
+          )}
 
-            {!loading && !error && filteredRestaurants.length > 0 && (
-              <div className="grid gap-4 xl:grid-cols-2">
-                {filteredRestaurants.map((restaurant) => {
-                  const restaurantId = getRestaurantId(restaurant)
-                  const isActive = restaurant.restaurantActive !== false
-                  const photoUrl = normalizePhoto(restaurant.restaurantPhoto)
+          {!loading && !error && filteredRestaurants.length > 0 && (
+            <div className="grid gap-4 md:grid-cols-1 xl:grid-cols-2">
+              {filteredRestaurants.map((restaurant) => {
+                const restaurantId = getRestaurantId(restaurant)
+                const isActive = restaurant.restaurantActive !== false
+                const photoUrl = normalizePhoto(restaurant.restaurantPhoto)
 
-                  return (
-                    <article
-                      key={restaurantId || restaurant.restaurantEmail}
-                      className="rounded-[26px] border border-slate-100 bg-white p-5 shadow-sm transition hover:shadow-md"
-                    >
-                      <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-                        <div className="h-20 w-20 overflow-hidden rounded-2xl bg-slate-900/10">
-                          {photoUrl ? (
-                            <img
-                              src={photoUrl}
-                              alt={restaurant.restaurantName}
-                              className="h-full w-full object-cover"
-                            />
-                          ) : (
-                            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-blue-500/30 via-indigo-500/20 to-slate-900/30 text-2xl font-semibold text-slate-700">
-                              {(restaurant.restaurantName || 'R').charAt(0)}
-                            </div>
-                          )}
+                return (
+                  <article
+                    key={restaurantId || restaurant.restaurantEmail}
+                    className="rounded-xl border border-slate-800/70 bg-slate-950/30 p-5 shadow-sm transition-all hover:border-slate-700 flex flex-col sm:flex-row gap-4 items-start"
+                  >
+                    {/* Contenedor Fotográfico */}
+                    <div className="h-20 w-20 overflow-hidden rounded-xl border border-slate-800 bg-slate-950 shrink-0 shadow-inner">
+                      {photoUrl ? (
+                        <img
+                          src={photoUrl}
+                          alt={restaurant.restaurantName}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-blue-500/10 via-indigo-500/5 to-slate-950 text-xl font-black text-slate-500">
+                          {(restaurant.restaurantName || 'R').charAt(0).toUpperCase()}
                         </div>
+                      )}
+                    </div>
 
-                        <div className="flex-1">
-                          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                            <div>
-                              <h3 className="font-display text-lg font-semibold text-slate-900">
-                                {restaurant.restaurantName}
-                              </h3>
-                              <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
-                                {restaurant.restaurantEmail || 'Sin correo'}
-                              </p>
-                            </div>
-                            <span
-                              className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                                isActive
-                                  ? 'bg-emerald-100 text-emerald-700'
-                                  : 'bg-rose-100 text-rose-700'
-                              }`}
-                            >
-                              {isActive ? 'Activo' : 'Inactivo'}
-                            </span>
-                          </div>
+                    {/* Información Descriptiva */}
+                    <div className="flex-1 min-w-0 space-y-3.5 w-full">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <h3 className="text-base font-bold text-white truncate">
+                            {restaurant.restaurantName}
+                          </h3>
+                          <p className="text-[11px] font-mono text-slate-500 truncate pt-0.5">
+                            {restaurant.restaurantEmail || 'Sin correo asignado'}
+                          </p>
+                        </div>
+                        
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-semibold tracking-wide shrink-0 ${
+                            isActive 
+                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/10' 
+                              : 'bg-slate-800 text-slate-400'
+                          }`}
+                        >
+                          <span className={`h-1.5 w-1.5 rounded-full ${isActive ? 'bg-emerald-400' : 'bg-slate-500'}`} />
+                          {isActive ? 'Activo' : 'Inactivo'}
+                        </span>
+                      </div>
 
-                          <div className="mt-3 grid gap-3 text-sm text-slate-600 sm:grid-cols-2">
-                            <div>
-                              <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Direccion</p>
-                              <p className="font-medium text-slate-700">{restaurant.restaurantAddress || '-'}</p>
-                            </div>
-                            <div>
-                              <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Telefono</p>
-                              <p className="font-medium text-slate-700">{restaurant.restaurantPhone || '-'}</p>
-                            </div>
-                            <div>
-                              <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Horario</p>
-                              <p className="font-medium text-slate-700">
-                                {restaurant.openingHours || '--:--'} a {restaurant.closingHours || '--:--'}
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Registro</p>
-                              <p className="font-medium text-slate-700">
-                                {restaurant.createdAt ? new Date(restaurant.createdAt).toLocaleDateString('es-GT') : 'N/D'}
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="mt-4 flex flex-wrap gap-2">
-                            <button
-                              type="button"
-                              onClick={() => handleEdit(restaurant)}
-                              className="rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-600 transition hover:bg-slate-100"
-                              disabled={!restaurantId}
-                            >
-                              Editar
-                            </button>
-                            {isActive ? (
-                              <button
-                                type="button"
-                                onClick={() => handleDelete(restaurant)}
-                                className="rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-rose-700 transition hover:bg-rose-100"
-                                disabled={!restaurantId}
-                              >
-                                Desactivar
-                              </button>
-                            ) : (
-                              <button
-                                type="button"
-                                onClick={() => handleReactivate(restaurant)}
-                                className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700 transition hover:bg-emerald-100"
-                                disabled={!restaurantId}
-                              >
-                                Reactivar
-                              </button>
-                            )}
-                          </div>
+                      {/* Parámetros Operativos */}
+                      <div className="grid gap-3 text-xs sm:grid-cols-2 pt-2 border-t border-slate-800/40">
+                        <div>
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Dirección</p>
+                          <p className="font-medium text-slate-300 pt-0.5 truncate" title={restaurant.restaurantAddress}>
+                            {restaurant.restaurantAddress || '-'}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Teléfono</p>
+                          <p className="font-medium text-slate-300 pt-0.5">{restaurant.restaurantPhone || '-'}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Horario Comercial</p>
+                          <p className="font-medium text-slate-300 pt-0.5">
+                            {restaurant.openingHours || '--:--'} a {restaurant.closingHours || '--:--'}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Fecha de Alta</p>
+                          <p className="font-medium text-slate-300 pt-0.5">
+                            {restaurant.createdAt ? new Date(restaurant.createdAt).toLocaleDateString('es-GT') : 'N/D'}
+                          </p>
                         </div>
                       </div>
-                    </article>
-                  )
-                })}
-              </div>
-            )}
-          </div>
-        </section>
-      </div>
 
+                      {/* Botones de Acción Integrados */}
+                      <div className="mt-4 pt-3 flex gap-2 justify-end border-t border-slate-800/40">
+                        <button
+                          type="button"
+                          onClick={() => handleEdit(restaurant)}
+                          className="rounded-lg px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
+                          disabled={!restaurantId}
+                        >
+                          Editar
+                        </button>
+                        {isActive ? (
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(restaurant)}
+                            className="rounded-lg px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-rose-400 hover:bg-rose-500/10 transition-colors"
+                            disabled={!restaurantId}
+                          >
+                            Desactivar
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleReactivate(restaurant)}
+                            className="rounded-lg px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-emerald-400 hover:bg-emerald-500/10 transition-colors"
+                            disabled={!restaurantId}
+                          >
+                            Reactivar
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </article>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Modal Flotante */}
       <ModalRestaurante
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

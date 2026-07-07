@@ -212,103 +212,132 @@ export const ClientesFrecuentes = () => {
   }, [filteredClientRows])
 
   return (
-    <section className="space-y-6 font-body">
-      <header className="rounded-[30px] border border-amber-200 bg-[radial-gradient(circle_at_top_right,_rgba(245,158,11,0.18),_transparent_40%),linear-gradient(120deg,_#fffbeb_0%,_#fff7ed_48%,_#fef3c7_100%)] p-8 shadow-sm">
-        <p className="inline-flex rounded-full bg-amber-600 px-4 py-1 text-xs font-semibold uppercase tracking-[0.32em] text-amber-50">
-          Fidelización
-        </p>
-        <h1 className="font-display mt-4 text-3xl font-semibold text-slate-900 sm:text-4xl">
-          Clientes frecuentes y pedidos recurrentes
-        </h1>
-        <p className="mt-3 max-w-3xl text-sm text-slate-700 sm:text-base">
-          Vista para identificar clientes con mayor actividad, sus reservaciones más repetidas, pedidos más comunes y un resumen útil para estrategias de fidelización.
-        </p>
+    <section className="space-y-6 font-sans text-slate-300 antialiased max-w-[1600px] mx-auto p-4 md:p-6">
+      
+      {/* Header Adaptado a la Interfaz Oscura */}
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-800 pb-5">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-amber-400" />
+            <span className="text-xs font-bold uppercase tracking-wider text-amber-400">Estrategia de Fidelización</span>
+          </div>
+          <h1 className="mt-1 text-2xl font-bold tracking-tight text-white md:text-3xl">
+            Clientes Frecuentes
+          </h1>
+          <p className="mt-1 text-sm text-slate-400">
+            Identifica usuarios con mayor volumen transaccional, hábitos de consumo e historial recurrente.
+          </p>
+        </div>
       </header>
 
+      {error && (
+        <div className="rounded-xl bg-rose-500/10 border border-rose-500/20 p-4 text-center text-sm text-rose-400 font-medium">
+          {error}
+        </div>
+      )}
+
+      {/* Grid de KPIs / Métricas Iniciales */}
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Clientes activos</p>
-          <p className="mt-2 text-2xl font-bold text-slate-900">{formatNumber(kpis.totalClients)}</p>
-        </article>
-        <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Reservas activas</p>
-          <p className="mt-2 text-2xl font-bold text-slate-900">{formatNumber(kpis.totalReservations)}</p>
-        </article>
-        <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Pedidos vinculados</p>
-          <p className="mt-2 text-2xl font-bold text-slate-900">{formatNumber(kpis.totalOrders)}</p>
-        </article>
-        <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Promedio actividad</p>
-          <p className="mt-2 text-2xl font-bold text-slate-900">{kpis.avgVisits.toFixed(1)}</p>
-        </article>
+        {[
+          { label: 'Clientes activos', value: formatNumber(kpis.totalClients) },
+          { label: 'Reservas activas', value: formatNumber(kpis.totalReservations) },
+          { label: 'Pedidos vinculados', value: formatNumber(kpis.totalOrders) },
+          { label: 'Promedio actividad', value: kpis.avgVisits.toFixed(1) },
+        ].map((kpi, idx) => (
+          <article key={idx} className="rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur-md p-4 shadow-xl">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{kpi.label}</p>
+            <p className="mt-1 text-2xl font-black tracking-tight text-white">{kpi.value}</p>
+          </article>
+        ))}
       </section>
 
-      <section className="rounded-[26px] border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      {/* Contenedor Principal (Tabla y Filtros) */}
+      <section className="rounded-2xl border border-slate-800 bg-slate-900/40 backdrop-blur-md p-5 shadow-xl space-y-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-xl font-bold text-slate-900">Ranking de clientes</h2>
-            <p className="text-sm text-slate-500">Ordenado por cantidad de interacciones: reservas y pedidos.</p>
+            <h2 className="text-base font-bold text-white">Ranking de clientes</h2>
+            <p className="text-xs text-slate-400">Ordenado jerárquicamente por cantidad de interacciones totales.</p>
           </div>
           <button
             type="button"
             onClick={loadData}
-            className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+            className="inline-flex items-center justify-center rounded-xl border border-slate-700 bg-slate-800/80 px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-200 shadow-sm transition-all hover:bg-slate-700 hover:text-white"
           >
-            Actualizar datos
+            Actualizar métricas
           </button>
         </div>
 
-        {loading && <p className="py-8 text-center text-sm text-slate-500">Cargando clientes frecuentes...</p>}
-        {!loading && error && <p className="py-8 text-center text-sm text-rose-500">{error}</p>}
+        {loading && (
+          <div className="p-12 text-center text-sm text-slate-400 animate-pulse font-medium">
+            Sincronizando perfiles recurrentes del servidor...
+          </div>
+        )}
         
         {!loading && !error && clientRows.length > 0 && (
-          <FilterBar
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-            hideDateFilters={true}
-            searchPlaceholder="Buscar por nombre, ID o restaurante..."
-          />
+          <div className="pt-1 border-t border-slate-800/60">
+            <FilterBar
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              hideDateFilters={true}
+              searchPlaceholder="Buscar por nombre, ID o restaurante..."
+            />
+          </div>
         )}
 
         {!loading && !error && filteredClientRows.length === 0 && (
-          <p className="py-8 text-center text-sm text-slate-500">No hay clientes que coincidan con la búsqueda.</p>
+          <div className="p-12 text-center text-sm text-slate-500 rounded-xl border border-dashed border-slate-800">
+            No se registran clientes que coincidan con los criterios de búsqueda.
+          </div>
         )}
 
+        {/* Tabla Estilizada */}
         {!loading && !error && filteredClientRows.length > 0 && (
-          <div className="mt-5 overflow-x-auto">
-            <table className="min-w-full divide-y divide-slate-200 text-sm">
+          <div className="overflow-x-auto rounded-xl border border-slate-800/60 bg-slate-950/20">
+            <table className="w-full text-left border-collapse text-sm">
               <thead>
-                <tr className="text-left text-xs uppercase tracking-[0.12em] text-slate-500">
-                  <th className="px-3 py-3">Cliente</th>
-                  <th className="px-3 py-3">Reservas</th>
-                  <th className="px-3 py-3">Pedidos</th>
-                  <th className="px-3 py-3">Restaurante frecuente</th>
-                  <th className="px-3 py-3">Pedidos más comunes</th>
-                  <th className="px-3 py-3">Resumen</th>
+                <tr className="border-b border-slate-800 bg-slate-950/50 text-xs font-bold uppercase tracking-wider text-slate-400">
+                  <th className="px-4 py-3.5">Cliente / Cuenta</th>
+                  <th className="px-4 py-3.5">Reservas</th>
+                  <th className="px-4 py-3.5">Pedidos</th>
+                  <th className="px-4 py-3.5">Restaurante Frecuente</th>
+                  <th className="px-4 py-3.5">Platillos más comunes</th>
+                  <th className="px-4 py-3.5">Resumen de Auditoría</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-800/50 text-slate-300">
                 {filteredClientRows.map((row) => (
-                  <tr key={row.userId} className="align-top">
-                    <td className="px-3 py-4">
-                      <p className="font-semibold text-slate-900">{row.name}</p>
-                      <p className="text-xs text-slate-500">ID: {row.userId}</p>
+                  <tr key={row.userId} className="hover:bg-slate-800/30 transition-colors align-top">
+                    <td className="px-4 py-4">
+                      <p className="font-bold text-white leading-tight">{row.name}</p>
+                      <p className="text-[11px] text-slate-500 font-mono mt-1">ID: {row.userId}</p>
                     </td>
-                    <td className="px-3 py-4">
-                      <p className="inline-flex rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-700">
-                        {formatNumber(row.activeReservations)} activas
-                      </p>
-                      <p className="mt-2 text-xs text-slate-500">{formatNumber(row.canceledReservations)} canceladas</p>
-                    </td>
-                    <td className="px-3 py-4">
-                      <p className="inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
-                        {formatNumber(row.totalOrders)} pedidos
+                    
+                    <td className="px-4 py-4">
+                      <span className="inline-flex items-center rounded-md bg-sky-500/10 px-2 py-0.5 text-xs font-semibold text-sky-400 border border-sky-500/20">
+                        {formatNumber(row.activeReservations)} Activas
+                      </span>
+                      <p className="mt-1.5 text-xs text-slate-500 font-normal">
+                        {formatNumber(row.canceledReservations)} Canceladas
                       </p>
                     </td>
-                    <td className="px-3 py-4 text-slate-700">{row.favoriteRestaurant}</td>
-                    <td className="px-3 py-4 text-slate-700">{row.favoriteItems}</td>
-                    <td className="px-3 py-4 text-slate-600">{row.summary}</td>
+                    
+                    <td className="px-4 py-4">
+                      <span className="inline-flex items-center rounded-md bg-emerald-500/10 px-2 py-0.5 text-xs font-semibold text-emerald-400 border border-emerald-500/20">
+                        {formatNumber(row.totalOrders)} Pedidos
+                      </span>
+                    </td>
+                    
+                    <td className="px-4 py-4 text-slate-200 font-medium">
+                      {row.favoriteRestaurant}
+                    </td>
+                    
+                    <td className="px-4 py-4 text-xs text-slate-400 leading-relaxed font-normal max-w-[240px]">
+                      {row.favoriteItems}
+                    </td>
+                    
+                    <td className="px-4 py-4 text-xs text-slate-500 font-normal leading-relaxed max-w-[300px]">
+                      {row.summary}
+                    </td>
                   </tr>
                 ))}
               </tbody>

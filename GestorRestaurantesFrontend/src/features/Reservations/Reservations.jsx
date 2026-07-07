@@ -264,69 +264,107 @@ export const Reservations = () => {
   }
 
   return (
-    <section className="space-y-6 font-body">
-      <header className="rounded-[28px] border border-sky-200 bg-[radial-gradient(circle_at_top_right,_rgba(14,165,233,0.18),_transparent_60%),linear-gradient(120deg,_#f0f9ff_0%,_#e0f2fe_60%,_#bae6fd_100%)] p-8 shadow-sm flex justify-between items-center flex-wrap gap-4">
+    <section className="space-y-6 font-sans text-slate-300 antialiased max-w-[1600px] mx-auto p-4 md:p-6">
+      
+      {/* Header en Sintonía con Entornos Oscuros */}
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-800 pb-5">
         <div>
-          <p className="inline-flex rounded-full bg-sky-700 px-4 py-1 text-xs font-semibold uppercase tracking-[0.32em] text-sky-50">Reservations</p>
-          <h1 className="font-display mt-4 text-3xl font-semibold text-slate-900 sm:text-4xl">Gestión de reservas</h1>
-          <p className="mt-3 text-sm text-slate-700 sm:text-base">Listado general de reservas, creación y edición asignadas a usuarios, cancelación y relación con mesas o clientes.</p>
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-sky-400" />
+            <span className="text-xs font-bold uppercase tracking-wider text-sky-400">Libro de Reservas</span>
+          </div>
+          <h1 className="mt-1 text-2xl font-bold tracking-tight text-white md:text-3xl">
+            Gestión de Reservas
+          </h1>
+          <p className="mt-1 text-sm text-slate-400">
+            Organiza y audita las reservas del salón, asignación de mesas y eventos corporativos o personales.
+          </p>
         </div>
-        <button
-          onClick={() => { resetForm(); setIsModalOpen(true); }}
-          className="rounded-xl bg-sky-600 px-6 py-3 text-sm font-bold text-white shadow-lg hover:bg-sky-500 transition-all"
-        >
-          + Nueva Reserva
-        </button>
+        
+        <div>
+          <button
+            onClick={() => { resetForm(); setIsModalOpen(true); }}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-sky-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:bg-sky-500 active:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-900"
+          >
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Nueva Reserva
+          </button>
+        </div>
       </header>
 
-      <div className="grid gap-6 xl:grid-cols-[1.4fr_1fr]">
-        <section className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="font-display text-xl font-semibold text-slate-900">Listado de reservas</h2>
-
-          <ReservationStats total={stats.total} pending={stats.pending} canceled={stats.canceled} />
-
-          <FilterBar
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-            startDate={startDate}
-            onStartDateChange={setStartDate}
-            endDate={endDate}
-            onEndDateChange={setEndDate}
-            searchPlaceholder="Buscar por ID, cliente o tipo..."
-          />
-
-          <AdminReservationList
-            loading={loading}
-            error={error}
-            reservations={filteredReservations}
-            selectedReservation={selectedReservation}
-            setSelectedReservation={setSelectedReservation}
-            usersById={usersById}
-            startEditing={startEditing}
-            handleCancel={handleCancel}
-            handleStatusUpdate={handleStatusUpdate}
-          />
-        </section>
-
-        <AdminReservationDetail 
-          selectedReservation={selectedReservation}
-          usersById={usersById}
-        />
+      {/* Grid General */}
+      <div className="grid gap-6 xl:grid-cols-[1fr_420px]">
         
-        <AdminReservationModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          form={form}
-          setForm={setForm}
-          handleSubmit={handleSubmit}
-          saving={saving}
-          editingReservation={editingReservation}
-          users={users}
-          restaurants={restaurants}
-          tables={tables}
-          toggleTableSelection={toggleTableSelection}
-        />
+        {/* Lado Izquierdo: Monitor de Reservas */}
+        <div className="space-y-6">
+          
+          {/* Card de Filtros Básicos y Controles Operativos */}
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-md p-5 shadow-xl space-y-4">
+            <div>
+              <h2 className="text-base font-bold text-white">Listado de reservas</h2>
+              <p className="text-xs text-slate-400">Verifica la ocupación futura y estados de confirmación.</p>
+            </div>
+
+            {/* Inyección de Estadísticas */}
+            <div className="pt-1">
+              <ReservationStats total={stats.total} pending={stats.pending} canceled={stats.canceled} />
+            </div>
+
+            {/* Filtros Globales Reutilizables */}
+            <div className="pt-2 border-t border-slate-800/60">
+              <FilterBar
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                startDate={startDate}
+                onStartDateChange={setStartDate}
+                endDate={endDate}
+                onEndDateChange={setEndDate}
+                searchPlaceholder="Buscar por ID, cliente o tipo..."
+              />
+            </div>
+          </div>
+
+          {/* Componente del Listado Central */}
+          <div className="rounded-2xl overflow-hidden shadow-xl border border-slate-800 bg-slate-900/40 backdrop-blur-md">
+            <AdminReservationList
+              loading={loading}
+              error={error}
+              reservations={filteredReservations}
+              selectedReservation={selectedReservation}
+              setSelectedReservation={setSelectedReservation}
+              usersById={usersById}
+              startEditing={startEditing}
+              handleCancel={handleCancel}
+              handleStatusUpdate={handleStatusUpdate}
+            />
+          </div>
+        </div>
+
+        {/* Lado Derecho: Panel de Detalle Fijo/Sticky */}
+        <aside className="h-fit sticky top-6">
+          <AdminReservationDetail 
+            selectedReservation={selectedReservation}
+            usersById={usersById}
+          />
+        </aside>
       </div>
+
+      {/* Modal CRUD Flotante */}
+      <AdminReservationModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        form={form}
+        setForm={setForm}
+        handleSubmit={handleSubmit}
+        saving={saving}
+        editingReservation={editingReservation}
+        users={users}
+        restaurants={restaurants}
+        tables={tables}
+        toggleTableSelection={toggleTableSelection}
+      />
     </section>
   )
 }
