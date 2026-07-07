@@ -1,8 +1,15 @@
 'use strict';
 
+import dns from 'node:dns';
 import mongoose from 'mongoose';
 
 import Promotion from '../src/promotions/promotion.model.js';
+
+// Node's DNS resolver can end up pointing at a non-functional server (e.g. a VPN
+// adapter like Hamachi injecting 127.0.0.1), which breaks the SRV lookups that
+// mongodb+srv:// URIs rely on even though the OS resolver works fine. Force
+// public DNS servers so Atlas SRV resolution doesn't depend on local network config.
+dns.setServers(['1.1.1.1', '8.8.8.8']);
 
 export const dbConnection = async () => {
     try {
